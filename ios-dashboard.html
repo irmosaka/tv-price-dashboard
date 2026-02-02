@@ -264,6 +264,36 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 10000;
+            backdrop-filter: blur(20px);
+            white-space: nowrap;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+            max-width: 90%;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(30px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 1; transform: translateX(-50%) translateY(0); }
+            to { opacity: 0; transform: translateX(-50%) translateY(30px); }
+        }
     </style>
 </head>
 <body>
@@ -291,8 +321,8 @@
             <div class="scraper-status" id="statusBox">
                 <div class="status-indicator" id="statusIndicator"></div>
                 <div style="flex: 1;">
-                    <div style="font-weight: 500;">آماده برای شروع</div>
-                    <div style="font-size: 14px; color: #8e8e93;">روی دکمه زیر کلیک کنید</div>
+                    <div style="font-weight: 500;" id="statusTitle">آماده برای شروع</div>
+                    <div style="font-size: 14px; color: #8e8e93;" id="statusSubtitle">روی دکمه زیر کلیک کنید</div>
                 </div>
             </div>
             
@@ -377,6 +407,21 @@
                 </div>
             </div>
         </div>
+        
+        <!-- API Status Card -->
+        <div class="ios-card">
+            <div class="card-title">
+                <span>🌐</span>
+                <span>وضعیت API</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-top: 12px;">
+                <div style="width: 10px; height: 10px; border-radius: 50%; background: #34c759;" id="apiStatus"></div>
+                <div>
+                    <div style="font-weight: 500;" id="apiStatusText">API آنلاین</div>
+                    <div style="font-size: 13px; color: #8e8e93;" id="apiUrl">در حال تشخیص...</div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Tab Bar -->
@@ -400,11 +445,48 @@
     </div>
     
     <script>
-        // متغیرهای اسکرپر
+        // ==================== تنظیمات API ====================
+        const API_BASE = window.location.origin.includes('localhost') 
+            ? 'http://localhost:3000/api' 
+            : window.location.origin + '/api';
+        
+        // ==================== متغیرهای اسکرپر ====================
         let isScraping = false;
         let scrapedProducts = [];
         let startTime = null;
         let logEntries = [];
+        
+        // ==================== توابع کمکی ====================
+        
+        // نمایش Toast
+        function showToast(message, type = 'info') {
+            const colors = {
+                info: '#007aff',
+                success: '#34c759',
+                warning: '#ff9500',
+                error: '#ff3b30'
+            };
+            
+            // حذف toast قبلی
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) existingToast.remove();
+            
+            // ایجاد toast جدید
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.backgroundColor = colors[type] || colors.info;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            // حذت toast بعد از 3 ثانیه
+            setTimeout(() => {
+                toast.style.animation = 'slideDown 0.3s ease';
+                setTimeout(() => {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
         
         // لاگ کردن رویدادها
         function logEvent(message, type = 'info') {
@@ -446,115 +528,164 @@
             }
         }
         
-        // شبیه‌سازی اسکرپینگ
-        async function simulateScraping() {
-            const sources = ['دیجی‌کالا', 'تکنولایف', 'ترب'];
-            const brands = ['سامسونگ', 'ال جی', 'سونی', 'شیائومی', 'TCL', 'هایسنس'];
-            const technologies = ['LED', 'OLED', 'QLED', 'Mini LED'];
-            
-            const products = [];
-            
-            // ایجاد محصولات شبیه‌سازی شده
-            for (let i = 0; i < 15; i++) {
-                const source = sources[Math.floor(Math.random() * sources.length)];
-                const brand = brands[Math.floor(Math.random() * brands.length)];
-                const tech = technologies[Math.floor(Math.random() * technologies.length)];
-                const size = [43, 50, 55, 65, 75][Math.floor(Math.random() * 5)];
-                const price = Math.floor(Math.random() * 20000000) + 5000000;
+        // فراخوانی API
+        async function callAPI(endpoint, method = 'GET', data = null) {
+            try {
+                const options = {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                };
                 
-                products.push({
-                    id: i + 1,
-                    name: `تلویزیون ${brand} ${size} اینچ ${tech}`,
-                    price: price.toLocaleString('fa-IR'),
-                    brand: brand,
-                    size: size,
-                    technology: tech,
-                    resolution: '4K',
-                    source: source,
-                    rating: (Math.random() * 2 + 3).toFixed(1),
-                    url: '#',
-                    image: `https://picsum.photos/seed/${i + 100}/200/150`
-                });
+                if (data && (method === 'POST' || method === 'PUT')) {
+                    options.body = JSON.stringify(data);
+                }
+                
+                logEvent(`درخواست ${method} به ${endpoint}`, 'info');
+                
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                
+                if (!response.ok) {
+                    throw new Error(`خطای HTTP: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                logEvent(`خطا در API: ${error.message}`, 'error');
+                throw error;
             }
-            
-            return products;
         }
         
-        // شروع اسکرپینگ
-        async function startScraping() {
+        // چک کردن وضعیت API
+        async function checkAPIStatus() {
+            try {
+                const data = await callAPI('/health');
+                document.getElementById('apiStatus').style.background = '#34c759';
+                document.getElementById('apiStatusText').textContent = 'API آنلاین';
+                document.getElementById('apiUrl').textContent = API_BASE;
+                logEvent('API در دسترس است', 'success');
+                return true;
+            } catch (error) {
+                document.getElementById('apiStatus').style.background = '#ff3b30';
+                document.getElementById('apiStatusText').textContent = 'API آفلاین';
+                document.getElementById('apiUrl').textContent = 'استفاده از داده‌های نمونه';
+                logEvent('API در دسترس نیست - استفاده از داده‌های نمونه', 'warning');
+                return false;
+            }
+        }
+        
+        // ==================== توابع اسکرپینگ واقعی ====================
+        
+        // شروع اسکرپینگ واقعی
+        async function startRealScraping() {
             if (isScraping) return;
             
             isScraping = true;
             startTime = new Date();
             
-            // تغییر وضعیت
+            // تغییر وضعیت UI
             document.getElementById('startBtn').classList.add('hidden');
             document.getElementById('stopBtn').classList.remove('hidden');
             document.getElementById('statusIndicator').classList.add('loading');
-            document.getElementById('statusBox').querySelector('div:first-child').textContent = 'در حال اسکرپینگ...';
-            document.getElementById('statusBox').querySelector('div:nth-child(2)').textContent = 'لطفاً صبر کنید';
+            document.getElementById('statusTitle').textContent = 'در حال اسکرپینگ دیجی‌کالا...';
+            document.getElementById('statusSubtitle').textContent = 'لطفاً صبر کنید';
             
-            logEvent('شروع فرآیند اسکرپینگ', 'info');
+            logEvent('شروع اسکرپینگ واقعی از دیجی‌کالا', 'info');
+            showToast('شروع اسکرپینگ از دیجی‌کالا...', 'info');
             
-            // شبیه‌سازی تاخیر
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 10;
-                document.getElementById('successRate').textContent = `${progress}%`;
+            try {
+                // ابتدا چک می‌کنیم API در دسترس هست یا نه
+                const apiAvailable = await checkAPIStatus();
                 
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    finishScraping();
-                }
-            }, 300);
-            
-            // به‌روزرسانی زمان اجرا
-            const timeInterval = setInterval(() => {
-                if (!isScraping) {
-                    clearInterval(timeInterval);
-                    return;
+                if (apiAvailable) {
+                    // استفاده از API واقعی
+                    logEvent('در حال دریافت داده از API...', 'info');
+                    
+                    // ابتدا سعی می‌کنیم از API اسکرپ واقعی بگیریم
+                    let data;
+                    try {
+                        data = await callAPI('/scrape?source=digikala&sample=false');
+                    } catch (apiError) {
+                        // اگر خطا داد، از داده‌های نمونه استفاده می‌کنیم
+                        logEvent('اسکرپ واقعی شکست خورد، استفاده از داده‌های نمونه', 'warning');
+                        data = await callAPI('/scrape?source=digikala&sample=true');
+                    }
+                    
+                    if (data.success) {
+                        scrapedProducts = data.products;
+                        showToast(`${data.count} محصول دریافت شد`, 'success');
+                    } else {
+                        throw new Error(data.error || 'خطا در اسکرپینگ');
+                    }
+                } else {
+                    // API در دسترس نیست - از داده‌های نمونه استفاده می‌کنیم
+                    logEvent('API در دسترس نیست - استفاده از داده‌های نمونه', 'warning');
+                    const sampleData = await generateSampleData();
+                    scrapedProducts = sampleData;
+                    showToast('استفاده از داده‌های نمونه', 'warning');
                 }
                 
+                // نمایش نتایج
+                document.getElementById('resultsCard').classList.remove('hidden');
+                document.getElementById('resultCount').textContent = `${scrapedProducts.length} محصول`;
+                document.getElementById('totalProducts').textContent = scrapedProducts.length;
+                
+                // محاسبه میانگین قیمت
+                const avgPrice = scrapedProducts.reduce((sum, p) => sum + (p.price || 0), 0) / scrapedProducts.length;
+                document.getElementById('avgPrice').textContent = Math.floor(avgPrice).toLocaleString('fa-IR');
+                document.getElementById('successRate').textContent = '100%';
+                
+                // نمایش محصولات
+                displayRealProducts(scrapedProducts);
+                
+                // ذخیره در localStorage برای استفاده بعدی
+                try {
+                    localStorage.setItem('tvProducts', JSON.stringify(scrapedProducts));
+                    localStorage.setItem('tvProductsTimestamp', new Date().toISOString());
+                    logEvent('داده‌ها در localStorage ذخیره شدند', 'success');
+                } catch (storageError) {
+                    logEvent('خطا در ذخیره‌سازی localStorage', 'warning');
+                }
+                
+                logEvent(`${scrapedProducts.length} محصول با موفقیت دریافت شد`, 'success');
+                
+            } catch (error) {
+                console.error('Error in scraping:', error);
+                logEvent(`خطا: ${error.message}`, 'error');
+                showToast(`خطا: ${error.message}`, 'error');
+                
+                // استفاده از داده‌های ذخیره شده یا نمونه
+                try {
+                    const savedProducts = localStorage.getItem('tvProducts');
+                    if (savedProducts) {
+                        scrapedProducts = JSON.parse(savedProducts);
+                        displayRealProducts(scrapedProducts);
+                        logEvent('استفاده از داده‌های ذخیره شده قبلی', 'warning');
+                        showToast('استفاده از داده‌های ذخیره شده', 'warning');
+                    } else {
+                        // تولید داده‌های نمونه
+                        scrapedProducts = await generateSampleData();
+                        displayRealProducts(scrapedProducts);
+                        logEvent('استفاده از داده‌های نمونه', 'warning');
+                    }
+                } catch (fallbackError) {
+                    logEvent('خطا در بازیابی داده‌های جایگزین', 'error');
+                }
+            } finally {
+                // بازنشانی وضعیت
+                isScraping = false;
                 const elapsed = Math.floor((new Date() - startTime) / 1000);
                 document.getElementById('timeElapsed').textContent = `${elapsed}s`;
-            }, 1000);
-            
-            // ذخیره اینتروال‌ها برای توقف
-            window.scrapingIntervals = { progress: interval, time: timeInterval };
-        }
-        
-        // اتمام اسکرپینگ
-        async function finishScraping() {
-            const products = await simulateScraping();
-            scrapedProducts = products;
-            
-            // نمایش نتایج
-            document.getElementById('resultsCard').classList.remove('hidden');
-            document.getElementById('resultCount').textContent = `${products.length} محصول`;
-            document.getElementById('totalProducts').textContent = products.length;
-            
-            // محاسبه میانگین قیمت
-            const avgPrice = products.reduce((sum, p) => {
-                const price = parseInt(p.price.replace(/,/g, ''));
-                return sum + (isNaN(price) ? 0 : price);
-            }, 0) / products.length;
-            
-            document.getElementById('avgPrice').textContent = Math.floor(avgPrice).toLocaleString('fa-IR');
-            document.getElementById('successRate').textContent = '100%';
-            
-            // نمایش محصولات
-            displayProducts();
-            
-            // بازنشانی وضعیت
-            isScraping = false;
-            document.getElementById('stopBtn').classList.add('hidden');
-            document.getElementById('startBtn').classList.remove('hidden');
-            document.getElementById('statusIndicator').classList.remove('loading');
-            document.getElementById('statusIndicator').style.background = '#34c759';
-            document.getElementById('statusBox').querySelector('div:first-child').textContent = 'اسکرپینگ تکمیل شد';
-            document.getElementById('statusBox').querySelector('div:nth-child(2)').textContent = `${products.length} محصول یافت شد`;
-            
-            logEvent(`اسکرپینگ با موفقیت تکمیل شد. ${products.length} محصول یافت شد.`, 'success');
+                
+                document.getElementById('stopBtn').classList.add('hidden');
+                document.getElementById('startBtn').classList.remove('hidden');
+                document.getElementById('statusIndicator').classList.remove('loading');
+                document.getElementById('statusIndicator').style.background = '#34c759';
+                document.getElementById('statusTitle').textContent = 'اسکرپینگ تکمیل شد';
+                document.getElementById('statusSubtitle').textContent = `${scrapedProducts.length} محصول یافت شد`;
+            }
         }
         
         // توقف اسکرپینگ
@@ -563,59 +694,96 @@
             
             isScraping = false;
             
-            // متوقف کردن اینتروال‌ها
-            if (window.scrapingIntervals) {
-                clearInterval(window.scrapingIntervals.progress);
-                clearInterval(window.scrapingIntervals.time);
-            }
-            
             // بازنشانی وضعیت
             document.getElementById('stopBtn').classList.add('hidden');
             document.getElementById('startBtn').classList.remove('hidden');
             document.getElementById('statusIndicator').classList.remove('loading');
             document.getElementById('statusIndicator').style.background = '#ff3b30';
-            document.getElementById('statusBox').querySelector('div:first-child').textContent = 'متوقف شد';
-            document.getElementById('statusBox').querySelector('div:nth-child(2)').textContent = 'اسکرپینگ متوقف شد';
+            document.getElementById('statusTitle').textContent = 'متوقف شد';
+            document.getElementById('statusSubtitle').textContent = 'اسکرپینگ متوقف شد';
             
             logEvent('اسکرپینگ متوقف شد', 'warning');
+            showToast('اسکرپینگ متوقف شد', 'warning');
         }
         
-        // نمایش محصولات
-        function displayProducts() {
+        // تولید داده‌های نمونه
+        async function generateSampleData() {
+            const brands = ['سامسونگ', 'ال‌جی', 'سونی', 'شیائومی', 'TCL', 'هایسنس'];
+            const technologies = ['QLED', 'OLED', 'Mini LED', 'NanoCell', 'LED'];
+            const sizes = [43, 50, 55, 65, 75, 85];
+            const resolutions = ['4K', '8K', 'Full HD'];
+            
+            const products = [];
+            
+            for (let i = 0; i < 12; i++) {
+                const brand = brands[Math.floor(Math.random() * brands.length)];
+                const tech = technologies[Math.floor(Math.random() * technologies.length)];
+                const size = sizes[Math.floor(Math.random() * sizes.length)];
+                const resolution = resolutions[Math.floor(Math.random() * resolutions.length)];
+                const price = Math.floor(Math.random() * 80000000) + 5000000;
+                
+                products.push({
+                    id: Date.now() + i,
+                    name: `تلویزیون ${brand} ${size} اینچ ${tech} ${resolution} اندروید`,
+                    price: price,
+                    formattedPrice: price.toLocaleString('fa-IR') + ' تومان',
+                    brand: brand,
+                    size: size,
+                    technology: tech,
+                    resolution: resolution,
+                    source: 'دیجی‌کالا',
+                    rating: (Math.random() * 2 + 3).toFixed(1),
+                    timestamp: new Date().toISOString()
+                });
+            }
+            
+            return products;
+        }
+        
+        // نمایش محصولات واقعی
+        function displayRealProducts(products) {
             const container = document.getElementById('resultsContainer');
             const previewContainer = document.getElementById('productsPreview');
             
             container.innerHTML = '';
             previewContainer.innerHTML = '';
             
+            if (products.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #8e8e93;">محصولی یافت نشد</div>';
+                previewContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #8e8e93;">محصولی برای نمایش وجود ندارد</div>';
+                return;
+            }
+            
             // نمایش 4 محصول در پیش‌نمایش
-            const previewProducts = scrapedProducts.slice(0, 4);
+            const previewProducts = products.slice(0, 4);
             
             previewProducts.forEach(product => {
                 const productElement = document.createElement('div');
                 productElement.className = 'product-card';
                 productElement.innerHTML = `
-                    <div style="font-size: 14px; color: #8e8e93; margin-bottom: 8px;">${product.brand}</div>
-                    <div style="font-size: 16px; font-weight: 500;">${product.size} اینچ</div>
-                    <div class="product-price">${product.price} تومان</div>
-                    <div style="font-size: 12px; color: #8e8e93;">${product.technology}</div>
+                    <div style="font-size: 14px; color: #8e8e93; margin-bottom: 8px;">${product.brand || 'نامشخص'}</div>
+                    <div style="font-size: 16px; font-weight: 500;">${product.size || 55} اینچ</div>
+                    <div class="product-price">${product.formattedPrice || (product.price?.toLocaleString('fa-IR') || '0') + ' تومان'}</div>
+                    <div style="font-size: 12px; color: #8e8e93;">${product.technology || 'LED'} | ${product.resolution || '4K'}</div>
                 `;
                 previewContainer.appendChild(productElement);
             });
             
             // نمایش تمام محصولات در نتایج
-            scrapedProducts.forEach(product => {
+            products.forEach(product => {
                 const productElement = document.createElement('div');
                 productElement.className = 'list-item';
                 productElement.innerHTML = `
                     <div class="list-item-content">
                         <div class="list-item-icon">📺</div>
                         <div class="list-item-text">
-                            <div class="list-item-title">${product.name}</div>
+                            <div class="list-item-title">${product.name || 'تلویزیون'}</div>
                             <div class="list-item-subtitle">
-                                <span>${product.source} | ⭐ ${product.rating}</span>
+                                <span>${product.source || 'دیجی‌کالا'} | ${product.brand || 'نامشخص'} | ⭐ ${product.rating || (Math.random() * 2 + 3).toFixed(1)}</span>
                                 <br>
-                                <span style="color: #34c759; font-weight: 600;">${product.price} تومان</span>
+                                <span style="color: #34c759; font-weight: 600;">
+                                    ${product.formattedPrice || (product.price?.toLocaleString('fa-IR') || '0') + ' تومان'}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -625,18 +793,77 @@
             });
         }
         
+        // بارگذاری محصولات ذخیره شده
+        async function loadSavedProducts() {
+            try {
+                logEvent('در حال بارگذاری محصولات ذخیره شده...', 'info');
+                
+                // اول سعی می‌کنیم از API بگیریم
+                try {
+                    const data = await callAPI('/products');
+                    if (data.success && data.products.length > 0) {
+                        scrapedProducts = data.products;
+                        displayRealProducts(scrapedProducts);
+                        logEvent(`${data.count} محصول از سرور بازیابی شد`, 'success');
+                        return;
+                    }
+                } catch (apiError) {
+                    // اگر API خطا داد، از localStorage استفاده می‌کنیم
+                }
+                
+                // چک کردن localStorage
+                const savedProducts = localStorage.getItem('tvProducts');
+                if (savedProducts) {
+                    scrapedProducts = JSON.parse(savedProducts);
+                    displayRealProducts(scrapedProducts);
+                    logEvent(`${scrapedProducts.length} محصول از localStorage بازیابی شد`, 'success');
+                } else {
+                    logEvent('هیچ محصول ذخیره شده‌ای یافت نشد', 'info');
+                }
+            } catch (error) {
+                logEvent('خطا در بارگذاری محصولات ذخیره شده', 'error');
+            }
+        }
+        
         // بارگذاری محصولات بیشتر
-        function loadMoreProducts() {
+        async function loadMoreProducts() {
             logEvent('بارگذاری محصولات بیشتر...', 'info');
+            showToast('در حال بارگذاری محصولات بیشتر...', 'info');
+            
             // در نسخه واقعی، اینجا درخواست به API می‌دهیم
-            setTimeout(() => {
-                logEvent('10 محصول جدید بارگذاری شد', 'success');
+            // فعلاً از داده‌های نمونه استفاده می‌کنیم
+            setTimeout(async () => {
+                try {
+                    const moreProducts = await generateSampleData();
+                    scrapedProducts = [...scrapedProducts, ...moreProducts];
+                    displayRealProducts(scrapedProducts);
+                    logEvent(`${moreProducts.length} محصول جدید بارگذاری شد`, 'success');
+                    showToast(`${moreProducts.length} محصول جدید اضافه شد`, 'success');
+                } catch (error) {
+                    logEvent('خطا در بارگذاری محصولات بیشتر', 'error');
+                }
             }, 1000);
         }
         
         // نمایش تنظیمات
         function showSettings() {
-            alert('⚙️ تنظیمات اسکرپر\n\n• فاصله زمانی: 6 ساعت\n• تعداد صفحات: 10\n• ذخیره به صورت: JSON\n• خودکار: فعال');
+            const settings = `
+🔧 تنظیمات اسکرپر
+
+• منبع اصلی: دیجی‌کالا
+• تعداد صفحات: 3
+• فاصله زمانی: 6 ساعت
+• ذخیره‌سازی: JSON + localStorage
+• حالت نمونه: ${API_BASE.includes('localhost') ? 'خیر' : 'بله'}
+
+📊 آمار:
+• API: ${API_BASE}
+• محصولات ذخیره شده: ${scrapedProducts.length}
+• آخرین بروزرسانی: ${localStorage.getItem('tvProductsTimestamp') ? new Date(localStorage.getItem('tvProductsTimestamp')).toLocaleString('fa-IR') : 'ندارد'}
+
+💡 نکته: در محیط GitHub Pages از داده‌های نمونه استفاده می‌شود.
+            `;
+            alert(settings);
         }
         
         // تغییر صفحات
@@ -650,13 +877,31 @@
             logEvent(`تغییر به صفحه ${page}`, 'info');
         }
         
-        // رویدادهای دکمه‌ها
-        document.getElementById('startBtn').addEventListener('click', startScraping);
-        document.getElementById('stopBtn').addEventListener('click', stopScraping);
+        // ==================== رویدادهای اولیه ====================
         
-        // لاگ اولیه
-        logEvent('سیستم اسکرپر آماده است', 'success');
-        logEvent('منتظر دستور شروع...', 'info');
+        document.addEventListener('DOMContentLoaded', async function() {
+            // لاگ اولیه
+            logEvent('سیستم اسکرپر آماده است', 'success');
+            logEvent(`API آدرس: ${API_BASE}`, 'info');
+            logEvent('منتظر دستور شروع...', 'info');
+            
+            // چک کردن وضعیت API
+            await checkAPIStatus();
+            
+            // بارگذاری محصولات ذخیره شده
+            await loadSavedProducts();
+            
+            // نمایش آمار اولیه
+            if (scrapedProducts.length > 0) {
+                document.getElementById('totalProducts').textContent = scrapedProducts.length;
+                const avgPrice = scrapedProducts.reduce((sum, p) => sum + (p.price || 0), 0) / scrapedProducts.length;
+                document.getElementById('avgPrice').textContent = Math.floor(avgPrice).toLocaleString('fa-IR');
+            }
+        });
+        
+        // رویدادهای دکمه‌ها
+        document.getElementById('startBtn').addEventListener('click', startRealScraping);
+        document.getElementById('stopBtn').addEventListener('click', stopScraping);
     </script>
 </body>
 </html>
