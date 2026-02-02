@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📱 داشبورد موبایل - قیمت تلویزیون</title>
+    <title>📱 داشبورد iOS - قیمت تلویزیون</title>
     
-    <!-- فونت وزیر از Google Fonts -->
+    <!-- فونت وزیر -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
-        /* ریست */
         * {
             margin: 0;
             padding: 0;
@@ -19,56 +18,34 @@
             -webkit-tap-highlight-color: transparent;
         }
         
-        /* فونت اصلی: وزیر */
         body {
-            font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #f2f2f7;
             color: #000;
             line-height: 1.6;
             max-width: 500px;
             margin: 0 auto;
             min-height: 100vh;
-            position: relative;
-            font-feature-settings: "ss01"; /* برای بهبود نمایش فارسی */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
         
-        /* iOS Status Bar */
-        .status-bar {
-            background: rgba(242, 242, 247, 0.8);
-            backdrop-filter: blur(20px);
-            padding: 12px 16px 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 14px;
-            font-weight: 600;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            font-family: 'Vazirmatn', -apple-system, sans-serif;
-        }
-        
-        .time {
-            font-feature-settings: "tnum";
-        }
-        
-        .status-icons {
-            display: flex;
-            gap: 5px;
-        }
-        
-        /* iOS Navigation Bar */
+        /* Navigation Bar */
         .nav-bar {
-            background: rgba(242, 242, 247, 0.8);
+            background: rgba(242, 242, 247, 0.95);
             backdrop-filter: blur(20px);
-            padding: 14px 16px;
+            padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 0.5px solid rgba(0,0,0,0.1);
-            position: sticky;
-            top: 40px;
-            z-index: 999;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            max-width: 500px;
+            margin: 0 auto;
+            z-index: 1000;
         }
         
         .nav-title {
@@ -76,43 +53,43 @@
             font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
         
-        /* iOS Content */
+        /* Content */
         .content {
-            padding: 16px;
-            padding-bottom: 100px;
+            padding: 100px 16px 120px;
+            max-width: 500px;
+            margin: 0 auto;
         }
         
         /* iOS Card */
         .ios-card {
             background: #fff;
-            border-radius: 14px;
-            padding: 18px;
-            margin-bottom: 16px;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
             box-shadow: 
-                0 2px 10px rgba(0,0,0,0.04),
-                0 1px 3px rgba(0,0,0,0.08);
+                0 4px 16px rgba(0,0,0,0.08),
+                0 1px 4px rgba(0,0,0,0.04);
         }
         
         .card-title {
             font-size: 18px;
             font-weight: 700;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
-        /* iOS List Item */
+        /* List Items */
         .list-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 14px 0;
+            padding: 16px 0;
             border-bottom: 0.5px solid rgba(0,0,0,0.1);
-            font-family: 'Vazirmatn', -apple-system, sans-serif;
         }
         
         .list-item:last-child {
@@ -123,13 +100,13 @@
             display: flex;
             align-items: center;
             gap: 14px;
+            flex: 1;
         }
         
         .list-item-icon {
-            font-size: 26px;
-            width: 36px;
+            font-size: 28px;
+            width: 40px;
             text-align: center;
-            font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
         }
         
         .list-item-text {
@@ -137,7 +114,7 @@
         }
         
         .list-item-title {
-            font-size: 17px;
+            font-size: 16px;
             font-weight: 500;
         }
         
@@ -145,13 +122,6 @@
             font-size: 14px;
             color: #8e8e93;
             margin-top: 4px;
-            font-weight: 300;
-        }
-        
-        .list-item-chevron {
-            color: #c7c7cc;
-            font-size: 22px;
-            font-family: -apple-system, sans-serif;
         }
         
         /* iOS Button */
@@ -159,20 +129,19 @@
             background: #007aff;
             color: white;
             border: none;
-            border-radius: 12px;
-            padding: 16px 24px;
+            border-radius: 14px;
+            padding: 18px 24px;
             font-size: 17px;
             font-weight: 600;
             width: 100%;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s;
-            -webkit-appearance: none;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            font-family: 'Vazirmatn', -apple-system, sans-serif;
+            margin: 10px 0;
         }
         
         .ios-button:active {
@@ -180,33 +149,7 @@
             transform: scale(0.98);
         }
         
-        /* iOS Segmented Control */
-        .segmented-control {
-            display: flex;
-            background: #e5e5ea;
-            border-radius: 10px;
-            padding: 4px;
-            margin: 20px 0;
-            font-family: 'Vazirmatn', -apple-system, sans-serif;
-        }
-        
-        .segment {
-            flex: 1;
-            padding: 10px;
-            text-align: center;
-            font-size: 15px;
-            font-weight: 500;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .segment.active {
-            background: #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
-        
-        /* iOS Tab Bar */
+        /* Tab Bar */
         .tab-bar {
             position: fixed;
             bottom: 0;
@@ -230,10 +173,9 @@
             gap: 6px;
             text-decoration: none;
             color: #8e8e93;
-            padding: 8px 12px;
-            border-radius: 10px;
+            padding: 8px 16px;
+            border-radius: 12px;
             transition: all 0.2s;
-            font-family: 'Vazirmatn', -apple-system, sans-serif;
         }
         
         .tab-item.active {
@@ -243,7 +185,6 @@
         
         .tab-icon {
             font-size: 24px;
-            font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
         }
         
         .tab-label {
@@ -251,135 +192,88 @@
             font-weight: 500;
         }
         
-        /* iOS Colors */
-        .ios-blue { color: #007aff; }
-        .ios-green { color: #34c759; }
-        .ios-red { color: #ff3b30; }
-        .ios-orange { color: #ff9500; }
-        .ios-purple { color: #af52de; }
-        
-        /* iOS Switch */
-        .ios-switch {
-            position: relative;
-            width: 51px;
-            height: 31px;
+        /* Scraper Status */
+        .scraper-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: #f8f8f8;
+            border-radius: 12px;
+            margin: 16px 0;
         }
         
-        .ios-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #e5e5ea;
-            transition: .4s;
-            border-radius: 31px;
-        }
-        
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 27px;
-            width: 27px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: .4s;
+        .status-indicator {
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            background: #34c759;
         }
         
-        input:checked + .slider {
-            background-color: #34c759;
+        .status-indicator.loading {
+            background: #ff9500;
+            animation: pulse 1.5s infinite;
         }
         
-        input:checked + .slider:before {
-            transform: translateX(20px);
+        .status-indicator.error {
+            background: #ff3b30;
         }
         
-        /* تنظیمات خاص برای فونت وزیر */
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Vazirmatn', sans-serif;
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
         
-        button, input, select, textarea {
-            font-family: 'Vazirmatn', sans-serif;
+        /* Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 16px;
         }
         
-        /* بهبود نمایش اعداد */
-        .persian-numbers {
-            font-feature-settings: "tnum", "ss01";
+        .product-card {
+            background: #f8f8f8;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
         }
         
-        /* استایل برای متن‌های کوچک */
-        .small-text {
-            font-size: 13px;
-            font-weight: 300;
-        }
-        
-        /* Badge */
-        .badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-            background: #e5e5ea;
-            color: #000;
-        }
-        
-        .badge-blue {
-            background: rgba(0, 122, 255, 0.1);
+        .product-price {
+            font-size: 18px;
+            font-weight: 700;
             color: #007aff;
+            margin: 8px 0;
         }
         
-        .badge-green {
-            background: rgba(52, 199, 89, 0.1);
-            color: #34c759;
+        /* Hidden elements */
+        .hidden {
+            display: none !important;
         }
         
-        /* Progress Bar */
-        .progress-bar {
-            height: 6px;
-            background: #e5e5ea;
-            border-radius: 3px;
-            overflow: hidden;
-            margin: 12px 0;
+        /* Loading spinner */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(0, 122, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #007aff;
+            animation: spin 1s linear infinite;
         }
         
-        .progress-fill {
-            height: 100%;
-            background: #007aff;
-            border-radius: 3px;
-            transition: width 0.3s ease;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <!-- iOS Status Bar -->
-    <div class="status-bar">
-       <!-- <div class="time persian-numbers">۰۹:۴۱</div>
-        <div class="status-icons">
-          <span>📶</span>
-            <span>📡</span>
-            <span>🔋 ۱۰۰٪</span>
-        </div> -->
-    </div>
-    
-    <!-- iOS Navigation Bar -->
+    <!-- Navigation Bar -->
     <div class="nav-bar">
         <div class="nav-title">
             <span>📺</span>
-            <span>داشبورد قیمت تلویزیون</span>
+            <span>اسکرپر تلویزیون</span>
         </div>
-        <div style="font-size: 24px; color: #8e8e93; cursor: pointer;">⋯</div>
+        <div style="font-size: 24px; color: #8e8e93; cursor: pointer;" onclick="showSettings()">⋯</div>
     </div>
     
     <!-- Main Content -->
@@ -387,84 +281,40 @@
         <!-- Welcome Card -->
         <div class="ios-card">
             <div class="card-title">
-                <span>👋</span>
-                <span>به داشبورد خوش آمدید</span>
+                <span>🕷️</span>
+                <span>اسکرپر دیجی‌کالا</span>
             </div>
-            <p style="color: #8e8e93; font-size: 15px; margin-bottom: 20px; line-height: 1.6;">
-                این پلتفرم برای مقایسه‌ی هوشمند قیمت تلویزیون‌ها از فروشگاه‌های معتبر ایرانی طراحی شده است.
-                داده‌ها به صورت خودکار بروز می‌شوند.
+            <p style="color: #8e8e93; font-size: 15px; margin-bottom: 20px;">
+                این اسکرپر داده‌های قیمت تلویزیون را از دیجی‌کالا جمع‌آوری می‌کند.
             </p>
             
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: 40%;"></div>
-            </div>
-            
-            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #8e8e93; margin-bottom: 20px;">
-                <span>پیشرفت پروژه</span>
-                <span class="persian-numbers">۴۰٪</span>
+            <div class="scraper-status" id="statusBox">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 500;">آماده برای شروع</div>
+                    <div style="font-size: 14px; color: #8e8e93;">روی دکمه زیر کلیک کنید</div>
+                </div>
             </div>
             
             <button class="ios-button" id="startBtn">
                 <span>🚀 شروع اسکرپینگ</span>
             </button>
+            
+            <button class="ios-button" id="stopBtn" style="background: #ff3b30;" class="hidden">
+                <span>⏹️ توقف اسکرپینگ</span>
+            </button>
         </div>
         
-        <!-- Sources Card -->
-        <div class="ios-card">
+        <!-- Results Card -->
+        <div class="ios-card hidden" id="resultsCard">
             <div class="card-title">
-                <span>🛒</span>
-                <span>منابع داده</span>
+                <span>📋</span>
+                <span>نتایج اسکرپینگ</span>
+                <span style="margin-right: auto; font-size: 14px; color: #8e8e93;" id="resultCount"></span>
             </div>
             
-            <div class="list-item">
-                <div class="list-item-content">
-                    <div class="list-item-icon">🛍️</div>
-                    <div class="list-item-text">
-                        <div class="list-item-title">دیجی‌کالا</div>
-                        <div class="list-item-subtitle">بزرگترین فروشگاه آنلاین</div>
-                    </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span class="badge badge-blue">فعال</span>
-                    <label class="ios-switch">
-                        <input type="checkbox" checked id="digikalaToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-            
-            <div class="list-item">
-                <div class="list-item-content">
-                    <div class="list-item-icon">⚡</div>
-                    <div class="list-item-text">
-                        <div class="list-item-title">تکنولایف</div>
-                        <div class="list-item-subtitle">تخصصی در کالای دیجیتال</div>
-                    </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span class="badge" style="background: #ff950022; color: #ff9500;">به زودی</span>
-                    <label class="ios-switch">
-                        <input type="checkbox" id="tecnolifeToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-            
-            <div class="list-item">
-                <div class="list-item-content">
-                    <div class="list-item-icon">🔎</div>
-                    <div class="list-item-text">
-                        <div class="list-item-title">ترب</div>
-                        <div class="list-item-subtitle">موتور جستجوی کالا</div>
-                    </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span class="badge" style="background: #8e8e9322; color: #8e8e93;">آینده</span>
-                    <label class="ios-switch">
-                        <input type="checkbox" disabled id="torobToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
+            <div id="resultsContainer">
+                <!-- نتایج اینجا نمایش داده می‌شود -->
             </div>
         </div>
         
@@ -472,288 +322,341 @@
         <div class="ios-card">
             <div class="card-title">
                 <span>📊</span>
-                <span>آمار و ارقام</span>
+                <span>آمار اسکرپینگ</span>
             </div>
             
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 10px;">
-                <div style="text-align: center; padding: 16px; background: #f8f8f8; border-radius: 12px;">
-                    <div style="font-size: 28px; font-weight: 800; color: #007aff;" class="persian-numbers">۰</div>
-                    <div style="font-size: 14px; color: #8e8e93; margin-top: 6px;">محصولات ذخیره شده</div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 32px; font-weight: 800; color: #007aff;" id="totalProducts">0</div>
+                    <div style="font-size: 14px; color: #8e8e93;">محصولات یافت شده</div>
                 </div>
                 
-                <div style="text-align: center; padding: 16px; background: #f8f8f8; border-radius: 12px;">
-                    <div style="font-size: 28px; font-weight: 800; color: #34c759;" class="persian-numbers">۳</div>
-                    <div style="font-size: 14px; color: #8e8e93; margin-top: 6px;">منبع فعال</div>
+                <div style="text-align: center;">
+                    <div style="font-size: 32px; font-weight: 800; color: #34c759;" id="successRate">0%</div>
+                    <div style="font-size: 14px; color: #8e8e93;">موفقیت</div>
                 </div>
                 
-                <div style="text-align: center; padding: 16px; background: #f8f8f8; border-radius: 12px;">
-                    <div style="font-size: 28px; font-weight: 800; color: #ff9500;" class="persian-numbers">۱۲</div>
-                    <div style="font-size: 14px; color: #8e8e93; margin-top: 6px;">برند پشتیبانی</div>
+                <div style="text-align: center;">
+                    <div style="font-size: 32px; font-weight: 800; color: #ff9500;" id="avgPrice">0</div>
+                    <div style="font-size: 14px; color: #8e8e93;">میانگین قیمت</div>
                 </div>
                 
-                <div style="text-align: center; padding: 16px; background: #f8f8f8; border-radius: 12px;">
-                    <div style="font-size: 28px; font-weight: 800; color: #af52de;" class="persian-numbers">۲۴</div>
-                    <div style="font-size: 14px; color: #8e8e93; margin-top: 6px;">ساعت آپدیت</div>
+                <div style="text-align: center;">
+                    <div style="font-size: 32px; font-weight: 800; color: #af52de;" id="timeElapsed">0s</div>
+                    <div style="font-size: 14px; color: #8e8e93;">زمان اجرا</div>
                 </div>
             </div>
         </div>
         
-        <!-- Segmented Control -->
-        <div class="segmented-control">
-            <div class="segment active">همه دسته‌ها</div>
-            <div class="segment">تلویزیون هوشمند</div>
-            <div class="segment">۴K و ۸K</div>
-            <div class="segment">OLED</div>
-        </div>
-        
-        <!-- Features Card -->
+        <!-- Products Preview -->
         <div class="ios-card">
             <div class="card-title">
-                <span>✨</span>
-                <span>قابلیت‌های ویژه</span>
+                <span>📺</span>
+                <span>پیشنمایش محصولات</span>
             </div>
             
-            <div class="list-item">
-                <div class="list-item-content">
-                    <div class="list-item-icon">📈</div>
-                    <div class="list-item-text">
-                        <div class="list-item-title">نمودارهای تعاملی</div>
-                        <div class="list-item-subtitle">تحلیل روند قیمت در بازه‌های زمانی</div>
-                    </div>
-                </div>
-                <span class="list-item-chevron">›</span>
+            <div class="product-grid" id="productsPreview">
+                <!-- محصولات اینجا نمایش داده می‌شوند -->
             </div>
             
-            <div class="list-item">
-                <div class="list-item-content">
-                    <div class="list-item-icon">🔍</div>
-                    <div class="list-item-text">
-                        <div class="list-item-title">جستجوی پیشرفته</div>
-                        <div class="list-item-subtitle">فیلتر بر اساس برند، سایز، تکنولوژی</div>
-                    </div>
-                </div>
-                <span class="list-item-chevron">›</span>
-            </div>
-            
-            <div class="list-item">
-                <div class="list-item-content">
-                    <div class="list-item-icon">🔄</div>
-                    <div class="list-item-text">
-                        <div class="list-item-title">بروزرسانی خودکار</div>
-                        <div class="list-item-subtitle">هر ۶ ساعت اطلاعات جدید</div>
-                    </div>
-                </div>
-                <span class="list-item-chevron">›</span>
-            </div>
-            
-            <div class="list-item">
-                <div class="list-item-content">
-                    <div class="list-item-icon">📱</div>
-                    <div class="list-item-text">
-                        <div class="list-item-title">طراحی واکنش‌گرا</div>
-                        <div class="list-item-subtitle">بهینه برای موبایل، تبلت و دسکتاپ</div>
-                    </div>
-                </div>
-                <span class="list-item-chevron">›</span>
-            </div>
-        </div>
-        
-        <!-- Call to Action -->
-        <div style="margin: 30px 0;">
-            <button class="ios-button" id="githubBtn" style="background: linear-gradient(45deg, #24292e, #2d3339);">
-                <span>🐙 مشاهده کد در GitHub</span>
-            </button>
-            
-            <!-- <button class="ios-button" id="deployBtn" style="background: #000; margin-top: 14px;">
-                <span>▲ دپلوی روی Vercel</span>
-            </button> -->
-            
-            <button class="ios-button" id="docsBtn" style="background: #f2f2f7; color: #000; margin-top: 14px; border: 1px solid #e5e5ea;">
-                <span>📚 مستندات پروژه</span>
+            <button class="ios-button" style="background: #f2f2f7; color: #000; margin-top: 16px;" onclick="loadMoreProducts()">
+                <span>📥 بارگذاری بیشتر</span>
             </button>
         </div>
         
-        <!-- Footer Info -->
-        <div style="text-align: center; color: #8e8e93; font-size: 13px; padding: 20px 0;">
-            <p>نسخه: <span class="persian-numbers">۱.۰.۰</span> | آخرین بروزرسانی: امروز</p>
-            <p style="margin-top: 5px;">طراحی شده با <span style="color: #ff3b30;">❤️</span> در ایران</p>
+        <!-- Log Card -->
+        <div class="ios-card">
+            <div class="card-title">
+                <span>📝</span>
+                <span>لاگ اسکرپینگ</span>
+            </div>
+            
+            <div style="background: #f8f8f8; border-radius: 12px; padding: 16px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 13px;">
+                <div id="logContainer">
+                    <div style="color: #8e8e93;">منتظر شروع اسکرپینگ...</div>
+                </div>
+            </div>
         </div>
     </div>
     
-    <!-- iOS Tab Bar -->
+    <!-- Tab Bar -->
     <div class="tab-bar">
-        <a href="#" class="tab-item active" data-page="home">
+        <a href="#" class="tab-item active" onclick="showPage('home')">
             <span class="tab-icon">🏠</span>
             <span class="tab-label">خانه</span>
         </a>
-        <a href="#" class="tab-item" data-page="search">
-            <span class="tab-icon">🔍</span>
-            <span class="tab-label">جستجو</span>
+        <a href="#" class="tab-item" onclick="showPage('scraper')">
+            <span class="tab-icon">🕷️</span>
+            <span class="tab-label">اسکرپر</span>
         </a>
-        <a href="#" class="tab-item" data-page="analytics">
-            <span class="tab-icon">📊</span>
-            <span class="tab-label">تحلیل</span>
+        <a href="#" class="tab-item" onclick="showPage('products')">
+            <span class="tab-icon">📺</span>
+            <span class="tab-label">محصولات</span>
         </a>
-        <a href="#" class="tab-item" data-page="settings">
+        <a href="#" class="tab-item" onclick="showPage('settings')">
             <span class="tab-icon">⚙️</span>
             <span class="tab-label">تنظیمات</span>
         </a>
     </div>
     
     <script>
-        // تغییر زبان به فارسی و تنظیم اعداد فارسی
-        document.addEventListener('DOMContentLoaded', function() {
-            // آپدیت زمان
-            function updateTime() {
-                const now = new Date();
-                const options = { 
-                    hour: '2-digit', 
-                    minute: '2-digit',
-                    hour12: false 
-                };
-                const timeString = now.toLocaleTimeString('fa-IR', options);
-                document.querySelector('.time').textContent = timeString;
+        // متغیرهای اسکرپر
+        let isScraping = false;
+        let scrapedProducts = [];
+        let startTime = null;
+        let logEntries = [];
+        
+        // لاگ کردن رویدادها
+        function logEvent(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('fa-IR');
+            const colors = {
+                info: '#007aff',
+                success: '#34c759',
+                warning: '#ff9500',
+                error: '#ff3b30'
+            };
+            
+            const logEntry = {
+                time: timestamp,
+                message: message,
+                type: type
+            };
+            
+            logEntries.unshift(logEntry);
+            
+            // نمایش در لاگ کانتینر
+            const logContainer = document.getElementById('logContainer');
+            const logElement = document.createElement('div');
+            logElement.style.marginBottom = '8px';
+            logElement.style.color = colors[type] || colors.info;
+            logElement.innerHTML = `<span style="color: #8e8e93">[${timestamp}]</span> ${message}`;
+            
+            if (logContainer.firstChild) {
+                logContainer.insertBefore(logElement, logContainer.firstChild);
+            } else {
+                logContainer.appendChild(logElement);
             }
             
-            updateTime();
-            setInterval(updateTime, 60000);
-            
-            // مدیریت سوییچ‌ها
-            document.getElementById('digikalaToggle').addEventListener('change', function() {
-                if(this.checked) {
-                    showToast('✅ دیجی‌کالا فعال شد');
-                } else {
-                    showToast('⚠️ دیجی‌کالا غیرفعال شد');
+            // محدود کردن تعداد لاگ‌ها
+            if (logEntries.length > 20) {
+                logEntries.pop();
+                if (logContainer.childNodes.length > 20) {
+                    logContainer.removeChild(logContainer.lastChild);
                 }
-            });
+            }
+        }
+        
+        // شبیه‌سازی اسکرپینگ
+        async function simulateScraping() {
+            const sources = ['دیجی‌کالا', 'تکنولایف', 'ترب'];
+            const brands = ['سامسونگ', 'ال جی', 'سونی', 'شیائومی', 'TCL', 'هایسنس'];
+            const technologies = ['LED', 'OLED', 'QLED', 'Mini LED'];
             
-            document.getElementById('tecnolifeToggle').addEventListener('change', function() {
-                if(this.checked) {
-                    showToast('🎉 تکنولایف به زودی اضافه می‌شود');
-                    setTimeout(() => {
-                        this.checked = false;
-                    }, 500);
-                }
-            });
+            const products = [];
             
-            // مدیریت دکمه‌ها
-            document.getElementById('startBtn').addEventListener('click', function() {
-                showToast('🚀 شروع فرآیند اسکرپینگ...');
-                setTimeout(() => {
-                    showToast('📡 در حال جمع‌آوری داده از دیجی‌کالا...');
-                }, 1000);
-            });
-            
-            document.getElementById('githubBtn').addEventListener('click', function() {
-                window.open('https://github.com/irmosaka/tv-price-dashboard', '_blank');
-            });
-            
-            document.getElementById('deployBtn').addEventListener('click', function() {
-                showToast('☁️ در حال هدایت به Vercel...');
-                setTimeout(() => {
-                    window.open('https://vercel.com/new', '_blank');
-                }, 500);
-            });
-            
-            document.getElementById('docsBtn').addEventListener('click', function() {
-                showToast('📖 مستندات به زودی آماده می‌شود');
-            });
-            
-            // مدیریت Segmented Control
-            document.querySelectorAll('.segment').forEach(segment => {
-                segment.addEventListener('click', function() {
-                    document.querySelectorAll('.segment').forEach(s => s.classList.remove('active'));
-                    this.classList.add('active');
-                    showToast(`فیلتر: ${this.textContent}`);
+            // ایجاد محصولات شبیه‌سازی شده
+            for (let i = 0; i < 15; i++) {
+                const source = sources[Math.floor(Math.random() * sources.length)];
+                const brand = brands[Math.floor(Math.random() * brands.length)];
+                const tech = technologies[Math.floor(Math.random() * technologies.length)];
+                const size = [43, 50, 55, 65, 75][Math.floor(Math.random() * 5)];
+                const price = Math.floor(Math.random() * 20000000) + 5000000;
+                
+                products.push({
+                    id: i + 1,
+                    name: `تلویزیون ${brand} ${size} اینچ ${tech}`,
+                    price: price.toLocaleString('fa-IR'),
+                    brand: brand,
+                    size: size,
+                    technology: tech,
+                    resolution: '4K',
+                    source: source,
+                    rating: (Math.random() * 2 + 3).toFixed(1),
+                    url: '#',
+                    image: `https://picsum.photos/seed/${i + 100}/200/150`
                 });
-            });
-            
-            // مدیریت Tab Bar
-            document.querySelectorAll('.tab-item').forEach(tab => {
-                tab.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const page = this.getAttribute('data-page');
-                    
-                    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    const pageNames = {
-                        'home': 'خانه',
-                        'search': 'جستجو',
-                        'analytics': 'تحلیل',
-                        'settings': 'تنظیمات'
-                    };
-                    
-                    showToast(`📱 رفتن به صفحه ${pageNames[page]}`);
-                });
-            });
-            
-            // تابع نمایش Toast
-            function showToast(message) {
-                // حذف toast قبلی اگر وجود داشته باشد
-                const existingToast = document.querySelector('.ios-toast');
-                if (existingToast) {
-                    existingToast.remove();
-                }
-                
-                // ساخت toast جدید
-                const toast = document.createElement('div');
-                toast.className = 'ios-toast';
-                toast.innerHTML = `
-                    <div style="
-                        position: fixed;
-                        bottom: 80px;
-                        left: 50%;
-                        transform: translateX(-50%);
-                        background: rgba(0,0,0,0.8);
-                        color: white;
-                        padding: 12px 20px;
-                        border-radius: 12px;
-                        font-size: 14px;
-                        font-weight: 500;
-                        z-index: 10000;
-                        backdrop-filter: blur(20px);
-                        white-space: nowrap;
-                        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-                        animation: fadeIn 0.3s ease;
-                    ">
-                        ${message}
-                    </div>
-                `;
-                
-                document.body.appendChild(toast);
-                
-                // حذف toast بعد از 3 ثانیه
-                setTimeout(() => {
-                    toast.style.animation = 'fadeOut 0.3s ease';
-                    setTimeout(() => {
-                        if (toast.parentNode) {
-                            toast.parentNode.removeChild(toast);
-                        }
-                    }, 300);
-                }, 3000);
             }
             
-            // اضافه کردن استایل‌های انیمیشن
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-                    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+            return products;
+        }
+        
+        // شروع اسکرپینگ
+        async function startScraping() {
+            if (isScraping) return;
+            
+            isScraping = true;
+            startTime = new Date();
+            
+            // تغییر وضعیت
+            document.getElementById('startBtn').classList.add('hidden');
+            document.getElementById('stopBtn').classList.remove('hidden');
+            document.getElementById('statusIndicator').classList.add('loading');
+            document.getElementById('statusBox').querySelector('div:first-child').textContent = 'در حال اسکرپینگ...';
+            document.getElementById('statusBox').querySelector('div:nth-child(2)').textContent = 'لطفاً صبر کنید';
+            
+            logEvent('شروع فرآیند اسکرپینگ', 'info');
+            
+            // شبیه‌سازی تاخیر
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                document.getElementById('successRate').textContent = `${progress}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    finishScraping();
+                }
+            }, 300);
+            
+            // به‌روزرسانی زمان اجرا
+            const timeInterval = setInterval(() => {
+                if (!isScraping) {
+                    clearInterval(timeInterval);
+                    return;
                 }
                 
-                @keyframes fadeOut {
-                    from { opacity: 1; transform: translateX(-50%) translateY(0); }
-                    to { opacity: 0; transform: translateX(-50%) translateY(20px); }
-                }
-            `;
-            document.head.appendChild(style);
-            
-            // شبیه‌سازی بارگذاری اولیه
-            setTimeout(() => {
-                showToast('🎯 داشبورد بروز شد!');
+                const elapsed = Math.floor((new Date() - startTime) / 1000);
+                document.getElementById('timeElapsed').textContent = `${elapsed}s`;
             }, 1000);
-        });
+            
+            // ذخیره اینتروال‌ها برای توقف
+            window.scrapingIntervals = { progress: interval, time: timeInterval };
+        }
+        
+        // اتمام اسکرپینگ
+        async function finishScraping() {
+            const products = await simulateScraping();
+            scrapedProducts = products;
+            
+            // نمایش نتایج
+            document.getElementById('resultsCard').classList.remove('hidden');
+            document.getElementById('resultCount').textContent = `${products.length} محصول`;
+            document.getElementById('totalProducts').textContent = products.length;
+            
+            // محاسبه میانگین قیمت
+            const avgPrice = products.reduce((sum, p) => {
+                const price = parseInt(p.price.replace(/,/g, ''));
+                return sum + (isNaN(price) ? 0 : price);
+            }, 0) / products.length;
+            
+            document.getElementById('avgPrice').textContent = Math.floor(avgPrice).toLocaleString('fa-IR');
+            document.getElementById('successRate').textContent = '100%';
+            
+            // نمایش محصولات
+            displayProducts();
+            
+            // بازنشانی وضعیت
+            isScraping = false;
+            document.getElementById('stopBtn').classList.add('hidden');
+            document.getElementById('startBtn').classList.remove('hidden');
+            document.getElementById('statusIndicator').classList.remove('loading');
+            document.getElementById('statusIndicator').style.background = '#34c759';
+            document.getElementById('statusBox').querySelector('div:first-child').textContent = 'اسکرپینگ تکمیل شد';
+            document.getElementById('statusBox').querySelector('div:nth-child(2)').textContent = `${products.length} محصول یافت شد`;
+            
+            logEvent(`اسکرپینگ با موفقیت تکمیل شد. ${products.length} محصول یافت شد.`, 'success');
+        }
+        
+        // توقف اسکرپینگ
+        function stopScraping() {
+            if (!isScraping) return;
+            
+            isScraping = false;
+            
+            // متوقف کردن اینتروال‌ها
+            if (window.scrapingIntervals) {
+                clearInterval(window.scrapingIntervals.progress);
+                clearInterval(window.scrapingIntervals.time);
+            }
+            
+            // بازنشانی وضعیت
+            document.getElementById('stopBtn').classList.add('hidden');
+            document.getElementById('startBtn').classList.remove('hidden');
+            document.getElementById('statusIndicator').classList.remove('loading');
+            document.getElementById('statusIndicator').style.background = '#ff3b30';
+            document.getElementById('statusBox').querySelector('div:first-child').textContent = 'متوقف شد';
+            document.getElementById('statusBox').querySelector('div:nth-child(2)').textContent = 'اسکرپینگ متوقف شد';
+            
+            logEvent('اسکرپینگ متوقف شد', 'warning');
+        }
+        
+        // نمایش محصولات
+        function displayProducts() {
+            const container = document.getElementById('resultsContainer');
+            const previewContainer = document.getElementById('productsPreview');
+            
+            container.innerHTML = '';
+            previewContainer.innerHTML = '';
+            
+            // نمایش 4 محصول در پیش‌نمایش
+            const previewProducts = scrapedProducts.slice(0, 4);
+            
+            previewProducts.forEach(product => {
+                const productElement = document.createElement('div');
+                productElement.className = 'product-card';
+                productElement.innerHTML = `
+                    <div style="font-size: 14px; color: #8e8e93; margin-bottom: 8px;">${product.brand}</div>
+                    <div style="font-size: 16px; font-weight: 500;">${product.size} اینچ</div>
+                    <div class="product-price">${product.price} تومان</div>
+                    <div style="font-size: 12px; color: #8e8e93;">${product.technology}</div>
+                `;
+                previewContainer.appendChild(productElement);
+            });
+            
+            // نمایش تمام محصولات در نتایج
+            scrapedProducts.forEach(product => {
+                const productElement = document.createElement('div');
+                productElement.className = 'list-item';
+                productElement.innerHTML = `
+                    <div class="list-item-content">
+                        <div class="list-item-icon">📺</div>
+                        <div class="list-item-text">
+                            <div class="list-item-title">${product.name}</div>
+                            <div class="list-item-subtitle">
+                                <span>${product.source} | ⭐ ${product.rating}</span>
+                                <br>
+                                <span style="color: #34c759; font-weight: 600;">${product.price} تومان</span>
+                            </div>
+                        </div>
+                    </div>
+                    <span style="color: #c7c7cc; font-size: 20px;">›</span>
+                `;
+                container.appendChild(productElement);
+            });
+        }
+        
+        // بارگذاری محصولات بیشتر
+        function loadMoreProducts() {
+            logEvent('بارگذاری محصولات بیشتر...', 'info');
+            // در نسخه واقعی، اینجا درخواست به API می‌دهیم
+            setTimeout(() => {
+                logEvent('10 محصول جدید بارگذاری شد', 'success');
+            }, 1000);
+        }
+        
+        // نمایش تنظیمات
+        function showSettings() {
+            alert('⚙️ تنظیمات اسکرپر\n\n• فاصله زمانی: 6 ساعت\n• تعداد صفحات: 10\n• ذخیره به صورت: JSON\n• خودکار: فعال');
+        }
+        
+        // تغییر صفحات
+        function showPage(page) {
+            const pages = ['home', 'scraper', 'products', 'settings'];
+            pages.forEach(p => {
+                document.querySelector(`[onclick="showPage('${p}')"]`).classList.remove('active');
+            });
+            document.querySelector(`[onclick="showPage('${page}')"]`).classList.add('active');
+            
+            logEvent(`تغییر به صفحه ${page}`, 'info');
+        }
+        
+        // رویدادهای دکمه‌ها
+        document.getElementById('startBtn').addEventListener('click', startScraping);
+        document.getElementById('stopBtn').addEventListener('click', stopScraping);
+        
+        // لاگ اولیه
+        logEvent('سیستم اسکرپر آماده است', 'success');
+        logEvent('منتظر دستور شروع...', 'info');
     </script>
 </body>
 </html>
