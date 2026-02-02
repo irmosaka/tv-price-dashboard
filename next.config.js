@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',  // این خط رو اضافه کن
+  output: 'export',
+  basePath: process.env.NODE_ENV === 'production' ? '/tv-price-dashboard' : '',
   images: {
-    unoptimized: true,  // این خط رو اضافه کن
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
