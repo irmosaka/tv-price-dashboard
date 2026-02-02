@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📱 داشبورد iOS - قیمت تلویزیون</title>
+    
+    <!-- فونت iOS -->
+    <style>
+        /* iOS System Font */
+        @font-face {
+            font-family: 'SF Pro';
+            src: local('-apple-system'), local('BlinkMacSystemFont'), local('Segoe UI');
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f2f2f7;
+            color: #000;
+            line-height: 1.4;
+            max-width: 500px;
+            margin: 0 auto;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        /* iOS Status Bar */
+        .status-bar {
+            background: rgba(242, 242, 247, 0.8);
+            backdrop-filter: blur(20px);
+            padding: 12px 16px 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 15px;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .time {
+            font-feature-settings: "tnum";
+        }
+        
+        .status-icons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        /* iOS Navigation Bar */
+        .nav-bar {
+            background: rgba(242, 242, 247, 0.8);
+            backdrop-filter: blur(20px);
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 0.5px solid rgba(0,0,0,0.1);
+            position: sticky;
+            top: 33px;
+            z-index: 999;
+        }
+        
+        .nav-title {
+            font-size: 17px;
+            font-weight: 600;
+        }
+        
+        /* iOS Content */
+        .content {
+            padding: 16px;
+            padding-bottom: 100px; /* برای تب بار */
+        }
+        
+        /* iOS Card */
+        .ios-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 
+                0 2px 8px rgba(0,0,0,0.04),
+                0 1px 2px rgba(0,0,0,0.08);
+        }
+        
+        .card-title {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* iOS List Item */
+        .list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 0.5px solid rgba(0,0,0,0.1);
+        }
+        
+        .list-item:last-child {
+            border-bottom: none;
+        }
+        
+        .list-item-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .list-item-icon {
+            font-size: 24px;
+            width: 32px;
+            text-align: center;
+        }
+        
+        .list-item-text {
+            flex: 1;
+        }
+        
+        .list-item-title {
+            font-size: 17px;
+            font-weight: 400;
+        }
+        
+        .list-item-subtitle {
+            font-size: 14px;
+            color: #8e8e93;
+            margin-top: 2px;
+        }
+        
+        .list-item-chevron {
+            color: #c7c7cc;
+            font-size: 20px;
+        }
+        
+        /* iOS Button */
+        .ios-button {
+            background: #007aff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-size: 17px;
+            font-weight: 500;
+            width: 100%;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            -webkit-appearance: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .ios-button:active {
+            background: #0056cc;
+            transform: scale(0.98);
+        }
+        
+        /* iOS Segmented Control */
+        .segmented-control {
+            display: flex;
+            background: #e5e5ea;
+            border-radius: 8px;
+            padding: 3px;
+            margin: 16px 0;
+        }
+        
+        .segment {
+            flex: 1;
+            padding: 8px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .segment.active {
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* iOS Tab Bar */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(249, 249, 249, 0.8);
+            backdrop-filter: blur(20px);
+            border-top: 0.5px solid rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: #8e8e93;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .tab-item.active {
+            color: #007aff;
+        }
+        
+        .tab-icon {
+            font-size: 22px;
+        }
+        
+        .tab-label {
+            font-size: 10px;
+            font-weight: 500;
+        }
+        
+        /* iOS Colors */
+        .ios-blue { color: #007aff; }
+        .ios-green { color: #34c759; }
+        .ios-red { color: #ff3b30; }
+        .ios-orange { color: #ff9500; }
+        .ios-purple { color: #af52de; }
+        
+        /* iOS Switch */
+        .ios-switch {
+            position: relative;
+            width: 51px;
+            height: 31px;
+        }
+        
+        .ios-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #e5e5ea;
+            transition: .4s;
+            border-radius: 31px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 27px;
+            width: 27px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        input:checked + .slider {
+            background-color: #34c759;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+    </style>
+</head>
+<body>
+    <!-- iOS Status Bar -->
+    <div class="status-bar">
+        <div class="time">۹:۴۱</div>
+        <div class="status-icons">
+            <span>📶</span>
+            <span>📡</span>
+            <span>🔋</span>
+        </div>
+    </div>
+    
+    <!-- iOS Navigation Bar -->
+    <div class="nav-bar">
+        <div class="nav-title">📺 داشبورد تلویزیون</div>
+        <div style="font-size: 20px;">⋯</div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Welcome Card -->
+        <div class="ios-card">
+            <div class="card-title">👋 سلام!</div>
+            <p style="color: #8e8e93; font-size: 15px; margin-bottom: 16px;">
+                این داشبورد برای مقایسه قیمت تلویزیون از فروشگاه‌های آنلاین طراحی شده.
+            </p>
+            <button class="ios-button">
+                <span>🚀 شروع کنید</span>
+            </button>
+        </div>
+        
+        <!-- Sources Card -->
+        <div class="ios-card">
+            <div class="card-title">🛒 منابع داده</div>
+            
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="list-item-icon">🛍️</div>
+                    <div class="list-item-text">
+                        <div class="list-item-title">دیجی‌کالا</div>
+                        <div class="list-item-subtitle">آماده برای اسکرپینگ</div>
+                    </div>
+                </div>
+                <label class="ios-switch">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="list-item-icon">⚡</div>
+                    <div class="list-item-text">
+                        <div class="list-item-title">تکنولایف</div>
+                        <div class="list-item-subtitle">به زودی فعال می‌شود</div>
+                    </div>
+                </div>
+                <label class="ios-switch">
+                    <input type="checkbox">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="list-item-icon">🔎</div>
+                    <div class="list-item-text">
+                        <div class="list-item-title">ترب</div>
+                        <div class="list-item-subtitle">در حال توسعه</div>
+                    </div>
+                </div>
+                <label class="ios-switch">
+                    <input type="checkbox" disabled>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+        
+        <!-- Stats Card -->
+        <div class="ios-card">
+            <div class="card-title">📊 آمار پروژه</div>
+            
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                <div style="text-align: center; padding: 12px; background: #f2f2f7; border-radius: 10px;">
+                    <div style="font-size: 24px; font-weight: 700; color: #007aff;">۰</div>
+                    <div style="font-size: 13px; color: #8e8e93; margin-top: 4px;">محصولات</div>
+                </div>
+                
+                <div style="text-align: center; padding: 12px; background: #f2f2f7; border-radius: 10px;">
+                    <div style="font-size: 24px; font-weight: 700; color: #34c759;">۳</div>
+                    <div style="font-size: 13px; color: #8e8e93; margin-top: 4px;">منابع</div>
+                </div>
+                
+                <div style="text-align: center; padding: 12px; background: #f2f2f7; border-radius: 10px;">
+                    <div style="font-size: 24px; font-weight: 700; color: #ff9500;">۰</div>
+                    <div style="font-size: 13px; color: #8e8e93; margin-top: 4px;">برندها</div>
+                </div>
+                
+                <div style="text-align: center; padding: 12px; background: #f2f2f7; border-radius: 10px;">
+                    <div style="font-size: 24px; font-weight: 700; color: #af52de;">۰</div>
+                    <div style="font-size: 13px; color: #8e8e93; margin-top: 4px;">آپدیت</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Segmented Control -->
+        <div class="segmented-control">
+            <div class="segment active">همه</div>
+            <div class="segment">۴K</div>
+            <div class="segment">OLED</div>
+            <div class="segment">QLED</div>
+        </div>
+        
+        <!-- Coming Soon -->
+        <div class="ios-card">
+            <div class="card-title">🔜 به زودی</div>
+            
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="list-item-icon">📈</div>
+                    <div class="list-item-text">
+                        <div class="list-item-title">نمودارهای قیمت</div>
+                        <div class="list-item-subtitle">تحلیل روند قیمت‌ها</div>
+                    </div>
+                </div>
+                <span class="list-item-chevron">›</span>
+            </div>
+            
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="list-item-icon">🔍</div>
+                    <div class="list-item-text">
+                        <div class="list-item-title">جستجوی پیشرفته</div>
+                        <div class="list-item-subtitle">فیلتر بر اساس مشخصات</div>
+                    </div>
+                </div>
+                <span class="list-item-chevron">›</span>
+            </div>
+            
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="list-item-icon">🔄</div>
+                    <div class="list-item-text">
+                        <div class="list-item-title">بروزرسانی خودکار</div>
+                        <div class="list-item-subtitle">هر ۶ ساعت</div>
+                    </div>
+                </div>
+                <span class="list-item-chevron">›</span>
+            </div>
+        </div>
+        
+        <!-- Call to Action -->
+        <div style="margin: 24px 0;">
+            <button class="ios-button" style="background: linear-gradient(45deg, #007aff, #5856d6);">
+                <span>🐙 مشاهده کد در GitHub</span>
+            </button>
+            
+            <button class="ios-button" style="background: #000; margin-top: 12px;">
+                <span>▲ دپلوی روی Vercel</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- iOS Tab Bar -->
+    <div class="tab-bar">
+        <a href="#" class="tab-item active">
+            <span class="tab-icon">🏠</span>
+            <span class="tab-label">خانه</span>
+        </a>
+        <a href="#" class="tab-item">
+            <span class="tab-icon">🔍</span>
+            <span class="tab-label">جستجو</span>
+        </a>
+        <a href="#" class="tab-item">
+            <span class="tab-icon">📊</span>
+            <span class="tab-label">تحلیل</span>
+        </a>
+        <a href="#" class="tab-item">
+            <span class="tab-icon">⚙️</span>
+            <span class="tab-label">تنظیمات</span>
+        </a>
+    </div>
+    
+    <script>
+        // تعاملی کردن سوییچ‌ها
+        document.querySelectorAll('.ios-switch input').forEach(switchInput => {
+            switchInput.addEventListener('change', function() {
+                if(this.disabled) {
+                    alert('🚧 این قابلیت به زودی فعال می‌شود!');
+                    this.checked = false;
+                }
+            });
+        });
+        
+        // تعاملی کردن دکمه‌ها
+        document.querySelectorAll('.ios-button').forEach(button => {
+            button.addEventListener('click', function() {
+                if(this.textContent.includes('شروع کنید')) {
+                    alert('🎯 اولین قدم: ساخت اسکرپر دیجی‌کالا');
+                } else if(this.textContent.includes('GitHub')) {
+                    window.open('https://github.com/irmosaka/tv-price-dashboard', '_blank');
+                } else if(this.textContent.includes('Vercel')) {
+                    window.open('https://vercel.com/new', '_blank');
+                }
+            });
+        });
+        
+        // تعاملی کردن segmented control
+        document.querySelectorAll('.segment').forEach(segment => {
+            segment.addEventListener('click', function() {
+                document.querySelectorAll('.segment').forEach(s => s.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // تعاملی کردن تب بار
+        document.querySelectorAll('.tab-item').forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const tabName = this.querySelector('.tab-label').textContent;
+                alert(`📱 رفتن به صفحه ${tabName}`);
+            });
+        });
+        
+        // آپدیت زمان در استاتوس بار
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('fa-IR', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false 
+            });
+            document.querySelector('.time').textContent = timeString;
+        }
+        
+        updateTime();
+        setInterval(updateTime, 60000);
+    </script>
+</body>
+</html>
