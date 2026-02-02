@@ -18,7 +18,12 @@
     "postcss": "^8",
     "axios": "^1.6.2",
     "cheerio": "^1.0.0-rc.12",
-    "recharts": "^2.10.0"
+    "recharts": "^2.10.0",
+    "lucide-react": "^0.309.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.0.0",
+    "framer-motion": "^10.16.0"
   },
   "devDependencies": {
     "@types/node": "^20",
