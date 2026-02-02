@@ -2,26 +2,94 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    
+    /* iOS-like colors */
+    --ios-blue: 210 100% 50%;
+    --ios-green: 146 64% 46%;
+    --ios-red: 4 90% 58%;
+    --ios-orange: 36 100% 50%;
+    --ios-purple: 276 83% 68%;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: 0 0% 3.9%;
+      --foreground: 0 0% 98%;
+    }
+  }
+
+  /* iOS Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
   }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-ios-gray-6 font-sf-arabic text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  /* iOS Card */
+  .ios-card {
+    @apply bg-white rounded-ios shadow-ios-card border border-ios-gray-5;
+  }
+
+  /* iOS Button */
+  .ios-btn {
+    @apply px-6 py-3 rounded-ios font-medium transition-all duration-200 
+           active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .ios-btn-primary {
+    @apply ios-btn bg-ios-blue text-white hover:bg-[#0066CC];
+  }
+
+  .ios-btn-secondary {
+    @apply ios-btn bg-ios-gray-6 text-ios-gray-1 hover:bg-ios-gray-5;
+  }
+
+  /* iOS Segmented Control */
+  .ios-segmented {
+    @apply flex p-1 bg-ios-gray-6 rounded-ios;
+  }
+
+  .ios-segmented-btn {
+    @apply flex-1 py-2 px-4 rounded-md text-sm font-medium 
+           transition-colors duration-200;
+  }
+
+  .ios-segmented-btn.active {
+    @apply bg-white shadow-ios text-ios-blue;
+  }
+
+  /* iOS List Item */
+  .ios-list-item {
+    @apply flex items-center justify-between p-4 bg-white 
+           border-b border-ios-gray-5 last:border-b-0;
+  }
 }
