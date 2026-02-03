@@ -1,0 +1,22 @@
+[
+  {
+    "id": "tv_sample_1",
+    "name": "تلویزیون سامسونگ QN90B 55 اینچ QLED 4K",
+    "brand": "سامسونگ",
+    "size": 55,
+    "technology": "QLED",
+    "price": 32000000,
+    "source": "دیجی‌کالا",
+    "rating": 4.5
+  },
+  {
+    "id": "tv_sample_2",
+    "name": "تلویزیون ال‌جی C2 65 اینچ OLED 4K",
+    "brand": "ال‌جی",
+    "size": 65,
+    "technology": "OLED",
+    "price": 45000000,
+    "source": "تکنولایف",
+    "rating": 4.7
+  }
+]
