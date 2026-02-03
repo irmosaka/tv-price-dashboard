@@ -407,70 +407,74 @@
 </head>
 <body>
     <!-- Header -->
-    <div class="header">
-        <h1><i class="fas fa-satellite-dish"></i> اسکرپر هوشمند قیمت تلویزیون</h1>
-        <p>دریافت خودکار قیمت‌ها از دیجی‌کالا و سایر فروشگاه‌ها</p>
-        <div class="scraper-controls" style="justify-content: center; margin-top: 20px;">
-            <button class="btn btn-primary" onclick="startScraping()">
-                <i class="fas fa-play"></i> شروع اسکرپینگ
+<!-- Header -->
+<div class="header">
+    <h1><i class="fas fa-chart-line"></i> اسکرپر قیمت از ترب (Torob)</h1>
+    <p>دریافت هوشمند قیمت‌ها با الگوریتم میانگین ۵ فروشنده اول</p>
+    <div class="scraper-controls" style="justify-content: center; margin-top: 20px;">
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" id="searchQuery" placeholder="جستجوی محصول در ترب..." 
+                   style="padding: 10px 15px; border-radius: 8px; border: 2px solid #6c5ce7; width: 300px;">
+            <button class="btn btn-primary" onclick="scrapeFromTorob()">
+                <i class="fas fa-search"></i> اسکرپ از ترب
             </button>
             <button class="btn btn-secondary" onclick="refreshData()">
                 <i class="fas fa-sync-alt"></i> بروزرسانی
             </button>
-            <button class="btn btn-danger" onclick="clearData()">
-                <i class="fas fa-trash-alt"></i> پاک کردن کش
-            </button>
         </div>
     </div>
+</div>
     
     <div class="container">
-        <!-- Stats Cards -->
-        <div class="stats-grid" id="statsContainer">
-            <!-- آمار به صورت دینامیک لود می‌شود -->
-        </div>
+<!-- Stats Cards -->
+<div class="stats-grid" id="statsContainer">
+    <!-- آمار به صورت دینامیک لود می‌شود -->
+</div>
         
         <!-- Filter Bar -->
-        <div class="filter-bar">
-            <div class="filter-controls">
-                <select id="brandFilter" onchange="filterProducts()">
-                    <option value="">همه برندها</option>
-                </select>
-                
-                <select id="techFilter" onchange="filterProducts()">
-                    <option value="">همه تکنولوژی‌ها</option>
-                    <option value="LED">LED</option>
-                    <option value="QLED">QLED</option>
-                    <option value="OLED">OLED</option>
-                    <option value="Mini LED">Mini LED</option>
-                </select>
-                
-                <select id="sizeFilter" onchange="filterProducts()">
-                    <option value="">همه سایزها</option>
-                    <option value="43">43 اینچ</option>
-                    <option value="50">50 اینچ</option>
-                    <option value="55">55 اینچ</option>
-                    <option value="65">65 اینچ</option>
-                    <option value="75">75 اینچ</option>
-                </select>
-                
-                <select id="storeFilter" onchange="filterProducts()">
-                    <option value="">همه فروشگاه‌ها</option>
-                    <option value="digikala">دیجی‌کالا</option>
-                    <option value="technolife">تکنولایف</option>
-                    <option value="torob">ترب</option>
-                </select>
-                
-                <select id="sortFilter" onchange="filterProducts()">
-                    <option value="newest">جدیدترین</option>
-                    <option value="price_asc">قیمت (کم به زیاد)</option>
-                    <option value="price_desc">قیمت (زیاد به کم)</option>
-                    <option value="size_asc">سایز (کم به زیاد)</option>
-                    <option value="size_desc">سایز (زیاد به کم)</option>
-                    <option value="discount_desc">بیشترین تخفیف</option>
-                </select>
-                
-                <input type="text" id="searchInput" placeholder="جستجوی نام محصول..." onkeyup="filterProducts()">
-            </div>
+        <!-- Filter Bar -->
+<div class="filter-bar">
+    <div class="filter-controls">
+        <select id="brandFilter" onchange="filterProducts()">
+            <option value="">همه برندها</option>
+        </select>
+        
+        <select id="techFilter" onchange="filterProducts()">
+            <option value="">همه تکنولوژی‌ها</option>
+            <option value="LED">LED</option>
+            <option value="QLED">QLED</option>
+            <option value="OLED">OLED</option>
+            <option value="Mini LED">Mini LED</option>
+        </select>
+        
+        <select id="sizeFilter" onchange="filterProducts()">
+            <option value="">همه سایزها</option>
+            <option value="32">32 اینچ</option>
+            <option value="43">43 اینچ</option>
+            <option value="50">50 اینچ</option>
+            <option value="55">55 اینچ</option>
+            <option value="65">65 اینچ</option>
+            <option value="75">75 اینچ</option>
+            <option value="85">85 اینچ</option>
+        </select>
+        
+        <select id="sellerFilter" onchange="filterProducts()">
+            <option value="">تعداد فروشنده</option>
+            <option value="1">۱ فروشنده</option>
+            <option value="3">۳+ فروشنده</option>
+            <option value="5">۵+ فروشنده</option>
+            <option value="10">۱۰+ فروشنده</option>
+        </select>
+        
+        <select id="sortFilter" onchange="filterProducts()">
+            <option value="newest">جدیدترین</option>
+            <option value="price_asc">قیمت (کم به زیاد)</option>
+            <option value="price_desc">قیمت (زیاد به کم)</option>
+            <option value="sellers_desc">بیشترین فروشنده</option>
+            <option value="size_asc">سایز (کم به زیاد)</option>
+        </select>
+    </div>
+</div>
             
             <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
                 <div style="display: flex; align-items: center; gap: 8px;">
@@ -588,913 +592,370 @@
     </div>
     
     <script>
-        // ==================== تنظیمات اصلی ====================
-        const API_BASE_URL = 'http://localhost:3000/api'; // آدرس سرور بک‌اند
-        let allProducts = [];
-        let filteredProducts = [];
-        let charts = {};
-        let lastUpdateTime = null;
-        let scrapedData = null;
+// ==================== تنظیمات اصلی ====================
+const API_BASE_URL = 'http://localhost:3000/api'; // آدرس سرور
+let allProducts = [];
+let filteredProducts = [];
+let charts = {};
+
+// ==================== تابع اصلی اسکرپ از ترب ====================
+async function scrapeFromTorob() {
+    try {
+        const searchQuery = document.getElementById('searchQuery').value || 'تلویزیون';
         
-        // ==================== توابع اصلی ====================
+        showNotification(`🔍 در حال جستجوی "${searchQuery}" در ترب...`, 'info');
+        showLoading(true);
         
-        // شروع اسکرپینگ از دیجی‌کالا
-        async function startScraping() {
-            try {
-                showNotification('در حال اسکرپینگ از دیجی‌کالا...', 'info');
-                showLoading(true);
-                
-                // ارسال درخواست به بک‌اند برای اسکرپینگ
-                const response = await fetch(`${API_BASE_URL}/scrape-real`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        store: 'digikala',
-                        category: 'tv',
-                        pages: 3,
-                        delay: 2000 // تاخیر ۲ ثانیه بین درخواست‌ها
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showNotification(`✅ ${result.data.length} محصول از دیجی‌کالا دریافت شد`, 'success');
-                    scrapedData = result.data;
-                    processScrapedData(scrapedData);
-                } else {
-                    throw new Error(result.error || 'خطا در اسکرپینگ');
-                }
-                
-            } catch (error) {
-                console.error('خطا در اسکرپینگ:', error);
-                showNotification(`❌ خطا: ${error.message}`, 'error');
-                
-                // اگر سرور در دسترس نبود، از داده‌های نمونه استفاده کن
-                loadSampleData();
-            } finally {
-                showLoading(false);
-            }
-        }
-        
-        // پردازش داده‌های اسکرپ شده
-        function processScrapedData(data) {
-            // تبدیل داده‌های اسکرپ شده به فرمت مورد نظر
-            allProducts = data.map((item, index) => ({
-                id: index + 1,
-                name: item.title || `تلویزیون ${item.brand}`,
-                brand: item.brand || 'نامشخص',
-                size: item.size || null,
-                technology: extractTechnology(item.title || ''),
-                price: item.price || 0,
-                discount_price: item.originalPrice || null,
-                discount: item.discount || 0,
-                rating: item.rating || 0,
-                in_stock: true,
-                source: 'digikala',
-                url: item.url || '#',
-                scraped_at: new Date().toISOString()
-            }));
-            
-            populateFilters();
-            filterProducts();
-            updateSystemStatus({
-                status: 'active',
-                last_scrape: new Date().toLocaleString('fa-IR'),
-                total_products: allProducts.length,
-                source: 'digikala'
-            });
-        }
-        
-        // استخراج تکنولوژی از عنوان
-        function extractTechnology(title) {
-            const techs = ['QLED', 'OLED', 'Mini LED', 'LED', 'UHD', '4K', '8K', 'Smart'];
-            for (const tech of techs) {
-                if (title.includes(tech)) return tech;
-            }
-            return 'LED';
-        }
-        
-        // بارگذاری داده‌های نمونه (در صورت عدم دسترسی به API)
-        function loadSampleData() {
-            showNotification('در حال استفاده از داده‌های نمونه...', 'info');
-            
-            // داده‌های نمونه
-            allProducts = [
-                {
-                    id: 1,
-                    name: "تلویزیون سامسونگ QLED 55 اینچ",
-                    brand: "Samsung",
-                    size: 55,
-                    technology: "QLED",
-                    price: 35000000,
-                    discount_price: 40000000,
-                    discount: 12,
-                    rating: 4.5,
-                    in_stock: true,
-                    source: "digikala"
-                },
-                {
-                    id: 2,
-                    name: "تلویزیون ال‌جی OLED 65 اینچ",
-                    brand: "LG",
-                    size: 65,
-                    technology: "OLED",
-                    price: 45000000,
-                    discount_price: 50000000,
-                    discount: 10,
-                    rating: 4.8,
-                    in_stock: true,
-                    source: "technolife"
-                },
-                {
-                    id: 3,
-                    name: "تلویزیون سونی 4K 43 اینچ",
-                    brand: "Sony",
-                    size: 43,
-                    technology: "LED",
-                    price: 22000000,
-                    discount_price: 25000000,
-                    discount: 12,
-                    rating: 4.2,
-                    in_stock: true,
-                    source: "digikala"
-                },
-                {
-                    id: 4,
-                    name: "تلویزیون TCL Mini LED 75 اینچ",
-                    brand: "TCL",
-                    size: 75,
-                    technology: "Mini LED",
-                    price: 52000000,
-                    discount_price: 60000000,
-                    discount: 13,
-                    rating: 4.6,
-                    in_stock: false,
-                    source: "torob"
-                },
-                {
-                    id: 5,
-                    name: "تلویزیون شیائومی Smart 50 اینچ",
-                    brand: "Xiaomi",
-                    size: 50,
-                    technology: "LED",
-                    price: 18000000,
-                    discount_price: 21000000,
-                    discount: 14,
-                    rating: 4.3,
-                    in_stock: true,
-                    source: "digikala"
-                }
-            ];
-            
-            // تکمیل داده‌های نمونه
-            const brands = ['Samsung', 'LG', 'Sony', 'TCL', 'Xiaomi', 'Hisense', 'Panasonic', 'Toshiba'];
-            const sizes = [43, 50, 55, 65, 75];
-            const techs = ['LED', 'QLED', 'OLED', 'Mini LED'];
-            const sources = ['digikala', 'technolife', 'torob'];
-            
-            for (let i = 6; i <= 50; i++) {
-                const brand = brands[Math.floor(Math.random() * brands.length)];
-                const size = sizes[Math.floor(Math.random() * sizes.length)];
-                const tech = techs[Math.floor(Math.random() * techs.length)];
-                const source = sources[Math.floor(Math.random() * sources.length)];
-                
-                const basePrice = size * 500000 + Math.random() * 10000000;
-                
-                allProducts.push({
-                    id: i,
-                    name: `تلویزیون ${brand} ${tech} ${size} اینچ`,
-                    brand: brand,
-                    size: size,
-                    technology: tech,
-                    price: Math.round(basePrice),
-                    discount_price: Math.round(basePrice * (1 + Math.random() * 0.3)),
-                    discount: Math.floor(Math.random() * 30),
-                    rating: (Math.random() * 2 + 3).toFixed(1),
-                    in_stock: Math.random() > 0.2,
-                    source: source
-                });
-            }
-            
-            populateFilters();
-            filterProducts();
-            updateSystemStatus({
-                status: 'sample_data',
-                message: 'در حال استفاده از داده‌های نمونه'
-            });
-        }
-        
-        // بروزرسانی داده‌ها
-        async function refreshData() {
-            try {
-                showLoading(true);
-                showNotification('در حال بروزرسانی داده‌ها...', 'info');
-                
-                // اگر داده‌های اسکرپ شده داریم، از آن‌ها استفاده کن
-                if (scrapedData) {
-                    processScrapedData(scrapedData);
-                } else {
-                    // در غیر این صورت اسکرپ جدید شروع کن
-                    await startScraping();
-                }
-                
-                showNotification('✅ داده‌ها با موفقیت بروزرسانی شدند', 'success');
-                
-            } catch (error) {
-                console.error('خطا در بروزرسانی:', error);
-                showNotification('❌ خطا در بروزرسانی داده‌ها', 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-        
-        // پاک کردن داده‌های کش
-        function clearData() {
-            if (confirm('آیا از پاک کردن داده‌های فعلی اطمینان دارید؟')) {
-                allProducts = [];
-                filteredProducts = [];
-                scrapedData = null;
-                
-                document.getElementById('productsTable').innerHTML = `
-                    <div style="text-align: center; padding: 50px; color: #636e72;">
-                        <i class="fas fa-database" style="font-size: 3rem; margin-bottom: 20px; color: #b2bec3;"></i>
-                        <p>داده‌ها پاک شدند. برای شروع اسکرپینگ دکمه "شروع اسکرپینگ" را بزنید.</p>
-                    </div>
-                `;
-                
-                updateStatsDisplay();
-                showNotification('✅ داده‌ها با موفقیت پاک شدند', 'success');
-            }
-        }
-        
-        // ==================== توابع فیلتر و جستجو ====================
-        
-        // پر کردن فیلترها
-        function populateFilters() {
-            const brandFilter = document.getElementById('brandFilter');
-            const sizeFilter = document.getElementById('sizeFilter');
-            
-            // پاک کردن گزینه‌های قبلی (به جز گزینه اول)
-            while (brandFilter.options.length > 1) brandFilter.remove(1);
-            while (sizeFilter.options.length > 1) sizeFilter.remove(1);
-            
-            // استخراج برندهای منحصر به فرد
-            const brands = [...new Set(allProducts.map(p => p.brand).filter(Boolean))];
-            brands.forEach(brand => {
-                const option = document.createElement('option');
-                option.value = brand;
-                option.textContent = brand;
-                brandFilter.appendChild(option);
-            });
-            
-            // استخراج سایزهای منحصر به فرد
-            const sizes = [...new Set(allProducts.map(p => p.size).filter(Boolean))].sort((a, b) => a - b);
-            sizes.forEach(size => {
-                const option = document.createElement('option');
-                option.value = size;
-                option.textContent = `${size} اینچ`;
-                sizeFilter.appendChild(option);
-            });
-        }
-        
-        // فیلتر کردن محصولات
-        function filterProducts() {
-            const brand = document.getElementById('brandFilter').value;
-            const tech = document.getElementById('techFilter').value;
-            const size = document.getElementById('sizeFilter').value;
-            const store = document.getElementById('storeFilter').value;
-            const sort = document.getElementById('sortFilter').value;
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const maxPrice = parseInt(document.getElementById('priceRange').value);
-            const minDiscount = parseInt(document.getElementById('discountRange').value);
-            const inStock = document.getElementById('inStockFilter').checked;
-            
-            filteredProducts = allProducts.filter(product => {
-                // فیلتر برند
-                if (brand && product.brand !== brand) return false;
-                
-                // فیلتر تکنولوژی
-                if (tech && product.technology !== tech) return false;
-                
-                // فیلتر سایز
-                if (size && product.size !== parseInt(size)) return false;
-                
-                // فیلتر فروشگاه
-                if (store && product.source !== store) return false;
-                
-                // فیلتر قیمت
-                if (product.price > maxPrice) return false;
-                
-                // فیلتر تخفیف
-                if (product.discount < minDiscount) return false;
-                
-                // فیلتر موجودی
-                if (inStock && !product.in_stock) return false;
-                
-                // جستجوی متن
-                if (search) {
-                    const searchText = (product.name || '').toLowerCase();
-                    const searchBrand = (product.brand || '').toLowerCase();
-                    if (!searchText.includes(search) && !searchBrand.includes(search)) return false;
-                }
-                
-                return true;
-            });
-            
-            // مرتب‌سازی
-            switch(sort) {
-                case 'price_asc':
-                    filteredProducts.sort((a, b) => (a.price || 0) - (b.price || 0));
-                    break;
-                case 'price_desc':
-                    filteredProducts.sort((a, b) => (b.price || 0) - (a.price || 0));
-                    break;
-                case 'size_asc':
-                    filteredProducts.sort((a, b) => (a.size || 0) - (b.size || 0));
-                    break;
-                case 'size_desc':
-                    filteredProducts.sort((a, b) => (b.size || 0) - (a.size || 0));
-                    break;
-                case 'discount_desc':
-                    filteredProducts.sort((a, b) => (b.discount || 0) - (a.discount || 0));
-                    break;
-                case 'newest':
-                default:
-                    // به صورت پیش‌فرض جدیدترین اول
-                    break;
-            }
-            
-            displayProducts();
-            updateCharts();
-            updateStatsDisplay();
-        }
-        
-        // نمایش محصولات
-        function displayProducts() {
-            const container = document.getElementById('productsTable');
-            const countElement = document.getElementById('productsCount');
-            const filteredCountElement = document.getElementById('filteredCount');
-            
-            countElement.textContent = `${allProducts.length.toLocaleString('fa-IR')} محصول`;
-            filteredCountElement.textContent = filteredProducts.length.toLocaleString('fa-IR');
-            
-            if (filteredProducts.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 50px; color: #636e72;">
-                        <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 20px; color: #b2bec3;"></i>
-                        <p>محصولی با فیلترهای انتخاب شده یافت نشد.</p>
-                        <button onclick="clearFilters()" style="margin-top: 20px; padding: 10px 20px; background: #6c5ce7; color: white; border: none; border-radius: 5px; cursor: pointer; font-family: 'Vazirmatn';">پاک کردن فیلترها</button>
-                    </div>
-                `;
-                return;
-            }
-            
-            let tableHTML = `
-                <div style="overflow-x: auto;">
-                    <table class="products-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>نام محصول</th>
-                                <th>برند</th>
-                                <th>سایز</th>
-                                <th>تکنولوژی</th>
-                                <th>قیمت</th>
-                                <th>تخفیف</th>
-                                <th>منبع</th>
-                                <th>رتبه</th>
-                                <th>وضعیت</th>
-                                <th>عملیات</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-            
-            filteredProducts.slice(0, 100).forEach((product, index) => {
-                const discountHtml = product.discount_price ? 
-                    `<span class="product-discount">${product.discount_price.toLocaleString('fa-IR')}</span>` : '';
-                
-                const discountBadge = product.discount > 0 ? 
-                    `<span style="background: #e17055; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">${product.discount}%</span>` : '';
-                
-                const ratingStars = '★'.repeat(Math.floor(product.rating || 0)) + 
-                                  '☆'.repeat(5 - Math.floor(product.rating || 0));
-                
-                tableHTML += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td class="product-name">${product.name || 'نامشخص'}</td>
-                        <td><span class="badge badge-brand">${product.brand || 'نامشخص'}</span></td>
-                        <td><span class="badge badge-size">${product.size || '?'} اینچ</span></td>
-                        <td><span class="badge badge-tech">${product.technology || 'نامشخص'}</span></td>
-                        <td>
-                            <span class="product-price">${(product.price || 0).toLocaleString('fa-IR')} تومان</span>
-                            ${discountHtml}
-                        </td>
-                        <td>${discountBadge}</td>
-                        <td>${product.source || 'نامشخص'}</td>
-                        <td style="color: #fdcb6e;">${ratingStars} <small>(${product.rating})</small></td>
-                        <td>
-                            ${product.in_stock ? 
-                                '<span style="color: #00b894;"><i class="fas fa-check-circle"></i> موجود</span>' : 
-                                '<span style="color: #d63031;"><i class="fas fa-times-circle"></i> ناموجود</span>'}
-                        </td>
-                        <td>
-                            <button onclick="viewProductDetails(${product.id})" style="padding: 5px 10px; background: #6c5ce7; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.8rem;">
-                                <i class="fas fa-external-link-alt"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-            
-            tableHTML += `
-                        </tbody>
-                    </table>
-                </div>
-                <div style="text-align: center; margin-top: 20px; color: #636e72;">
-                    <small>نمایش ${Math.min(filteredProducts.length, 100)} از ${filteredProducts.length} محصول</small>
-                </div>
-            `;
-            
-            container.innerHTML = tableHTML;
-        }
-        
-        // ==================== توابع نمودارها ====================
-        
-        function createCharts() {
-            // نمودار توزیع قیمت
-            const priceCtx = document.getElementById('priceChart').getContext('2d');
-            charts.priceChart = new Chart(priceCtx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'توزیع قیمت',
-                        data: [],
-                        borderColor: '#6c5ce7',
-                        backgroundColor: 'rgba(108, 92, 231, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            rtl: true,
-                            labels: {
-                                font: {
-                                    family: 'Vazirmatn'
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return value.toLocaleString('fa-IR') + ' تومان';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // نمودار مقایسه برندها
-            const brandCtx = document.getElementById('brandChart').getContext('2d');
-            charts.brandChart = new Chart(brandCtx, {
-                type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'میانگین قیمت',
-                        data: [],
-                        backgroundColor: '#00b894',
-                        borderRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            rtl: true,
-                            labels: {
-                                font: {
-                                    family: 'Vazirmatn'
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return value.toLocaleString('fa-IR') + ' تومان';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // نمودار فروشگاه‌ها
-            const storeCtx = document.getElementById('storeChart').getContext('2d');
-            charts.storeChart = new Chart(storeCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        data: [],
-                        backgroundColor: [
-                            '#6c5ce7',
-                            '#00b894',
-                            '#fd79a8',
-                            '#fdcb6e',
-                            '#a29bfe'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'left',
-                            rtl: true,
-                            labels: {
-                                font: {
-                                    family: 'Vazirmatn'
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // نمودار رابطه سایز و قیمت - **اینجا تغییر کرد**
-            const sizePriceCtx = document.getElementById('sizePriceChart').getContext('2d');
-            charts.sizePriceChart = new Chart(sizePriceCtx, {
-                type: 'scatter',
-                data: {
-                    datasets: [{
-                        label: 'رابطه سایز و قیمت',
-                        data: [],
-                        backgroundColor: '#6c5ce7',
-                        pointRadius: 6,
-                        pointHoverRadius: 10
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            rtl: true,
-                            labels: {
-                                font: {
-                                    family: 'Vazirmatn'
-                                }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const point = context.raw;
-                                    return [
-                                        `نام: ${point.name}`,
-                                        `برند: ${point.brand}`,
-                                        `سایز: ${point.x} اینچ`,
-                                        `قیمت: ${point.y.toLocaleString('fa-IR')} تومان`,
-                                        `تخفیف: ${point.discount}%`,
-                                        `منبع: ${point.source}`
-                                    ];
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'سایز (اینچ)'
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'قیمت (تومان)'
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return value.toLocaleString('fa-IR') + ' تومان';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            
-            updateCharts();
-        }
-        
-        function updateCharts() {
-            const products = filteredProducts.length > 0 ? filteredProducts : allProducts;
-            if (products.length === 0) return;
-            
-            // نمودار قیمت
-            const priceData = products.map(p => p.price).filter(p => p).sort((a, b) => a - b);
-            const priceLabels = Array.from({length: priceData.length}, (_, i) => `محصول ${i + 1}`);
-            
-            if (charts.priceChart) {
-                charts.priceChart.data.labels = priceLabels;
-                charts.priceChart.data.datasets[0].data = priceData;
-                charts.priceChart.update();
-                
-                // نمایش محدوده قیمت
-                const minPrice = Math.min(...priceData);
-                const maxPrice = Math.max(...priceData);
-                document.getElementById('priceRangeLabel').textContent = 
-                    `${minPrice.toLocaleString('fa-IR')} تا ${maxPrice.toLocaleString('fa-IR')} تومان`;
-            }
-            
-            // نمودار برندها
-            const brands = {};
-            products.forEach(product => {
-                if (product.brand) {
-                    if (!brands[product.brand]) {
-                        brands[product.brand] = { total: 0, count: 0, products: [] };
-                    }
-                    brands[product.brand].total += (product.price || 0);
-                    brands[product.brand].count++;
-                    brands[product.brand].products.push(product);
-                }
-            });
-            
-            const brandLabels = Object.keys(brands);
-            const brandAverages = brandLabels.map(brand => 
-                Math.round(brands[brand].total / brands[brand].count)
-            );
-            
-            const brandCounts = brandLabels.map(brand => brands[brand].count);
-            
-            const metric = document.getElementById('chartBrandMetric').value;
-            const brandData = metric === 'count' ? brandCounts : brandAverages;
-            
-            if (charts.brandChart) {
-                charts.brandChart.data.labels = brandLabels;
-                charts.brandChart.data.datasets[0].data = brandData;
-                charts.brandChart.data.datasets[0].label = 
-                    metric === 'count' ? 'تعداد محصولات' : 
-                    metric === 'total_price' ? 'مجموع قیمت' : 'میانگین قیمت';
-                charts.brandChart.update();
-            }
-            
-            // نمودار فروشگاه‌ها
-            const storeCount = {};
-            products.forEach(product => {
-                const store = product.source || 'نامشخص';
-                storeCount[store] = (storeCount[store] || 0) + 1;
-            });
-            
-            if (charts.storeChart) {
-                charts.storeChart.data.labels = Object.keys(storeCount);
-                charts.storeChart.data.datasets[0].data = Object.values(storeCount);
-                charts.storeChart.update();
-            }
-            
-            // نمودار رابطه سایز و قیمت - **اینجا تغییر کرد**
-            const sizePriceData = products
-                .filter(p => p.size && p.price)
-                .map(p => ({
-                    x: p.size,
-                    y: p.price,
-                    name: p.name || 'نامشخص',
-                    brand: p.brand || 'نامشخص',
-                    price: p.price,
-                    discount: p.discount || 0,
-                    source: p.source || 'نامشخص',
-                    rating: p.rating || 0
-                }));
-            
-            if (charts.sizePriceChart) {
-                charts.sizePriceChart.data.datasets[0].data = sizePriceData;
-                charts.sizePriceChart.update();
-            }
-        }
-        
-        // ==================== توابع کمکی ====================
-        
-        function updateStatsDisplay() {
-            const products = filteredProducts.length > 0 ? filteredProducts : allProducts;
-            
-            if (products.length === 0) {
-                document.getElementById('statsContainer').innerHTML = `
-                    <div class="stat-card">
-                        <i class="fas fa-exclamation-triangle stat-icon"></i>
-                        <div class="stat-number">0</div>
-                        <div class="stat-label">داده‌ای موجود نیست</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            const prices = products.map(p => p.price).filter(p => p);
-            const avgPrice = prices.length > 0 ? 
-                Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0;
-            
-            const uniqueBrands = [...new Set(products.map(p => p.brand).filter(Boolean))];
-            const totalDiscount = products.reduce((sum, p) => sum + (p.discount || 0), 0);
-            const avgDiscount = products.length > 0 ? Math.round(totalDiscount / products.length) : 0;
-            
-            const statsHTML = `
-                <div class="stat-card">
-                    <i class="fas fa-tv stat-icon"></i>
-                    <div class="stat-number">${products.length.toLocaleString('fa-IR')}</div>
-                    <div class="stat-label">تعداد محصولات</div>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-money-bill-wave stat-icon"></i>
-                    <div class="stat-number">${avgPrice.toLocaleString('fa-IR')}</div>
-                    <div class="stat-label">میانگین قیمت (تومان)</div>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-tags stat-icon"></i>
-                    <div class="stat-number">${uniqueBrands.length}</div>
-                    <div class="stat-label">تعداد برندها</div>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-percentage stat-icon"></i>
-                    <div class="stat-number">${avgDiscount}%</div>
-                    <div class="stat-label">میانگین تخفیف</div>
-                </div>
-            `;
-            
-            document.getElementById('statsContainer').innerHTML = statsHTML;
-        }
-        
-        function updateSystemStatus(info) {
-            const container = document.getElementById('systemStatus');
-            
-            const now = new Date();
-            const nextRun = new Date(now.getTime() + 30 * 60 * 1000); // 30 دقیقه بعد
-            
-            container.innerHTML = `
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
-                        <div style="color: #636e72; font-size: 0.9rem;">وضعیت اسکرپر</div>
-                        <div style="color: ${info.status === 'active' ? '#00b894' : '#fdcb6e'}; font-weight: 600; font-size: 1.1rem;">
-                            ${info.status === 'active' ? '✅ فعال' : '⚠️ داده‌های نمونه'}
-                        </div>
-                    </div>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
-                        <div style="color: #636e72; font-size: 0.9rem;">آخرین اسکرپ</div>
-                        <div style="font-weight: 600; font-size: 1.1rem;">${info.last_scrape || now.toLocaleString('fa-IR')}</div>
-                    </div>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
-                        <div style="color: #636e72; font-size: 0.9rem;">اسکرپ بعدی</div>
-                        <div style="font-weight: 600; font-size: 1.1rem;">${nextRun.toLocaleTimeString('fa-IR')}</div>
-                    </div>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
-                        <div style="color: #636e72; font-size: 0.9rem;">منبع داده</div>
-                        <div style="font-weight: 600; font-size: 1.1rem;">${info.source || 'داده‌های نمونه'}</div>
-                    </div>
-                </div>
-                <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px; font-size: 0.9rem; color: #636e72;">
-                    <div><strong>راهنمایی:</strong> برای اسکرپ واقعی از دیجی‌کالا، ابتدا سرور بک‌اند را اجرا کنید.</div>
-                    <div style="margin-top: 5px; font-family: monospace; background: #2d3436; color: white; padding: 10px; border-radius: 5px;">
-                        cd backend && npm install && npm start
-                    </div>
-                </div>
-            `;
-        }
-        
-        async function checkAPIStatus() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/health`);
-                const result = await response.json();
-                
-                if (result.status === 'ok') {
-                    showNotification('✅ سرور بک‌اند در دسترس است', 'success');
-                } else {
-                    showNotification('⚠️ سرور در دسترس نیست', 'error');
-                }
-            } catch (error) {
-                showNotification('❌ سرور بک‌اند یافت نشد', 'error');
-                console.log('برای اجرای اسکرپر واقعی، سرور Node.js را اجرا کنید.');
-            }
-        }
-        
-        function updateLastUpdateTime() {
-            const updateElement = document.getElementById('lastUpdate');
-            updateElement.textContent = `آخرین بروزرسانی: ${new Date().toLocaleString('fa-IR')}`;
-        }
-        
-        function showLoading(show) {
-            const container = document.getElementById('productsTable');
-            if (show) {
-                container.innerHTML = `
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
-                        <p>در حال بارگذاری داده‌ها...</p>
-                    </div>
-                `;
-            }
-        }
-        
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-                <span>${message}</span>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 5000);
-        }
-        
-        function updatePriceValue(value) {
-            document.getElementById('priceValue').textContent = 
-                `تا ${parseInt(value).toLocaleString('fa-IR')} تومان`;
-            filterProducts();
-        }
-        
-        function updateDiscountValue(value) {
-            document.getElementById('discountValue').textContent = 
-                `تخفیف: ${value}%`;
-            filterProducts();
-        }
-        
-        function clearFilters() {
-            document.getElementById('brandFilter').value = '';
-            document.getElementById('techFilter').value = '';
-            document.getElementById('sizeFilter').value = '';
-            document.getElementById('storeFilter').value = '';
-            document.getElementById('searchInput').value = '';
-            document.getElementById('priceRange').value = 200000000;
-            document.getElementById('discountRange').value = 0;
-            document.getElementById('inStockFilter').checked = false;
-            
-            updatePriceValue(200000000);
-            updateDiscountValue(0);
-            filterProducts();
-        }
-        
-        function viewProductDetails(productId) {
-            const product = allProducts.find(p => p.id === productId);
-            if (product) {
-                alert(`
-                    نام: ${product.name}
-                    برند: ${product.brand}
-                    سایز: ${product.size} اینچ
-                    تکنولوژی: ${product.technology}
-                    قیمت: ${product.price.toLocaleString('fa-IR')} تومان
-                    تخفیف: ${product.discount}%
-                    رتبه: ${product.rating}/5
-                    وضعیت: ${product.in_stock ? 'موجود' : 'ناموجود'}
-                    منبع: ${product.source}
-                `);
-            }
-        }
-        
-        // ==================== راه‌اندازی ====================
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            updateLastUpdateTime();
-            createCharts();
-            checkAPIStatus();
-            
-            // تست اتصال به API و بارگذاری داده‌ها
-            setTimeout(() => {
-                const useRealData = confirm('آیا می‌خواهید از اسکرپر واقعی استفاده کنید؟\n\nاگر سرور بک‌اند اجرا نیست، "لغو" را بزنید تا از داده‌های نمونه استفاده شود.');
-                
-                if (useRealData) {
-                    startScraping();
-                } else {
-                    loadSampleData();
-                }
-            }, 1000);
-            
-            // بروزرسانی خودکار هر 5 دقیقه
-            setInterval(() => {
-                if (scrapedData) {
-                    refreshData();
-                    updateLastUpdateTime();
-                }
-            }, 5 * 60 * 1000);
+        // ارسال درخواست به سرور برای اسکرپ از ترب
+        const response = await fetch(`${API_BASE_URL}/scrape-torob`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                searchQuery: searchQuery,
+                maxPages: 3
+            })
         });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification(`✅ ${result.total_products} محصول از ترب دریافت شد`, 'success');
+            processTorobData(result.data);
+        } else {
+            throw new Error(result.error || 'خطا در اسکرپینگ');
+        }
+        
+    } catch (error) {
+        console.error('خطا در اسکرپینگ ترب:', error);
+        showNotification(`❌ خطا: ${error.message}`, 'error');
+        
+        // اگر سرور در دسترس نبود، از داده‌های نمونه استفاده کن
+        loadSampleData();
+    } finally {
+        showLoading(false);
+    }
+}
+
+// ==================== پردازش داده‌های ترب ====================
+function processTorobData(data) {
+    // تبدیل داده‌های ترب به فرمت مورد نظر
+    allProducts = data.map((item, index) => ({
+        id: index + 1,
+        name: item.name || 'نامشخص',
+        brand: item.brand || 'نامشخص',
+        size: item.size || null,
+        technology: item.technology || 'نامشخص',
+        price: item.price || 0,
+        discount: item.discount || 0,
+        rating: item.rating || 0,
+        in_stock: item.in_stock !== undefined ? item.in_stock : true,
+        source: 'torob',
+        seller_count: item.seller_count || 1,
+        price_min: item.price_range?.min || item.price || 0,
+        price_max: item.price_range?.max || item.price || 0,
+        top_sellers: item.top_sellers || 1,
+        last_updated: item.last_updated || new Date().toLocaleString('fa-IR')
+    }));
+    
+    populateFilters();
+    filterProducts();
+    updateSystemStatus({
+        status: 'active',
+        source: 'torob',
+        last_scrape: new Date().toLocaleString('fa-IR'),
+        total_products: allProducts.length,
+        algorithm: 'میانگین قیمت ۵ فروشنده اول'
+    });
+}
+
+// ==================== تابع نمونه داده ====================
+function loadSampleData() {
+    showNotification('📋 در حال استفاده از داده‌های نمونه...', 'info');
+    
+    // داده‌های نمونه منطبق بر الگوریتم ترب
+    allProducts = [];
+    const brands = ['سامسونگ', 'ال جی', 'سونی', 'TCL', 'شیائومی'];
+    const sizes = [32, 43, 50, 55, 65, 75];
+    
+    for (let i = 0; i < 25; i++) {
+        const brand = brands[Math.floor(Math.random() * brands.length)];
+        const size = sizes[Math.floor(Math.random() * sizes.length)];
+        const sellerCount = Math.floor(Math.random() * 8) + 2; // 2-10 فروشنده
+        
+        // شبیه‌سازی الگوریتم: میانگین قیمت ۵ فروشنده اول
+        const prices = [];
+        for (let j = 0; j < Math.min(5, sellerCount); j++) {
+            const basePrice = size * 500000 + Math.random() * 8000000;
+            prices.push(Math.round(basePrice));
+        }
+        const avgPrice = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
+        
+        allProducts.push({
+            id: i + 1,
+            name: `تلویزیون ${brand} ${size} اینچ`,
+            brand: brand,
+            size: size,
+            technology: ['LED', 'QLED', 'OLED'][Math.floor(Math.random() * 3)],
+            price: avgPrice,
+            discount: sellerCount > 3 ? Math.floor(Math.random() * 20) : 0,
+            rating: (Math.random() * 2 + 3).toFixed(1),
+            in_stock: true,
+            source: 'torob',
+            seller_count: sellerCount,
+            price_min: Math.min(...prices),
+            price_max: Math.max(...prices),
+            top_sellers: Math.min(5, sellerCount)
+        });
+    }
+    
+    populateFilters();
+    filterProducts();
+    updateSystemStatus({
+        status: 'sample_data',
+        message: 'در حال استفاده از داده‌های نمونه'
+    });
+}
+
+// ==================== آپدیت فیلترها ====================
+function populateFilters() {
+    const brandFilter = document.getElementById('brandFilter');
+    const sizeFilter = document.getElementById('sizeFilter');
+    
+    // پاک کردن گزینه‌های قبلی
+    while (brandFilter.options.length > 1) brandFilter.remove(1);
+    while (sizeFilter.options.length > 1) sizeFilter.remove(1);
+    
+    // استخراج برندهای منحصر به فرد
+    const brands = [...new Set(allProducts.map(p => p.brand).filter(Boolean))];
+    brands.forEach(brand => {
+        const option = document.createElement('option');
+        option.value = brand;
+        option.textContent = brand;
+        brandFilter.appendChild(option);
+    });
+    
+    // استخراج سایزهای منحصر به فرد
+    const sizes = [...new Set(allProducts.map(p => p.size).filter(Boolean))].sort((a, b) => a - b);
+    sizes.forEach(size => {
+        const option = document.createElement('option');
+        option.value = size;
+        option.textContent = `${size} اینچ`;
+        sizeFilter.appendChild(option);
+    });
+}
+
+// ==================== فیلتر کردن محصولات ====================
+function filterProducts() {
+    const brand = document.getElementById('brandFilter').value;
+    const tech = document.getElementById('techFilter').value;
+    const size = document.getElementById('sizeFilter').value;
+    const sellerFilter = document.getElementById('sellerFilter').value;
+    const sort = document.getElementById('sortFilter').value;
+    
+    filteredProducts = allProducts.filter(product => {
+        // فیلتر برند
+        if (brand && product.brand !== brand) return false;
+        
+        // فیلتر تکنولوژی
+        if (tech && product.technology !== tech) return false;
+        
+        // فیلتر سایز
+        if (size && product.size !== parseInt(size)) return false;
+        
+        // فیلتر تعداد فروشنده
+        if (sellerFilter) {
+            const minSellers = parseInt(sellerFilter);
+            if (product.seller_count < minSellers) return false;
+        }
+        
+        return true;
+    });
+    
+    // مرتب‌سازی
+    switch(sort) {
+        case 'price_asc':
+            filteredProducts.sort((a, b) => (a.price || 0) - (b.price || 0));
+            break;
+        case 'price_desc':
+            filteredProducts.sort((a, b) => (b.price || 0) - (a.price || 0));
+            break;
+        case 'sellers_desc':
+            filteredProducts.sort((a, b) => (b.seller_count || 0) - (a.seller_count || 0));
+            break;
+        case 'size_asc':
+            filteredProducts.sort((a, b) => (a.size || 0) - (b.size || 0));
+            break;
+        case 'newest':
+        default:
+            // به صورت پیش‌فرض جدیدترین اول
+            break;
+    }
+    
+    displayProducts();
+    updateCharts();
+    updateStatsDisplay();
+}
+
+// ==================== نمایش محصولات ====================
+function displayProducts() {
+    const container = document.getElementById('productsTable');
+    const countElement = document.getElementById('productsCount');
+    const filteredCountElement = document.getElementById('filteredCount');
+    
+    countElement.textContent = `${allProducts.length.toLocaleString('fa-IR')} محصول`;
+    filteredCountElement.textContent = filteredProducts.length.toLocaleString('fa-IR');
+    
+    if (filteredProducts.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 50px; color: #636e72;">
+                <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 20px; color: #b2bec3;"></i>
+                <p>محصولی با فیلترهای انتخاب شده یافت نشد.</p>
+                <button onclick="clearFilters()" style="margin-top: 20px; padding: 10px 20px; background: #6c5ce7; color: white; border: none; border-radius: 5px; cursor: pointer; font-family: 'Vazirmatn';">پاک کردن فیلترها</button>
+            </div>
+        `;
+        return;
+    }
+    
+    let tableHTML = `
+        <div style="overflow-x: auto;">
+            <table class="products-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>نام محصول</th>
+                        <th>برند</th>
+                        <th>سایز</th>
+                        <th>تکنولوژی</th>
+                        <th>قیمت مرجع</th>
+                        <th>تخفیف</th>
+                        <th>فروشندگان</th>
+                        <th>رنج قیمت</th>
+                        <th>رتبه</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    filteredProducts.slice(0, 50).forEach((product, index) => {
+        const priceRange = product.price_min && product.price_max && product.price_min !== product.price_max
+            ? `${product.price_min.toLocaleString('fa-IR')} - ${product.price_max.toLocaleString('fa-IR')}`
+            : `${product.price.toLocaleString('fa-IR')}`;
+        
+        const sellerBadge = product.seller_count > 3
+            ? `<span style="background: #00b894; color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem;">${product.seller_count} فروشنده</span>`
+            : `<span style="background: #636e72; color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem;">${product.seller_count} فروشنده</span>`;
+        
+        const discountBadge = product.discount > 0
+            ? `<span style="background: #e17055; color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem;">${product.discount}%</span>`
+            : '';
+        
+        const ratingStars = '★'.repeat(Math.floor(product.rating || 0)) + 
+                          '☆'.repeat(5 - Math.floor(product.rating || 0));
+        
+        tableHTML += `
+            <tr>
+                <td>${index + 1}</td>
+                <td class="product-name">${product.name || 'نامشخص'}</td>
+                <td><span class="badge badge-brand">${product.brand || 'نامشخص'}</span></td>
+                <td><span class="badge badge-size">${product.size || '?'} اینچ</span></td>
+                <td><span class="badge badge-tech">${product.technology || 'نامشخص'}</span></td>
+                <td>
+                    <span class="product-price">${(product.price || 0).toLocaleString('fa-IR')} تومان</span>
+                </td>
+                <td>${discountBadge}</td>
+                <td>${sellerBadge}</td>
+                <td style="font-size: 0.9rem; color: #636e72;">${priceRange}</td>
+                <td style="color: #fdcb6e;">${ratingStars}</td>
+                <td>
+                    <button onclick="viewProductDetails(${product.id})" style="padding: 5px 10px; background: #6c5ce7; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.8rem;">
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    tableHTML += `
+                </tbody>
+            </table>
+        </div>
+        <div style="text-align: center; margin-top: 20px; color: #636e72; font-size: 0.9rem;">
+            <p><i class="fas fa-info-circle"></i> قیمت مرجع: میانگین قیمت ${filteredProducts[0]?.top_sellers || 5} فروشنده اول در ترب</p>
+        </div>
+    `;
+    
+    container.innerHTML = tableHTML;
+}
+
+// ==================== آپدیت آمار ====================
+function updateStatsDisplay() {
+    const products = filteredProducts.length > 0 ? filteredProducts : allProducts;
+    
+    if (products.length === 0) {
+        document.getElementById('statsContainer').innerHTML = `
+            <div class="stat-card">
+                <i class="fas fa-exclamation-triangle stat-icon"></i>
+                <div class="stat-number">0</div>
+                <div class="stat-label">داده‌ای موجود نیست</div>
+            </div>
+        `;
+        return;
+    }
+    
+    const prices = products.map(p => p.price).filter(p => p);
+    const avgPrice = prices.length > 0 
+        ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) 
+        : 0;
+    
+    const totalSellers = products.reduce((sum, p) => sum + (p.seller_count || 0), 0);
+    const avgSellers = products.length > 0 
+        ? Math.round(totalSellers / products.length) 
+        : 0;
+    
+    const maxSellers = Math.max(...products.map(p => p.seller_count || 0));
+    
+    const statsHTML = `
+        <div class="stat-card">
+            <i class="fas fa-tv stat-icon"></i>
+            <div class="stat-number">${products.length.toLocaleString('fa-IR')}</div>
+            <div class="stat-label">تعداد محصولات</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-money-bill-wave stat-icon"></i>
+            <div class="stat-number">${avgPrice.toLocaleString('fa-IR')}</div>
+            <div class="stat-label">میانگین قیمت</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-store stat-icon"></i>
+            <div class="stat-number">${avgSellers}</div>
+            <div class="stat-label">میانگین فروشنده</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-chart-bar stat-icon"></i>
+            <div class="stat-number">${maxSellers}</div>
+            <div class="stat-label">بیشترین فروشنده</div>
+        </div>
+    `;
+    
+    document.getElementById('statsContainer').innerHTML = statsHTML;
+}
+
+// ==================== راه‌اندازی ====================
+document.addEventListener('DOMContentLoaded', function() {
+    updateLastUpdateTime();
+    createCharts();
+    
+    // تست اتصال به API
+    checkAPIStatus();
+    
+    // بارگذاری اولیه داده‌ها
+    setTimeout(() => {
+        loadSampleData();
+    }, 1000);
+});
     </script>
 </body>
 </html>
