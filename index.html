@@ -1,508 +1,1026 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="fa">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📺 داشبورد قیمت تلویزیون</title>
+    <title>📊 داشبورد قیمت تلویزیون - مقایسه هوشمند</title>
     
-    <!-- فونت وزیر از Google Fonts -->
+    <!-- فونت وزیر -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- آیکون‌های Font Awesome -->
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* ریست و تنظیمات پایه */
+        /* ریست استایل */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         
-        :root {
-            --primary: #4361ee;
-            --secondary: #3a0ca3;
-            --accent: #f72585;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --success: #4cc9f0;
-            --warning: #f8961e;
-            --danger: #e63946;
-        }
-        
         body {
             font-family: 'Vazirmatn', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: var(--dark);
-            line-height: 1.6;
+            color: #333;
         }
         
-        /* کانتینر اصلی */
+        /* Container */
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
         
-        /* هدر */
+        /* Header */
         .header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
             text-align: center;
+            padding: 40px 20px;
+            color: white;
+            margin-bottom: 30px;
         }
         
-        .logo {
-            font-size: 3.5rem;
+        .header h1 {
+            font-size: 3rem;
             margin-bottom: 15px;
-            background: linear-gradient(45deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
         
-        .title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: var(--dark);
-            margin-bottom: 10px;
-        }
-        
-        .subtitle {
+        .header p {
             font-size: 1.2rem;
-            color: #666;
-            font-weight: 300;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
         }
         
-        /* کارت‌ها */
-        .cards {
+        /* Dashboard Grid */
+        .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 25px;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
         
+        /* Card */
         .card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
         }
         
         .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px);
         }
         
-        .card-icon {
-            font-size: 3rem;
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
-            display: inline-block;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
         }
         
         .card-title {
             font-size: 1.5rem;
             font-weight: 700;
-            margin-bottom: 15px;
-            color: var(--primary);
-        }
-        
-        .card-text {
-            color: #555;
-            font-size: 1rem;
-        }
-        
-        /* وضعیت پروژه */
-        .project-status {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 40px;
-            margin-bottom: 40px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-        
-        .status-title {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--dark);
-            margin-bottom: 30px;
-            text-align: center;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            background: linear-gradient(45deg, var(--success), #2ec4b6);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 50px;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-        
-        /* لیست مراحل */
-        .steps {
-            list-style: none;
-            counter-reset: step-counter;
-        }
-        
-        .step {
-            counter-increment: step-counter;
-            padding: 25px;
-            margin-bottom: 15px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            border-right: 5px solid var(--primary);
-            position: relative;
-            transition: all 0.3s ease;
-        }
-        
-        .step:hover {
-            background: #e9ecef;
-            transform: translateX(-5px);
-        }
-        
-        .step:before {
-            content: counter(step-counter);
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: var(--primary);
-            color: white;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
+            color: #2d3436;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-weight: 700;
+            gap: 10px;
         }
         
-        .step-done:before {
-            background: var(--success);
-            content: '✓';
+        .card-title i {
+            color: #636e72;
         }
         
-        .step-inprogress:before {
-            background: var(--warning);
-            content: '🔄';
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
         
-        .step-pending:before {
-            background: #adb5bd;
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
         }
         
-        .step-content {
-            margin-right: 50px;
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #6c5ce7;
         }
         
-        .step-title {
-            font-weight: 700;
-            font-size: 1.1rem;
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #2d3436;
             margin-bottom: 5px;
         }
         
-        .step-desc {
-            color: #666;
-            font-size: 0.95rem;
+        .stat-label {
+            color: #636e72;
+            font-size: 0.9rem;
         }
         
-        /* دکمه‌ها */
-        .buttons {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            margin: 40px 0;
+        /* Table */
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
         
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 16px 32px;
-            border-radius: 50px;
-            font-family: 'Vazirmatn', sans-serif;
+        .products-table th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: right;
+            color: #636e72;
             font-weight: 600;
-            font-size: 1.1rem;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            gap: 10px;
-            min-width: 200px;
+            border-bottom: 2px solid #e9ecef;
         }
         
-        .btn-primary {
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            color: white;
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        .products-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
         }
         
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.4);
+        .products-table tr:hover {
+            background: #f8f9fa;
         }
         
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.95);
-            color: var(--dark);
-            border: 2px solid var(--primary);
+        .product-name {
+            font-weight: 600;
+            color: #2d3436;
         }
         
-        .btn-secondary:hover {
-            background: var(--primary);
-            color: white;
+        .product-price {
+            font-weight: 700;
+            color: #00b894;
         }
         
-        .btn-success {
-            background: linear-gradient(45deg, var(--success), #2ec4b6);
-            color: white;
-            box-shadow: 0 5px 15px rgba(76, 201, 240, 0.3);
+        .product-discount {
+            color: #e17055;
+            text-decoration: line-through;
+            margin-left: 10px;
+            font-size: 0.9em;
         }
         
-        /* فوتر */
-        .footer {
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .badge-brand {
+            background: rgba(108, 92, 231, 0.1);
+            color: #6c5ce7;
+        }
+        
+        .badge-tech {
+            background: rgba(0, 184, 148, 0.1);
+            color: #00b894;
+        }
+        
+        .badge-size {
+            background: rgba(253, 203, 110, 0.1);
+            color: #fdcb6e;
+        }
+        
+        /* Loading */
+        .loading {
             text-align: center;
-            padding: 30px;
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 0.95rem;
-            margin-top: 40px;
+            padding: 50px;
+            color: #636e72;
         }
         
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
+        .loading-spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #6c5ce7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
             margin-bottom: 20px;
         }
         
-        .footer-link {
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Error */
+        .error {
+            background: #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            color: #d63031;
+            margin: 20px 0;
+        }
+        
+        /* Filter */
+        .filter-bar {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        
+        .filter-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        select, input {
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 1rem;
+            background: white;
+            color: #333;
+            min-width: 200px;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #6c5ce7;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
             color: white;
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            margin-top: 50px;
+            opacity: 0.9;
+        }
+        
+        .update-time {
             background: rgba(255, 255, 255, 0.1);
-            transition: background 0.3s;
+            padding: 15px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 20px;
         }
         
-        .footer-link:hover {
-            background: rgba(255, 255, 255, 0.2);
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
         }
         
-        /* ریسپانسیو */
+        /* Responsive */
         @media (max-width: 768px) {
-            .title {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
                 font-size: 2rem;
             }
             
-            .subtitle {
-                font-size: 1rem;
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
             
-            .card {
-                padding: 20px;
+            .filter-controls {
+                flex-direction: column;
+                align-items: stretch;
             }
             
-            .btn {
+            select, input {
                 min-width: 100%;
             }
-            
-            .step:before {
-                position: static;
-                transform: none;
-                margin-left: 10px;
-                float: right;
-            }
-            
-            .step-content {
-                margin-right: 0;
-            }
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
         }
     </style>
 </head>
 <body>
+    <!-- Header -->
+    <div class="header">
+        <h1><i class="fas fa-tv"></i> داشبورد هوشمند قیمت تلویزیون</h1>
+        <p>رصد و مقایسه خودکار قیمت‌ها از دیجی‌کالا، تکنولایف و ترب</p>
+    </div>
+    
     <div class="container">
-        <!-- هدر -->
-        <header class="header">
-            <div class="logo">
-                <i class="fas fa-tv"></i>
-            </div>
-            <h1 class="title">داشبورد قیمت تلویزیون</h1>
-            <p class="subtitle">رصد و مقایسه هوشمند قیمت تلویزیون‌ها از فروشگاه‌های معتبر آنلاین</p>
-        </header>
+        <!-- Stats Cards -->
+        <div class="stats-grid" id="statsContainer">
+            <!-- آمار به صورت دینامیک لود می‌شود -->
+        </div>
         
-        <!-- کارت‌های ویژگی‌ها -->
-        <div class="cards">
-            <div class="card">
-                <div class="card-icon" style="color: #4361ee;">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <h3 class="card-title">نمودارهای تعاملی</h3>
-                <p class="card-text">تحلیل روند قیمت‌ها با نمودارهای پیشرفته و قابل تنظیم. مقایسه برندها در بازه‌های زمانی مختلف.</p>
-            </div>
-            
-            <div class="card">
-                <div class="card-icon" style="color: #f72585;">
-                    <i class="fas fa-filter"></i>
-                </div>
-                <h3 class="card-title">جستجوی پیشرفته</h3>
-                <p class="card-text">فیلتر هوشمند بر اساس برند، سایز، تکنولوژی، رزولوشن و محدوده قیمتی. پیدا کردن بهترین گزینه برای شما.</p>
-            </div>
-            
-            <div class="card">
-                <div class="card-icon" style="color: #4cc9f0;">
-                    <i class="fas fa-mobile-alt"></i>
-                </div>
-                <h3 class="card-title">موبایل فرندلی</h3>
-                <p class="card-text">طراحی کاملاً واکنش‌گرا و بهینه‌شده برای همه دستگاه‌ها. تجربه کاربری عالی در موبایل، تبلت و دسکتاپ.</p>
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-controls">
+                <select id="brandFilter" onchange="filterProducts()">
+                    <option value="">همه برندها</option>
+                </select>
+                
+                <select id="techFilter" onchange="filterProducts()">
+                    <option value="">همه تکنولوژی‌ها</option>
+                    <option value="LED">LED</option>
+                    <option value="QLED">QLED</option>
+                    <option value="OLED">OLED</option>
+                    <option value="Mini LED">Mini LED</option>
+                </select>
+                
+                <select id="sizeFilter" onchange="filterProducts()">
+                    <option value="">همه سایزها</option>
+                    <option value="43">43 اینچ</option>
+                    <option value="50">50 اینچ</option>
+                    <option value="55">55 اینچ</option>
+                    <option value="65">65 اینچ</option>
+                    <option value="75">75 اینچ</option>
+                </select>
+                
+                <select id="sortFilter" onchange="filterProducts()">
+                    <option value="newest">جدیدترین</option>
+                    <option value="price_asc">قیمت (کم به زیاد)</option>
+                    <option value="price_desc">قیمت (زیاد به کم)</option>
+                    <option value="size_asc">سایز (کم به زیاد)</option>
+                    <option value="size_desc">سایز (زیاد به کم)</option>
+                </select>
+                
+                <input type="text" id="searchInput" placeholder="جستجوی نام محصول..." onkeyup="filterProducts()">
             </div>
         </div>
         
-        <!-- وضعیت پروژه -->
-        <section class="project-status">
-            <h2 class="status-title">وضعیت توسعه پروژه</h2>
-            
-            <div class="status-badge">
-                <i class="fas fa-code-branch"></i> در حال توسعه فعال
+        <!-- Main Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Chart 1: Price Distribution -->
+            <div class="card fade-in">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-chart-line"></i> توزیع قیمت‌ها</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="priceChart"></canvas>
+                </div>
             </div>
             
-            <ul class="steps">
-                <li class="step step-done">
-                    <div class="step-content">
-                        <div class="step-title">ساخت ریپوزیتوری در گیت‌هاب</div>
-                        <div class="step-desc">ایجاد مخزن و تنظیمات اولیه پروژه</div>
-                    </div>
-                </li>
-                
-                <li class="step step-done">
-                    <div class="step-content">
-                        <div class="step-title">ایجاد ساختار پروژه</div>
-                        <div class="step-desc">تنظیم پوشه‌بندی و فایل‌های پایه</div>
-                    </div>
-                </li>
-                
-                <li class="step step-done">
-                    <div class="step-content">
-                        <div class="step-title">راه‌اندازی Next.js + TypeScript</div>
-                        <div class="step-desc">نصب فریمورک و کتابخانه‌های ضروری</div>
-                    </div>
-                </li>
-                
-                <li class="step step-inprogress">
-                    <div class="step-content">
-                        <div class="step-title">پیاده‌سازی اسکرپرها</div>
-                        <div class="step-desc">جمع‌آوری داده از دیجی‌کالا، تکنولایف و ترب</div>
-                    </div>
-                </li>
-                
-                <li class="step step-pending">
-                    <div class="step-content">
-                        <div class="step-title">ایجاد دیتابیس و API</div>
-                        <div class="step-desc">طراحی مدل داده و endpoints برای ذخیره‌سازی</div>
-                    </div>
-                </li>
-                
-                <li class="step step-pending">
-                    <div class="step-content">
-                        <div class="step-title">ساخت کامپوننت‌های نمودار</div>
-                        <div class="step-desc">پیاده‌سازی نمودارهای تعاملی با Recharts</div>
-                    </div>
-                </li>
-                
-                <li class="step step-pending">
-                    <div class="step-content">
-                        <div class="step-title">دپلوی نهایی و اتوماسیون</div>
-                        <div class="step-desc">انتشار پروژه و تنظیم بروزرسانی خودکار</div>
-                    </div>
-                </li>
-            </ul>
-        </section>
-        
-        <!-- دکمه‌های اقدام -->
-        <div class="buttons">
-            <a href="https://github.com/irmosaka/tv-price-dashboard" class="btn btn-primary" target="_blank">
-                <i class="fab fa-github"></i> مشاهده کد منبع
-            </a>
+            <!-- Chart 2: Brand Comparison -->
+            <div class="card fade-in">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-chart-bar"></i> مقایسه برندها</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="brandChart"></canvas>
+                </div>
+            </div>
             
-            <!-- <a href="https://vercel.com/new?utm_source=github&utm_medium=preview" class="btn btn-secondary" target="_blank">
-                <i class="fas fa-cloud-upload-alt"></i> دپلوی روی Vercel
-            </a> -->
+            <!-- Chart 3: Technology Distribution -->
+            <div class="card fade-in">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-chart-pie"></i> توزیع تکنولوژی</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="techChart"></canvas>
+                </div>
+            </div>
             
-            <a href="#" class="btn btn-success" id="livePreview">
-                <i class="fas fa-eye"></i> پیش‌نمایش زنده (به زودی)
-            </a>
+            <!-- Chart 4: Size Distribution -->
+            <div class="card fade-in">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-ruler-combined"></i> توزیع سایز</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="sizeChart"></canvas>
+                </div>
+            </div>
         </div>
         
-        <!-- اطلاعات فنی -->
-        <div class="card" style="text-align: center;">
-            <h3 class="card-title">🛠 تکنولوژی‌های استفاده‌شده</h3>
-            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 20px;">
-                <span style="background: #007acc; color: white; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem;">TypeScript</span>
-                <span style="background: #000; color: white; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem;">Next.js</span>
-                <span style="background: #38b2ac; color: white; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem;">Tailwind CSS</span>
-                <span style="background: #4479a1; color: white; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem;">PostgreSQL</span>
-                <span style="background: #f0db4f; color: #323330; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem;">Prisma</span>
+        <!-- Products Table -->
+        <div class="card fade-in">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-list"></i> لیست محصولات</h2>
+                <span id="productsCount">0 محصول</span>
+            </div>
+            <div id="productsTable">
+                <!-- جدول به صورت دینامیک لود می‌شود -->
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>در حال بارگذاری داده‌ها...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Status -->
+        <div class="card fade-in">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-info-circle"></i> وضعیت سیستم</h2>
+            </div>
+            <div id="systemStatus">
+                <!-- اطلاعات سیستم به صورت دینامیک لود می‌شود -->
             </div>
         </div>
     </div>
     
-    <!-- فوتر -->
-    <footer class="footer">
-        <div class="footer-links">
-            <a href="https://github.com/irmosaka/tv-price-dashboard/issues" class="footer-link" target="_blank">
-                <i class="fas fa-bug"></i> گزارش مشکل
-            </a>
-            <a href="https://github.com/irmosaka/tv-price-dashboard" class="footer-link" target="_blank">
-                <i class="fas fa-star"></i> ستاره دادن
-            </a>
-            <a href="https://github.com/irmosaka" class="footer-link" target="_blank">
-                <i class="fas fa-user"></i> سازنده
-            </a>
+    <!-- Footer -->
+    <div class="footer">
+        <p>داده‌ها به صورت خودکار هر ۶ ساعت بروزرسانی می‌شوند</p>
+        <div class="update-time">
+            <i class="fas fa-sync-alt"></i> 
+            <span id="lastUpdate">در حال بارگذاری...</span>
         </div>
-        
-        <p>آدرس دائمی پروژه: <strong>https://irmosaka.github.io/tv-price-dashboard</strong></p>
-        <p style="margin-top: 10px; opacity: 0.8;">© ۱۴۰۳ - توسعه داده شده با <i class="fas fa-heart" style="color: #e63946;"></i> در ایران</p>
-        <p style="margin-top: 5px; font-size: 0.85rem; opacity: 0.7;">فونت: Vazirmatn • آیکون‌ها: Font Awesome</p>
-    </footer>
+        <p style="margin-top: 20px;">توسعه داده شده با ❤️ در ایران</p>
+    </div>
     
     <script>
-        // اسکریپت ساده برای تعامل
-        document.getElementById('livePreview').addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('🔄 نسخه کامل با قابلیت پیش‌نمایش زنده به زودی منتشر خواهد شد!\n\nدر حال حاضر می‌توانید کدهای پروژه را در GitHub مشاهده کنید.');
-        });
+        // ==================== متغیرهای اصلی ====================
+        let allProducts = [];
+        let filteredProducts = [];
+        let charts = {};
+        let lastUpdateTime = null;
         
-        // افکت برای کارت‌ها هنگام اسکرول
-        const cards = document.querySelectorAll('.card');
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
+        // ==================== توابع بارگذاری داده ====================
         
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
+        // بارگذاری داده‌های اسکرپ شده
+        async function loadData() {
+            try {
+                showLoading(true);
+                
+                // 1. بارگذاری داده‌های اصلی
+                const productsResponse = await fetch('data/dashboard.json');
+                if (!productsResponse.ok) throw new Error('داده‌ها یافت نشدند');
+                allProducts = await productsResponse.json();
+                
+                // 2. بارگذاری آمار
+                const statsResponse = await fetch('data/stats.json');
+                if (statsResponse.ok) {
+                    const stats = await statsResponse.json();
+                    updateStats(stats);
+                } else {
+                    calculateAndUpdateStats();
+                }
+                
+                // 3. بارگذاری اطلاعات اسکرپر
+                const infoResponse = await fetch('data/scraper_info.json');
+                if (infoResponse.ok) {
+                    const info = await infoResponse.json();
+                    updateSystemStatus(info);
+                    lastUpdateTime = info.timestamp;
+                    updateLastUpdateTime();
+                }
+                
+                // 4. پر کردن فیلترها
+                populateFilters();
+                
+                // 5. نمایش داده‌ها
+                filterProducts();
+                
+                // 6. ایجاد نمودارها
+                setTimeout(createCharts, 500);
+                
+                showLoading(false);
+                
+            } catch (error) {
+                console.error('خطا در بارگذاری داده‌ها:', error);
+                showError('خطا در بارگذاری داده‌ها. لطفاً بعداً تلاش کنید.');
+                showLoading(false);
+            }
+        }
+        
+        // به‌روزرسانی آمار
+        function updateStats(stats) {
+            const statsContainer = document.getElementById('statsContainer');
+            
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <i class="fas fa-tv stat-icon"></i>
+                    <div class="stat-number" id="totalProducts">${stats.total_products.toLocaleString('fa-IR')}</div>
+                    <div class="stat-label">تعداد کل محصولات</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-money-bill-wave stat-icon"></i>
+                    <div class="stat-number" id="avgPrice">${stats.avg_price.toLocaleString('fa-IR')}</div>
+                    <div class="stat-label">میانگین قیمت (تومان)</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-tags stat-icon"></i>
+                    <div class="stat-number" id="totalBrands">${Object.keys(stats.by_brand).length}</div>
+                    <div class="stat-label">تعداد برندها</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-sync-alt stat-icon"></i>
+                    <div class="stat-number" id="priceRange">${stats.min_price.toLocaleString('fa-IR')} - ${stats.max_price.toLocaleString('fa-IR')}</div>
+                    <div class="stat-label">بازه قیمت (تومان)</div>
+                </div>
+            `;
+        }
+        
+        // محاسبه آمار از داده‌ها
+        function calculateAndUpdateStats() {
+            if (allProducts.length === 0) return;
+            
+            const prices = allProducts.map(p => p.price).filter(p => p);
+            const avgPrice = prices.length > 0 ? 
+                Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0;
+            
+            const uniqueBrands = [...new Set(allProducts.map(p => p.brand).filter(Boolean))];
+            
+            const stats = {
+                total_products: allProducts.length,
+                avg_price: avgPrice,
+                min_price: Math.min(...prices),
+                max_price: Math.max(...prices),
+                by_brand: {}
+            };
+            
+            updateStats(stats);
+        }
+        
+        // پر کردن فیلترها
+        function populateFilters() {
+            const brandFilter = document.getElementById('brandFilter');
+            const sizeFilter = document.getElementById('sizeFilter');
+            
+            // برندها
+            const brands = [...new Set(allProducts.map(p => p.brand).filter(Boolean))];
+            brands.forEach(brand => {
+                const option = document.createElement('option');
+                option.value = brand;
+                option.textContent = brand;
+                brandFilter.appendChild(option);
+            });
+            
+            // سایزها
+            const sizes = [...new Set(allProducts.map(p => p.size).filter(Boolean))].sort((a, b) => a - b);
+            sizes.forEach(size => {
+                const option = document.createElement('option');
+                option.value = size;
+                option.textContent = `${size} اینچ`;
+                sizeFilter.appendChild(option);
+            });
+        }
+        
+        // ==================== توابع فیلتر و جستجو ====================
+        
+        function filterProducts() {
+            const brand = document.getElementById('brandFilter').value;
+            const tech = document.getElementById('techFilter').value;
+            const size = document.getElementById('sizeFilter').value;
+            const sort = document.getElementById('sortFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            
+            filteredProducts = allProducts.filter(product => {
+                // فیلتر برند
+                if (brand && product.brand !== brand) return false;
+                
+                // فیلتر تکنولوژی
+                if (tech && product.technology !== tech) return false;
+                
+                // فیلتر سایز
+                if (size && product.size !== parseInt(size)) return false;
+                
+                // جستجوی متن
+                if (search) {
+                    const searchText = product.name?.toLowerCase() || '';
+                    if (!searchText.includes(search)) return false;
+                }
+                
+                return true;
+            });
+            
+            // مرتب‌سازی
+            switch(sort) {
+                case 'price_asc':
+                    filteredProducts.sort((a, b) => (a.price || 0) - (b.price || 0));
+                    break;
+                case 'price_desc':
+                    filteredProducts.sort((a, b) => (b.price || 0) - (a.price || 0));
+                    break;
+                case 'size_asc':
+                    filteredProducts.sort((a, b) => (a.size || 0) - (b.size || 0));
+                    break;
+                case 'size_desc':
+                    filteredProducts.sort((a, b) => (b.size || 0) - (a.size || 0));
+                    break;
+                case 'newest':
+                default:
+                    // به صورت پیش‌فرض جدیدترین اول
+                    break;
+            }
+            
+            displayProducts();
+            updateCharts();
+        }
+        
+        // نمایش محصولات
+        function displayProducts() {
+            const container = document.getElementById('productsTable');
+            const countElement = document.getElementById('productsCount');
+            
+            countElement.textContent = `${filteredProducts.length.toLocaleString('fa-IR')} محصول`;
+            
+            if (filteredProducts.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 50px; color: #636e72;">
+                        <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 20px; color: #b2bec3;"></i>
+                        <p>محصولی با فیلترهای انتخاب شده یافت نشد.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let tableHTML = `
+                <div style="overflow-x: auto;">
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th>نام محصول</th>
+                                <th>برند</th>
+                                <th>سایز</th>
+                                <th>تکنولوژی</th>
+                                <th>قیمت</th>
+                                <th>منبع</th>
+                                <th>رتبه</th>
+                                <th>وضعیت</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            filteredProducts.slice(0, 50).forEach(product => {
+                const discountHtml = product.discount_price ? 
+                    `<span class="product-discount">${product.discount_price.toLocaleString('fa-IR')}</span>` : '';
+                
+                const ratingStars = '★'.repeat(Math.floor(product.rating || 0)) + 
+                                  '☆'.repeat(5 - Math.floor(product.rating || 0));
+                
+                tableHTML += `
+                    <tr>
+                        <td class="product-name">${product.name || 'نامشخص'}</td>
+                        <td><span class="badge badge-brand">${product.brand || 'نامشخص'}</span></td>
+                        <td><span class="badge badge-size">${product.size || '?'} اینچ</span></td>
+                        <td><span class="badge badge-tech">${product.technology || 'نامشخص'}</span></td>
+                        <td>
+                            <span class="product-price">${(product.price || 0).toLocaleString('fa-IR')} تومان</span>
+                            ${discountHtml}
+                        </td>
+                        <td>${product.source || 'نامشخص'}</td>
+                        <td style="color: #fdcb6e;">${ratingStars}</td>
+                        <td>
+                            ${product.in_stock ? 
+                                '<span style="color: #00b894;"><i class="fas fa-check-circle"></i> موجود</span>' : 
+                                '<span style="color: #d63031;"><i class="fas fa-times-circle"></i> ناموجود</span>'}
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            container.innerHTML = tableHTML;
+        }
+        
+        // ==================== توابع نمودارها ====================
+        
+        function createCharts() {
+            // نمودار توزیع قیمت
+            const priceCtx = document.getElementById('priceChart').getContext('2d');
+            charts.priceChart = new Chart(priceCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'توزیع قیمت',
+                        data: [],
+                        borderColor: '#6c5ce7',
+                        backgroundColor: 'rgba(108, 92, 231, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            rtl: true,
+                            labels: {
+                                font: {
+                                    family: 'Vazirmatn'
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString('fa-IR') + ' تومان';
+                                }
+                            }
+                        }
+                    }
                 }
             });
-        }, observerOptions);
+            
+            // نمودار مقایسه برندها
+            const brandCtx = document.getElementById('brandChart').getContext('2d');
+            charts.brandChart = new Chart(brandCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'میانگین قیمت برندها',
+                        data: [],
+                        backgroundColor: '#00b894',
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            rtl: true,
+                            labels: {
+                                font: {
+                                    family: 'Vazirmatn'
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString('fa-IR') + ' تومان';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // نمودار توزیع تکنولوژی
+            const techCtx = document.getElementById('techChart').getContext('2d');
+            charts.techChart = new Chart(techCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            '#6c5ce7',
+                            '#00b894',
+                            '#fd79a8',
+                            '#fdcb6e',
+                            '#a29bfe'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'left',
+                            rtl: true,
+                            labels: {
+                                font: {
+                                    family: 'Vazirmatn'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // نمودار توزیع سایز
+            const sizeCtx = document.getElementById('sizeChart').getContext('2d');
+            charts.sizeChart = new Chart(sizeCtx, {
+                type: 'polarArea',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            '#6c5ce7',
+                            '#00b894',
+                            '#fd79a8',
+                            '#fdcb6e',
+                            '#a29bfe',
+                            '#81ecec'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'left',
+                            rtl: true,
+                            labels: {
+                                font: {
+                                    family: 'Vazirmatn'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            updateCharts();
+        }
         
-        cards.forEach(card => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            observer.observe(card);
+        function updateCharts() {
+            const products = filteredProducts.length > 0 ? filteredProducts : allProducts;
+            if (products.length === 0) return;
+            
+            // نمودار قیمت
+            const priceData = products.map(p => p.price).filter(p => p).sort((a, b) => a - b);
+            const priceLabels = Array.from({length: priceData.length}, (_, i) => `محصول ${i + 1}`);
+            
+            if (charts.priceChart) {
+                charts.priceChart.data.labels = priceLabels;
+                charts.priceChart.data.datasets[0].data = priceData;
+                charts.priceChart.update();
+            }
+            
+            // نمودار برندها
+            const brands = {};
+            products.forEach(product => {
+                if (product.brand && product.price) {
+                    if (!brands[product.brand]) {
+                        brands[product.brand] = { total: 0, count: 0 };
+                    }
+                    brands[product.brand].total += product.price;
+                    brands[product.brand].count++;
+                }
+            });
+            
+            const brandLabels = Object.keys(brands);
+            const brandAverages = brandLabels.map(brand => 
+                Math.round(brands[brand].total / brands[brand].count)
+            );
+            
+            if (charts.brandChart) {
+                charts.brandChart.data.labels = brandLabels;
+                charts.brandChart.data.datasets[0].data = brandAverages;
+                charts.brandChart.update();
+            }
+            
+            // نمودار تکنولوژی
+            const techCount = {};
+            products.forEach(product => {
+                const tech = product.technology || 'نامشخص';
+                techCount[tech] = (techCount[tech] || 0) + 1;
+            });
+            
+            if (charts.techChart) {
+                charts.techChart.data.labels = Object.keys(techCount);
+                charts.techChart.data.datasets[0].data = Object.values(techCount);
+                charts.techChart.update();
+            }
+            
+            // نمودار سایز
+            const sizeCount = {};
+            products.forEach(product => {
+                if (product.size) {
+                    const size = `${product.size} اینچ`;
+                    sizeCount[size] = (sizeCount[size] || 0) + 1;
+                }
+            });
+            
+            if (charts.sizeChart) {
+                charts.sizeChart.data.labels = Object.keys(sizeCount);
+                charts.sizeChart.data.datasets[0].data = Object.values(sizeCount);
+                charts.sizeChart.update();
+            }
+        }
+        
+        // ==================== توابع کمکی ====================
+        
+        function showLoading(show) {
+            const container = document.getElementById('productsTable');
+            if (show) {
+                container.innerHTML = `
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <p>در حال بارگذاری داده‌ها...</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function showError(message) {
+            const container = document.getElementById('productsTable');
+            container.innerHTML = `
+                <div class="error">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                    <p>${message}</p>
+                    <button onclick="loadData()" style="margin-top: 20px; padding: 10px 20px; background: #6c5ce7; color: white; border: none; border-radius: 5px; cursor: pointer; font-family: 'Vazirmatn';">تلاش مجدد</button>
+                </div>
+            `;
+        }
+        
+        function updateSystemStatus(info) {
+            const container = document.getElementById('systemStatus');
+            if (!info) return;
+            
+            const nextRun = info.next_run ? new Date(info.next_run) : new Date(Date.now() + 6 * 60 * 60 * 1000);
+            const nextRunTime = nextRun.toLocaleTimeString('fa-IR');
+            
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                        <div style="color: #636e72; font-size: 0.9rem;">وضعیت اسکرپر</div>
+                        <div style="color: #00b894; font-weight: 600; font-size: 1.1rem;">✅ فعال</div>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                        <div style="color: #636e72; font-size: 0.9rem;">آخرین اجرا</div>
+                        <div style="font-weight: 600; font-size: 1.1rem;">${new Date(info.timestamp).toLocaleString('fa-IR')}</div>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                        <div style="color: #636e72; font-size: 0.9rem;">اجرای بعدی</div>
+                        <div style="font-weight: 600; font-size: 1.1rem;">${nextRunTime}</div>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                        <div style="color: #636e72; font-size: 0.9rem;">تعداد منابع</div>
+                        <div style="font-weight: 600; font-size: 1.1rem;">${info.sources ? info.sources.length : 3}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function updateLastUpdateTime() {
+            if (!lastUpdateTime) return;
+            
+            const updateElement = document.getElementById('lastUpdate');
+            const updateDate = new Date(lastUpdateTime);
+            const now = new Date();
+            const diffMs = now - updateDate;
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            
+            let timeText;
+            if (diffHours < 1) {
+                const diffMinutes = Math.floor(diffMs / (1000 * 60));
+                timeText = `${diffMinutes} دقیقه پیش`;
+            } else if (diffHours < 24) {
+                timeText = `${diffHours} ساعت پیش`;
+            } else {
+                const diffDays = Math.floor(diffHours / 24);
+                timeText = `${diffDays} روز پیش`;
+            }
+            
+            updateElement.textContent = `آخرین بروزرسانی: ${timeText}`;
+        }
+        
+        // ==================== راه‌اندازی ====================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            
+            // رفرش خودکار هر 5 دقیقه
+            setInterval(() => {
+                loadData();
+                updateLastUpdateTime();
+            }, 5 * 60 * 1000);
+        });
+        
+        // رفرش با دکمه F5
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F5') {
+                e.preventDefault();
+                loadData();
+            }
         });
     </script>
 </body>
