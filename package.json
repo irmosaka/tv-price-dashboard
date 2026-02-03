@@ -1,34 +1,18 @@
 {
   "name": "tv-price-dashboard",
-  "version": "0.1.0",
-  "private": true,
-"scripts": {
-  "dev": "next dev",
-  "build": "next build",
-  "start": "next start",
-  "lint": "next lint",
-  "export": "next export"  // این خط رو اضافه کن
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
-    "next": "14.0.4",
-    "react": "^18",
-    "react-dom": "^18",
-    "tailwindcss": "^3.3.0",
-    "autoprefixer": "^10.0.1",
-    "postcss": "^8",
+    "express": "^4.18.2",
     "axios": "^1.6.2",
     "cheerio": "^1.0.0-rc.12",
-    "recharts": "^2.10.0",
-    "lucide-react": "^0.309.0",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.0.0",
-    "tailwind-merge": "^2.0.0",
-    "framer-motion": "^10.16.0"
+    "cors": "^2.8.5"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "typescript": "^5"
+    "nodemon": "^3.0.2"
   }
 }
