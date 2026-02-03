@@ -1,298 +1,139 @@
-// server.js
 const express = require('express');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = 3000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.')); // برای سرو فایل‌های استاتیک
 
-// ذخیره داده‌ها در فایل JSON
-const DATA_FILE = path.join(__dirname, 'data', 'products.json');
+// لیست URL‌های دیجی‌کالا برای تلویزیون
+const DIGIKALA_URLS = {
+  samsung: 'https://www.digikala.com/search/category-tv-video-audio/tv/',
+  lg: 'https://www.digikala.com/search/category-tv-video-audio/tv/brands/lg/',
+  sony: 'https://www.digikala.com/search/category-tv-video-audio/tv/brands/sony/',
+  all: 'https://www.digikala.com/search/category-tv-video-audio/tv/'
+};
 
-// ایجاد پوشه data اگر وجود ندارد
-if (!fs.existsSync('data')) {
-    fs.mkdirSync('data');
-}
-
-// API Health Check
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'OK', message: 'اسکرپر تلویزیون فعال است' });
+// API برای اسکرپینگ
+app.get('/api/scrape', async (req, res) => {
+  try {
+    const { brand = 'all', page = 1 } = req.query;
+    
+    console.log(`در حال اسکرپینگ برند: ${brand}, صفحه: ${page}`);
+    
+    // در مرحله اول، داده‌های نمونه برمی‌گردونیم
+    // بعداً می‌تونی اسکرپر واقعی رو اضافه کنی
+    const sampleData = generateSampleData(brand);
+    
+    res.json({
+      success: true,
+      brand,
+      page,
+      total: sampleData.length,
+      data: sampleData,
+      lastUpdated: new Date().toLocaleString('fa-IR')
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
 });
 
-// API برای اسکرپ دیجی‌کالا
-app.get('/api/scrape/digikala', async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const products = await scrapeDigikala(page);
-        
-        // ذخیره در فایل
-        saveProducts(products);
-        
-        res.json({
-            success: true,
-            count: products.length,
-            products: products,
-            source: 'دیجی‌کالا'
-        });
-    } catch (error) {
-        console.error('Error scraping Digikala:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-// دریافت محصولات ذخیره شده
-app.get('/api/products', (req, res) => {
-    try {
-        if (fs.existsSync(DATA_FILE)) {
-            const data = fs.readFileSync(DATA_FILE, 'utf8');
-            const products = JSON.parse(data);
-            res.json({
-                success: true,
-                count: products.length,
-                products: products
-            });
-        } else {
-            res.json({
-                success: true,
-                count: 0,
-                products: []
-            });
-        }
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-// تابع اسکرپ دیجی‌کالا
-async function scrapeDigikala(page = 1) {
-    console.log(`Starting Digikala scrape for page ${page}...`);
+// API برای اسکرپینگ واقعی (احتیاط: ممکنه دیجی‌کالا بلاک کنه)
+app.get('/api/scrape-real', async (req, res) => {
+  try {
+    const { brand = 'all' } = req.query;
+    const url = DIGIKALA_URLS[brand] || DIGIKALA_URLS.all;
     
-    // URL صفحه تلویزیون در دیجی‌کالا
-    const url = `https://www.digikala.com/search/category-television/?page=${page}`;
+    // درخواست به دیجی‌کالا
+    const { data } = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
     
-    const headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Connection': 'keep-alive',
-    };
-    
-    try {
-        const response = await axios.get(url, { headers });
-        const $ = cheerio.load(response.data);
-        
-        const products = [];
-        
-        // ساختار دیجی‌کالا ممکنه تغییر کنه - اینجا نیاز به بررسی داره
-        $('.product-list_ProductList__item__LiiNI').each((index, element) => {
-            try {
-                const product = extractProductData($(element));
-                if (product.name && product.price) {
-                    products.push(product);
-                }
-            } catch (err) {
-                console.log('Error parsing product:', err.message);
-            }
-        });
-        
-        // اگر محصولی پیدا نکردیم، از ساختار جایگزین استفاده می‌کنیم
-        if (products.length === 0) {
-            $('a[class*="product-list"]').each((index, element) => {
-                const product = extractAlternativeProductData($(element));
-                if (product.name && product.price) {
-                    products.push(product);
-                }
-            });
-        }
-        
-        console.log(`Found ${products.length} products`);
-        return products;
-        
-    } catch (error) {
-        console.error('Error fetching Digikala:', error.message);
-        // برگرداندن داده‌های نمونه برای تست
-        return generateSampleData();
-    }
-}
-
-// استخراج اطلاعات محصول
-function extractProductData($element) {
-    const name = $element.find('h3').text().trim() || 
-                 $element.find('[class*="title"]').text().trim() ||
-                 'تلویزیون بدون نام';
-    
-    const priceText = $element.find('[class*="price"]').text().trim() ||
-                     $element.find('[class*="Price"]').text().trim() ||
-                     '0';
-    
-    const price = extractPrice(priceText);
-    
-    const image = $element.find('img').attr('src') || 
-                  $element.find('img').attr('data-src') ||
-                  'https://via.placeholder.com/150';
-    
-    const link = $element.find('a').attr('href') || '#';
-    const fullLink = link.startsWith('http') ? link : `https://www.digikala.com${link}`;
-    
-    // استخراج برند و سایز از نام
-    const { brand, size } = extractBrandAndSize(name);
-    
-    return {
-        id: Date.now() + Math.random(),
-        name: name,
-        price: price,
-        formattedPrice: price.toLocaleString('fa-IR') + ' تومان',
-        brand: brand,
-        size: size,
-        technology: detectTechnology(name),
-        image: image,
-        link: fullLink,
-        source: 'دیجی‌کالا',
-        timestamp: new Date().toISOString()
-    };
-}
-
-// استخراج اطلاعات از ساختار جایگزین
-function extractAlternativeProductData($element) {
-    const name = $element.attr('title') || 
-                 $element.find('img').attr('alt') ||
-                 'تلویزیون';
-    
-    return {
-        id: Date.now() + Math.random(),
-        name: name,
-        price: Math.floor(Math.random() * 50000000) + 5000000,
-        brand: 'سامسونگ',
-        size: 55,
-        technology: 'LED',
-        image: 'https://via.placeholder.com/150',
-        link: 'https://www.digikala.com',
-        source: 'دیجی‌کالا',
-        timestamp: new Date().toISOString()
-    };
-}
-
-// استخراج قیمت از متن
-function extractPrice(priceText) {
-    // حذف کاراکترهای غیرعددی
-    const numericString = priceText.replace(/[^0-9]/g, '');
-    return parseInt(numericString) || 0;
-}
-
-// استخراج برند و سایز از نام محصول
-function extractBrandAndSize(name) {
-    const brands = ['سامسونگ', 'Samsung', 'ال‌جی', 'LG', 'سونی', 'Sony', 'پاناسونیک', 
-                   'Panasonic', 'توشیبا', 'Toshiba', 'هایسنس', 'Hisense', 'تی‌سی‌ال', 
-                   'TCL', 'شیائومی', 'Xiaomi', 'نوکیا', 'Nokia', 'هواوی', 'Huawei'];
-    
-    let brand = 'نامشخص';
-    for (const b of brands) {
-        if (name.includes(b)) {
-            brand = b;
-            break;
-        }
-    }
-    
-    // استخراج سایز (مثلاً "43 اینچ")
-    const sizeMatch = name.match(/(\d{2,3})\s*اینچ/);
-    const size = sizeMatch ? parseInt(sizeMatch[1]) : 55;
-    
-    return { brand, size };
-}
-
-// تشخیص تکنولوژی از نام
-function detectTechnology(name) {
-    const nameUpper = name.toUpperCase();
-    if (nameUpper.includes('QLED')) return 'QLED';
-    if (nameUpper.includes('OLED')) return 'OLED';
-    if (nameUpper.includes('MINI LED')) return 'Mini LED';
-    if (nameUpper.includes('NANOCELL')) return 'NanoCell';
-    if (nameUpper.includes('LED')) return 'LED';
-    return 'LED';
-}
-
-// تولید داده‌های نمونه برای تست
-function generateSampleData() {
-    const brands = ['سامسونگ', 'ال‌جی', 'سونی', 'شیائومی', 'TCL'];
-    const technologies = ['QLED', 'OLED', 'LED', 'Mini LED'];
-    const sizes = [43, 50, 55, 65, 75];
-    
+    const $ = cheerio.load(data);
     const products = [];
-    for (let i = 0; i < 10; i++) {
-        const brand = brands[Math.floor(Math.random() * brands.length)];
-        const tech = technologies[Math.floor(Math.random() * technologies.length)];
-        const size = sizes[Math.floor(Math.random() * sizes.length)];
-        const price = Math.floor(Math.random() * 50000000) + 5000000;
+    
+    // استخراج محصولات (باید با ساختار سایت تطبیق بدی)
+    $('.product-list_ProductList__item__LiiNI').each((i, element) => {
+      const title = $(element).find('.d-flex.ai-start.jc-start .ellipsis-2').text().trim();
+      const priceText = $(element).find('.d-flex.ai-center.jc-end .mr-1').text().trim();
+      const price = parseInt(priceText.replace(/,/g, '')) || 0;
+      
+      if (title && price > 0) {
+        // استخراج برند و اندازه از عنوان
+        const brandMatch = title.match(/(سامسونگ|Samsung|LG|ال جی|Sony|سونی|TCL|شیائومی|Xiaomi)/i);
+        const sizeMatch = title.match(/(\d+)\s*(اینچ|inch|″)/i);
         
         products.push({
-            id: Date.now() + i,
-            name: `تلویزیون ${brand} ${size} اینچ ${tech}`,
-            price: price,
-            formattedPrice: price.toLocaleString('fa-IR') + ' تومان',
-            brand: brand,
-            size: size,
-            technology: tech,
-            image: `https://picsum.photos/seed/tv${i}/200/150`,
-            link: 'https://www.digikala.com',
-            source: 'دیجی‌کالا',
-            timestamp: new Date().toISOString()
+          id: i + 1,
+          title,
+          brand: brandMatch ? brandMatch[1] : 'نامشخص',
+          size: sizeMatch ? parseInt(sizeMatch[1]) : null,
+          price,
+          originalPrice: price * 1.1, // قیمت اصلی (نمونه)
+          discount: Math.floor(Math.random() * 30), // تخفیف تصادفی
+          rating: (Math.random() * 2 + 3).toFixed(1), // امتیاز ۳-۵
+          url: `https://www.digikala.com${$(element).find('a').attr('href')}`
         });
-    }
+      }
+    });
     
-    return products;
-}
+    res.json({
+      success: true,
+      brand,
+      total: products.length,
+      data: products.slice(0, 20), // فقط ۲۰ آیتم اول
+      lastUpdated: new Date().toLocaleString('fa-IR')
+    });
+    
+  } catch (error) {
+    console.error('خطا در اسکرپینگ:', error.message);
+    res.status(500).json({
+      success: false,
+      error: 'خطا در دریافت داده از دیجی‌کالا'
+    });
+  }
+});
 
-// ذخیره محصولات در فایل
-function saveProducts(products) {
-    try {
-        let allProducts = [];
-        
-        // اگر فایل وجود دارد، محصولات قبلی رو بخوان
-        if (fs.existsSync(DATA_FILE)) {
-            const existingData = fs.readFileSync(DATA_FILE, 'utf8');
-            allProducts = JSON.parse(existingData);
-        }
-        
-        // اضافه کردن محصولات جدید (بدون تکراری)
-        const newProducts = products.filter(newProd => 
-            !allProducts.some(existingProd => existingProd.id === newProd.id)
-        );
-        
-        allProducts = [...newProducts, ...allProducts];
-        
-        // محدود کردن به 100 محصول
-        if (allProducts.length > 100) {
-            allProducts = allProducts.slice(0, 100);
-        }
-        
-        fs.writeFileSync(DATA_FILE, JSON.stringify(allProducts, null, 2));
-        console.log(`Saved ${allProducts.length} products to ${DATA_FILE}`);
-        
-    } catch (error) {
-        console.error('Error saving products:', error);
+// داده‌های نمونه برای توسعه
+function generateSampleData(brand) {
+  const brands = brand === 'all' ? ['Samsung', 'LG', 'Sony', 'TCL', 'Xiaomi'] : [brand];
+  const data = [];
+  
+  let id = 1;
+  brands.forEach(brandName => {
+    for (let i = 0; i < 8; i++) {
+      const basePrice = brandName === 'Samsung' ? 25000000 : 
+                       brandName === 'LG' ? 22000000 : 
+                       brandName === 'Sony' ? 30000000 : 
+                       brandName === 'TCL' ? 15000000 : 12000000;
+      
+      data.push({
+        id: id++,
+        brand: brandName,
+        model: `${brandName} ${['QN90A', 'C1', 'A80J', 'C825', 'Mi TV 6', 'AU8000', 'NanoCell', 'UHD'][i % 8]}`,
+        size: [43, 50, 55, 65, 75, 55, 50, 65][i % 8],
+        price: Math.round(basePrice * (0.8 + Math.random() * 0.4)),
+        originalPrice: Math.round(basePrice * (1 + Math.random() * 0.2)),
+        discount: Math.floor(Math.random() * 40),
+        rating: (Math.random() * 2 + 3).toFixed(1),
+        status: Math.random() > 0.3 ? 'موجود' : 'ناموجود',
+        digikalaUrl: `https://www.digikala.com/product/${id}`
+      });
     }
+  });
+  
+  return data;
 }
 
-// شروع سرور
 app.listen(PORT, () => {
-    console.log(`✅ Server running on http://localhost:${PORT}`);
-    console.log(`📡 API Endpoints:`);
-    console.log(`   http://localhost:${PORT}/api/health`);
-    console.log(`   http://localhost:${PORT}/api/scrape/digikala`);
-    console.log(`   http://localhost:${PORT}/api/products`);
+  console.log(`سرور API روی پورت ${PORT} اجرا شد`);
+  console.log(`آدرس: http://localhost:${PORT}/api/scrape`);
 });
