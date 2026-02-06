@@ -2,14 +2,19 @@ name: Update TV Prices Daily
 
 on:
   schedule:
-    - cron: '0 5,17 * * *'   # حدود ۸:۳۰ صبح و ۸:۳۰ عصر به وقت ایران (UTC+3:30 ≈ 5 و 17 UTC)
-  workflow_dispatch:         # دکمه دستی هم داشته باشه
+    - cron: '0 5,17 * * *'   # ۸:۳۰ صبح و عصر ایران
+  workflow_dispatch:
+
+permissions:
+  contents: write   # این خط خیلی مهمه! اجازه write به repo می‌ده
 
 jobs:
   update:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main       # صریحاً branch main رو چک‌اوت کن تا detached HEAD نباشه
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -24,8 +29,8 @@ jobs:
 
       - name: Commit & Push changes
         run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
           git add tv_prices.json
-          git commit -m "آپدیت روزانه قیمت تلویزیون‌ها" || echo "هیچ تغییری نبود"
-          git push
+          git commit -m "آپدیت روزانه قیمت تلویزیون‌ها" || echo "هیچ تغییری نبود (شاید قیمت‌ها ثابت مونده)"
+          git push origin main   # صریحاً به main push کن
