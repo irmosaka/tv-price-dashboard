@@ -3,7 +3,7 @@
 یک داشبورد تحت وب ساده و زیبا برای نمایش قیمت‌های تلویزیون از سایت ترب (Torob)
 
 ## 🌐 دموی زنده
-[https://irmosaka.github.io/tv-price-dashboard/](https://yourusername.github.io/torob-tv-dashboard)
+[https://irmosaka.github.io/tv-price-dashboard](https://irmosaka.github.io/tv-price-dashboard/)
 
 ## 🚀 ویژگی‌ها
 
@@ -17,4 +17,4 @@
 
 
 
-https://irmosaka.github.io/tv-price-dashboard/
+
