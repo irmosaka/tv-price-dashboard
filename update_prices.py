@@ -30,43 +30,39 @@ try:
 
     print(f"تعداد عنوان‌های پیدا شده: {len(titles)}")
 
-    for title_tag in titles:
-        title = title_tag.get_text(strip=True)
-        if not title or 'تلویزیون' not in title:
-            continue  # فقط تلویزیون‌ها
+for title_tag in titles:
+    title = title_tag.get_text(strip=True)
+    if 'تلویزیون' not in title:
+        continue
 
-        # قیمت بعدی (معمولاً متن بعد از h2)
-        next_text = title_tag.find_next(string=True)
-        price_match = re.search(r'(\d{1,3}(?:[.,]\d{3})*)\s*تومان', next_text or '')
-        price = price_match.group(0) if price_match else "نامشخص"
+    # قیمت: جستجو در متن‌های بعدی یا والد
+    price = "نامشخص"
+    current = title_tag
+    for _ in range(5):  # ۵ المان بعدی چک کن
+        current = current.find_next()
+        if current and current.string:
+            text = current.string.strip()
+            if 'تومان' in text:
+                price_match = re.search(r'([\d,]+(?:\.\d+)?)\s*تومان', text)
+                if price_match:
+                    price = price_match.group(0)
+                    break
 
-        # لینک (a tag اطراف یا بعدی)
-        link_tag = title_tag.find_parent('a') or title_tag.find('a')
-        link = "https://torob.com" + link_tag['href'] if link_tag and 'href' in link_tag.attrs else url
+    # لینک
+    link_tag = title_tag.find_parent('a') or title_tag.find('a')
+    link = "https://torob.com" + link_tag['href'] if link_tag and 'href' in link_tag.attrs else url
 
-        # برند، سایز، تکنولوژی از عنوان
-        brand_match = re.search(r'(سامسونگ|ال جی|سونی|جی پلاس|دوو|اسنوا|ایکس ویژن|تی سی ال|هایسنس)', title)
-        brand = brand_match.group(0) if brand_match else "نامشخص"
+    # بقیه فیلدها مثل قبل (brand, size, tech)
 
-        size_match = re.search(r'(\d{2,3})\s*اینچ', title)
-        size = size_match.group(1) + " اینچ" if size_match else "نامشخص"
-
-        tech_match = re.search(r'(LED|OLED|QLED|NanoCell|MiniLED|UHD|4K|8K)', title)
-        tech = tech_match.group(0) if tech_match else "نامشخص"
-
-        # تعداد فروشندگان (تقریبی از متن)
-        sellers_match = re.search(r'در \d+ فروشگاه', next_text or '')
-        num_sellers = re.search(r'\d+', sellers_match.group(0)).group(0) if sellers_match else "نامشخص"
-
-        tv_data.append({
-            "title": title,
-            "brand": brand,
-            "size": size,
-            "tech": tech,
-            "num_sellers": num_sellers,
-            "avg_price_top5": price,  # فعلاً min price، میانگین بعداً فیکس می‌کنیم
-            "link": link
-        })
+    tv_data.append({
+        "title": title,
+        "brand": brand,
+        "size": size,
+        "tech": tech,
+        "num_sellers": "نامشخص (در لیست اصلی نیست)",
+        "avg_price_top5": price,  # فعلاً حداقل قیمت
+        "link": link
+    })
 
         if len(tv_data) >= 50:
             break
