@@ -27,33 +27,70 @@ try:
         print("صفحه دریافت شد، شروع پارس...")
 
         # پیدا کردن همه المان‌های احتمالی محصول
-        possible_items = soup.find_all(['div', 'article', 'li'], class_=re.compile(r'(product|item|card|row|tile)'))
+        possible_items = soup.find_all(['div', 'article', 'li'], class_=re.compile(r'(product|item|card|row|tile|good|offer)'))
 
         print(f"تعداد المان احتمالی محصول: {len(possible_items)}")
 
         for item in possible_items:
             try:
-                title_tag = item.find(['h2', 'h3', 'span'], class_=re.compile(r'(title|name|model)'))
+                # عنوان
+                title_tag = item.find(['h2', 'h3', 'span', 'div'], class_=re.compile(r'(title|name|model|product-name|good-title)'))
                 title = title_tag.get_text(strip=True) if title_tag else None
 
-                if not title or 'تلویزیون' not in title:
+                if not title or 'تلویزیون' not in title.lower():
                     continue
 
-                # قیمت
-                price_tag = item.find(string=re.compile(r'[\d,]+.*تومان|از.*تومان'))
-                price = price_tag.strip() if price_tag else "نامشخص"
+                # قیمت (جستجوی قوی‌تر)
+                price = "نامشخص"
+                price_candidates = item.find_all(string=re.compile(r'[\d,]+.*تومان|از.*تومان|قیمت.*تومان|\d{6,}', re.IGNORECASE))
+                for p in price_candidates:
+                    p_text = p.strip()
+                    match = re.search(r'([\d,]+(?:\.\d+)?)\s*(تومان)?', p_text)
+                    if match:
+                        price = match.group(1).replace(',', '') + " تومان"
+                        break
 
                 # لینک
-                link_tag = item.find('a')
-                link = "https://torob.com" + link_tag['href'] if link_tag and 'href' in link_tag.attrs else ""
+                link = ""
+                link_tag = item.find('a', href=True)
+                if link_tag:
+                    href = link_tag['href']
+                    if href.startswith('/'):
+                        link = "https://torob.com" + href
+                    elif href.startswith('http'):
+                        link = href
+
+                # برند، سایز، تکنولوژی (از عنوان)
+                brand = "نامشخص"
+                brand_match = re.search(r'(سامسونگ|ال جی|ال‌جی|سونی|جی پلاس|دوو|اسنوا|ایکس ویژن|تی سی ال|هایسنس|tcl|hisense|lg|sony|samsung)', title, re.IGNORECASE)
+                if brand_match:
+                    brand = brand_match.group(0)
+
+                size = "نامشخص"
+                size_match = re.search(r'(\d{2,3})\s*(اینچ|")', title, re.IGNORECASE)
+                if size_match:
+                    size = size_match.group(1) + " اینچ"
+
+                tech = "نامشخص"
+                tech_match = re.search(r'(oled|qled|led|nanocell|miniled|uhd|4k|8k)', title, re.IGNORECASE)
+                if tech_match:
+                    tech = tech_match.group(0).upper()
+
+                # تعداد فروشندگان (اگر در لیست اصلی باشد)
+                num_sellers = "نامشخص"
+                sellers_text = item.find(string=re.compile(r'(از|در)\s*\d+\s*(فروشگاه|فروشنده)'))
+                if sellers_text:
+                    num_match = re.search(r'\d+', sellers_text)
+                    if num_match:
+                        num_sellers = num_match.group(0)
 
                 tv_data.append({
                     "title": title,
-                    "brand": "نامشخص",
-                    "size": "نامشخص",
-                    "tech": "نامشخص",
-                    "num_sellers": "نامشخص",
-                    "avg_price_top5": price,
+                    "brand": brand,
+                    "size": size,
+                    "tech": tech,
+                    "num_sellers": num_sellers,
+                    "avg_price_top5": price,   # فعلاً حداقل قیمت
                     "link": link
                 })
 
@@ -63,25 +100,25 @@ try:
         if tv_data:
             print(f"موفقیت: {len(tv_data)} محصول استخراج شد")
         else:
-            print("هیچ محصولی پیدا نشد")
+            print("هیچ محصولی پیدا نشد - احتمالاً ساختار صفحه تغییر کرده")
 
 except Exception as e:
     error_message = f"خطا در اجرا: {str(e)}"
     print(error_message)
 
-# اگر چیزی پیدا نشد یا خطا داشت، حداقل یک ردیف بگذار
+# اگر چیزی پیدا نشد، حداقل یک ردیف اطلاع‌رسانی بگذار
 if not tv_data:
     tv_data = [{
-        "title": "خطا در بروزرسانی",
+        "title": "خطا در بروزرسانی - داده‌ای استخراج نشد",
         "brand": "-",
         "size": "-",
         "tech": "-",
         "num_sellers": "-",
-        "avg_price_top5": "در حال حاضر در دسترس نیست",
+        "avg_price_top5": "در حال حاضر امکان استخراج وجود ندارد",
         "link": "https://torob.com/browse/246/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-tv/?sort=-price"
     }]
 
-# همیشه فایل را ذخیره کن
+# همیشه ذخیره کن
 with open('tv_prices.json', 'w', encoding='utf-8') as f:
     json.dump(tv_data, f, ensure_ascii=False, indent=4)
 
