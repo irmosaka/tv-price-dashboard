@@ -6,7 +6,7 @@ import sys
 
 print("شروع اسکرپینگ صفحه تلویزیون ترب...")
 
-url = "https://torob.com/browse/94/tv/?sort=price"
+url = "https://torob.com/browse/246/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-tv/?sort=price"
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
