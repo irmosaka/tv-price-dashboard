@@ -1,0 +1,28 @@
+name: Update TV Prices Daily
+
+on:
+  schedule:
+    - cron: '0 5,17 * * *'   # حدود ۸:۳۰ صبح و ۸:۳۰ عصر به وقت ایران (UTC+3:30 ≈ 5 و 17 UTC)
+  workflow_dispatch:         # دکمه دستی هم داشته باشه
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run price updater
+        run: python update_prices.py
+
+      - name: Commit & Push changes
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add tv_prices.json
+          git commit -m "آپدیت روزانه قیمت تلویزیون‌ها" || echo "هیچ تغییری نبود"
+          git push
