@@ -96,12 +96,12 @@
 
                 // فیلتر کردن جدول
                 function applyFilters() {
-                    const selectedBrand = brandFilter.value;
+                    const selectedBrand = brandFilter.value.toLowerCase(); // case-insensitive
                     const selectedSize = sizeFilter.value;
                     const selectedTech = techFilter.value;
 
                     const filtered = data.filter(item => {
-                        return (!selectedBrand || item.brand === selectedBrand) &&
+                        return (!selectedBrand || item.brand.toLowerCase() === selectedBrand) && // case-insensitive
                                (!selectedSize || item.size === selectedSize) &&
                                (!selectedTech || item.tech === selectedTech);
                     });
