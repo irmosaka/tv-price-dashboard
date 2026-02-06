@@ -1,11 +1,434 @@
 [
     {
-        "title": "نمونه - تلویزیون ال جی 65 اینچ OLED",
-        "brand": "ال جی",
-        "size": "65 اینچ",
-        "tech": "OLED",
-        "num_sellers": "نامشخص (خطا در استخراج)",
+        "title": "تلویزیون سونی مدل XR50 سایز ۹۸ اینچ LED Ultra HD 4K",
+        "brand": "سونی",
+        "size": "۹۸ اینچ",
+        "tech": "LED",
+        "num_sellers": "نامشخص",
         "avg_price_top5": "نامشخص",
-        "link": "https://torob.com/browse/246/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-tv/?sort=-price"
+        "link": "https://torob.com/p/97f1e08f-2106-448f-97cb-4166a96f4dd4/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D9%88%D9%86%DB%8C-%D9%85%D8%AF%D9%84-xr50-%D8%B3%D8%A7%DB%8C%D8%B2-98-%D8%A7%DB%8C%D9%86%DA%86-led-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون سامسونگ QN900D سایز ۸۵ اینچ QLED",
+        "brand": "سامسونگ",
+        "size": "۸۵ اینچ",
+        "tech": "QLED",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/e95b0667-dbc4-4e87-a07a-b74f8340131f/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-qn900d-%D8%B3%D8%A7%DB%8C%D8%B2-85-%D8%A7%DB%8C%D9%86%DA%86-qled/"
+    },
+    {
+        "title": "تلویزیون سامسونگ QN900C سایز ۸۵ اینچ Ultra HD 4K QLED",
+        "brand": "سامسونگ",
+        "size": "۸۵ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/dcfbeb44-0b3e-4e6f-be96-99beeb554114/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-qn900c-%D8%B3%D8%A7%DB%8C%D8%B2-85-%D8%A7%DB%8C%D9%86%DA%86-ultra-hd-4k-qled/"
+    },
+    {
+        "title": "تلویزیون هوشمند بلانتون مدل BEW-TV6523 سایز 65 اینچ 4K",
+        "brand": "نامشخص",
+        "size": "65 اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/498b6b29-6887-4cb4-9385-18b7973c076f/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D9%87%D9%88%D8%B4%D9%85%D9%86%D8%AF-%D8%A8%D9%84%D8%A7%D9%86%D8%AA%D9%88%D9%86-%D9%85%D8%AF%D9%84-bew-tv6523-%D8%B3%D8%A7%DB%8C%D8%B2-65-%D8%A7%DB%8C%D9%86%DA%86-4k/"
+    },
+    {
+        "title": "تلویزیون سونی مدل XR90 سایز ۸۵ اینچ Ultra HD 4K LED",
+        "brand": "سونی",
+        "size": "۸۵ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/9a5b00cb-87cd-45e6-84ed-8771f9afbb96/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D9%88%D9%86%DB%8C-%D9%85%D8%AF%D9%84-xr90-%D8%B3%D8%A7%DB%8C%D8%B2-85-%D8%A7%DB%8C%D9%86%DA%86-ultra-hd-4k-led/"
+    },
+    {
+        "title": "تلویزیون سونی مدل X90L سایز ۹۸ اینچ LED Ultra HD 4K",
+        "brand": "سونی",
+        "size": "۹۸ اینچ",
+        "tech": "LED",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/7a59fa94-00a4-4c8d-a97a-8b5ea0854a03/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D9%88%D9%86%DB%8C-%D9%85%D8%AF%D9%84-x90l-%D8%B3%D8%A7%DB%8C%D8%B2-98-%D8%A7%DB%8C%D9%86%DA%86-led-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون سامسونگ QN900D سایز ۷۵ اینچ کیفیت Ultra HD 4K نوع QLED",
+        "brand": "سامسونگ",
+        "size": "۷۵ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/6544ad39-d4e3-4442-8c71-c29560248085/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-qn900d-%D8%B3%D8%A7%DB%8C%D8%B2-75-%D8%A7%DB%8C%D9%86%DA%86-%DA%A9%DB%8C%D9%81%DB%8C%D8%AA-ultra-hd-4k-%D9%86%D9%88%D8%B9-qled/"
+    },
+    {
+        "title": "تلویزیون سونی مدل XR80M2 سایز ۶۵ اینچ OLED Ultra HD 4K",
+        "brand": "سونی",
+        "size": "۶۵ اینچ",
+        "tech": "OLED",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/61f27d9c-81c4-4ffb-8f1e-e719d09a4e2e/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D9%88%D9%86%DB%8C-%D9%85%D8%AF%D9%84-xr80m2-%D8%B3%D8%A7%DB%8C%D8%B2-65-%D8%A7%DB%8C%D9%86%DA%86-oled-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون سونی X95L سایز ۷۵ اینچ Ultra HD 4K LED",
+        "brand": "سونی",
+        "size": "۷۵ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/4d15dafa-a9a9-4c9b-8fdf-3204ac9495e4/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D9%88%D9%86%DB%8C-x95l-%D8%B3%D8%A7%DB%8C%D8%B2-75-%D8%A7%DB%8C%D9%86%DA%86-ultra-hd-4k-led/"
+    },
+    {
+        "title": "تلویزیون ال جی G4 سایز ۸۳ اینچ OLED Ultra HD 4K",
+        "brand": "ال جی",
+        "size": "۸۳ اینچ",
+        "tech": "OLED",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/723fc300-4b68-4417-9aea-78aa5bb122a8/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%A7%D9%84-%D8%AC%DB%8C-g4-%D8%B3%D8%A7%DB%8C%D8%B2-83-%D8%A7%DB%8C%D9%86%DA%86-oled-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون سامسونگ مدل QN90D سایز ۸۵ اینچ Ultra HD 4K QLED",
+        "brand": "سامسونگ",
+        "size": "۸۵ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/34f08762-8f97-4ef6-90cd-6fb0ad182d6d/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-%D9%85%D8%AF%D9%84-qn90d-%D8%B3%D8%A7%DB%8C%D8%B2-85-%D8%A7%DB%8C%D9%86%DA%86-ultra-hd-4k-qled/"
+    },
+    {
+        "title": "تلویزیون سامسونگ QN80F کیفیت تصویر Ultra HD 4K",
+        "brand": "سامسونگ",
+        "size": "نامشخص",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/68606f7a-b924-45ed-9539-9a25a76981df/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-qn80f-%DA%A9%DB%8C%D9%81%DB%8C%D8%AA-%D8%AA%D8%B5%D9%88%DB%8C%D8%B1-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون سامسونگ مدل QN80F سایز ۱۰۰ اینچ Ultra HD 4K QLED",
+        "brand": "سامسونگ",
+        "size": "۱۰۰ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/1fce28a2-747c-4d14-b8d2-f52baa73df9b/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-%D9%85%D8%AF%D9%84-qn80f-%D8%B3%D8%A7%DB%8C%D8%B2-100-%D8%A7%DB%8C%D9%86%DA%86-ultra-hd-4k-qled/"
+    },
+    {
+        "title": "تلویزیون سامسونگ Q80C سایز ۹۸ اینچ کیفیت Ultra HD 4K QLED",
+        "brand": "سامسونگ",
+        "size": "۹۸ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/fa3d1869-8063-49d0-aa3d-74bbea92ca65/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-q80c-%D8%B3%D8%A7%DB%8C%D8%B2-98-%D8%A7%DB%8C%D9%86%DA%86-%DA%A9%DB%8C%D9%81%DB%8C%D8%AA-ultra-hd-4k-qled/"
+    },
+    {
+        "title": "تلویزیون هوشمند بلانتون ۵۸ اینچ مدل BEF-TV5840",
+        "brand": "نامشخص",
+        "size": "۵۸ اینچ",
+        "tech": "نامشخص",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/79413bca-5dae-48d9-9228-440715a268ee/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D9%87%D9%88%D8%B4%D9%85%D9%86%D8%AF-%D8%A8%D9%84%D8%A7%D9%86%D8%AA%D9%88%D9%86-58-%D8%A7%DB%8C%D9%86%DA%86-%D9%85%D8%AF%D9%84-bef-tv5840/"
+    },
+    {
+        "title": "تلویزیون سونی مدل 85RX90 سایز ۸۵ اینچ",
+        "brand": "سونی",
+        "size": "۸۵ اینچ",
+        "tech": "نامشخص",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/e5880752-07e7-49ea-ade4-f0a2f244901c/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D9%88%D9%86%DB%8C-%D9%85%D8%AF%D9%84-85rx90-%D8%B3%D8%A7%DB%8C%D8%B2-85-%D8%A7%DB%8C%D9%86%DA%86/"
+    },
+    {
+        "title": "تلویزیون فیلیپس مدل 77OLED818 سایز ۷۷ اینچ OLED Ultra HD 4K",
+        "brand": "نامشخص",
+        "size": "۷۷ اینچ",
+        "tech": "OLED",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/3a1f597b-1982-4cf2-a8ec-dc96ed16b78e/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D9%81%DB%8C%D9%84%DB%8C%D9%BE%D8%B3-%D9%85%D8%AF%D9%84-77oled818-%D8%B3%D8%A7%DB%8C%D8%B2-77-%D8%A7%DB%8C%D9%86%DA%86-oled-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون سامسونگ QN800D سایز ۸۵ اینچ QLED Ultra HD 4K",
+        "brand": "سامسونگ",
+        "size": "۸۵ اینچ",
+        "tech": "QLED",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/4293bc9a-4057-4680-966c-4e8870ba6b26/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-qn800d-%D8%B3%D8%A7%DB%8C%D8%B2-85-%D8%A7%DB%8C%D9%86%DA%86-qled-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون سونی مدل A80L سایز ۸۳ اینچ اولد Ultra HD 4K",
+        "brand": "سونی",
+        "size": "۸۳ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/a2e339c9-ba05-447f-8156-426164dc2f1f/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D9%88%D9%86%DB%8C-%D9%85%D8%AF%D9%84-a80l-%D8%B3%D8%A7%DB%8C%D8%B2-83-%D8%A7%DB%8C%D9%86%DA%86-%D8%A7%D9%88%D9%84%D8%AF-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون سونی مدل XR80 سایز ۷۵ اینچ",
+        "brand": "سونی",
+        "size": "۷۵ اینچ",
+        "tech": "نامشخص",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/64ad4c46-79a4-427e-bbc6-5b38e60fb66a/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D9%88%D9%86%DB%8C-%D9%85%D8%AF%D9%84-xr80-%D8%B3%D8%A7%DB%8C%D8%B2-75-%D8%A7%DB%8C%D9%86%DA%86/"
+    },
+    {
+        "title": "تلویزیون ال جی مدل QNED86 سایز ۱۰۰ اینچ Ultra HD 4K",
+        "brand": "ال جی",
+        "size": "۱۰۰ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/393331e5-20e9-4d64-9879-638e9708cb9c/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%A7%D9%84-%D8%AC%DB%8C-%D9%85%D8%AF%D9%84-qned86-%D8%B3%D8%A7%DB%8C%D8%B2-100-%D8%A7%DB%8C%D9%86%DA%86-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون سونی XR80 سایز ۷۷ اینچ OLED کیفیت تصویر Ultra HD 4K",
+        "brand": "سونی",
+        "size": "۷۷ اینچ",
+        "tech": "OLED",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/8521a020-542d-4453-9e66-3efbc877eb88/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D9%88%D9%86%DB%8C-xr80-%D8%B3%D8%A7%DB%8C%D8%B2-77-%D8%A7%DB%8C%D9%86%DA%86-oled-%DA%A9%DB%8C%D9%81%DB%8C%D8%AA-%D8%AA%D8%B5%D9%88%DB%8C%D8%B1-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون سونی ۹۸ اینچ مدل 98bzl50",
+        "brand": "سونی",
+        "size": "۹۸ اینچ",
+        "tech": "نامشخص",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/2b86db5b-f8aa-4ed1-b1f3-27817e0e20a2/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D9%88%D9%86%DB%8C-98-%D8%A7%DB%8C%D9%86%DA%86-%D9%85%D8%AF%D9%84-98bzl50/"
+    },
+    {
+        "title": "تلویزیون سونی BZ50L سایز ۹۸ اینچ Ultra HD 4K LED",
+        "brand": "سونی",
+        "size": "۹۸ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/66e22274-e097-4dce-b583-dc13b954b514/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D9%88%D9%86%DB%8C-bz50l-%D8%B3%D8%A7%DB%8C%D8%B2-98-%D8%A7%DB%8C%D9%86%DA%86-ultra-hd-4k-led/"
+    },
+    {
+        "title": "تلویزیون سونی مدل X95L سایز ۸۵ اینچ Ultra HD 4K LED",
+        "brand": "سونی",
+        "size": "۸۵ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/f5d5fd48-a1a5-46b2-b580-3ba813c3358c/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D9%88%D9%86%DB%8C-%D9%85%D8%AF%D9%84-x95l-%D8%B3%D8%A7%DB%8C%D8%B2-85-%D8%A7%DB%8C%D9%86%DA%86-ultra-hd-4k-led/"
+    },
+    {
+        "title": "تلویزیون سونی مدل XR50 سایز ۸۵ اینچ LED Ultra HD 4K",
+        "brand": "سونی",
+        "size": "۸۵ اینچ",
+        "tech": "LED",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/501b8ac9-72b9-4264-b8f9-bbad1538e388/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D9%88%D9%86%DB%8C-%D9%85%D8%AF%D9%84-xr50-%D8%B3%D8%A7%DB%8C%D8%B2-85-%D8%A7%DB%8C%D9%86%DA%86-led-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون سونی مدل 98BZL50 سایز ۹۸ اینچ",
+        "brand": "سونی",
+        "size": "۹۸ اینچ",
+        "tech": "نامشخص",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/2e315ca7-0d0b-4e21-a9e0-6ed4948f8a93/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D9%88%D9%86%DB%8C-%D9%85%D8%AF%D9%84-98bzl50-%D8%B3%D8%A7%DB%8C%D8%B2-98-%D8%A7%DB%8C%D9%86%DA%86/"
+    },
+    {
+        "title": "تلویزیون ال ای دی سونی مدل براویا ۹ XR90 سایز ۷۵ اینچ",
+        "brand": "سونی",
+        "size": "۷۵ اینچ",
+        "tech": "نامشخص",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/593abe4e-db2f-4c5b-af31-382b51204c09/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%A7%D9%84-%D8%A7%DB%8C-%D8%AF%DB%8C-%D8%B3%D9%88%D9%86%DB%8C-%D9%85%D8%AF%D9%84-%D8%A8%D8%B1%D8%A7%D9%88%DB%8C%D8%A7-9-xr90-%D8%B3%D8%A7%DB%8C%D8%B2-75-%D8%A7%DB%8C%D9%86%DA%86/"
+    },
+    {
+        "title": "تلویزیون هایسنس UX سایز ۸۵ اینچ Ultra HD 4K LED",
+        "brand": "هایسنس",
+        "size": "۸۵ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/199f38f8-2152-4837-a484-4814764912e5/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D9%87%D8%A7%DB%8C%D8%B3%D9%86%D8%B3-ux-%D8%B3%D8%A7%DB%8C%D8%B2-85-%D8%A7%DB%8C%D9%86%DA%86-ultra-hd-4k-led/"
+    },
+    {
+        "title": "تلویزیون سامسونگ مدل QN90D سایز ۷۵ اینچ Ultra HD 4K QLED",
+        "brand": "سامسونگ",
+        "size": "۷۵ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/3c372c11-7587-4d72-898f-79b93febfe51/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-%D9%85%D8%AF%D9%84-qn90d-%D8%B3%D8%A7%DB%8C%D8%B2-75-%D8%A7%DB%8C%D9%86%DA%86-ultra-hd-4k-qled/"
+    },
+    {
+        "title": "تلویزیون سامسونگ S90D سایز ۸۳ اینچ OLED Ultra HD 4K",
+        "brand": "سامسونگ",
+        "size": "۸۳ اینچ",
+        "tech": "OLED",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/00248b41-0478-4780-8eb4-99ac7031ac2e/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-s90d-%D8%B3%D8%A7%DB%8C%D8%B2-83-%D8%A7%DB%8C%D9%86%DA%86-oled-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون سامسونگ QN800D سایز ۷۵ اینچ QLED Ultra HD 4K",
+        "brand": "سامسونگ",
+        "size": "۷۵ اینچ",
+        "tech": "QLED",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/25da17a0-3e46-4231-bf61-67b77b5fe9fb/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-qn800d-%D8%B3%D8%A7%DB%8C%D8%B2-75-%D8%A7%DB%8C%D9%86%DA%86-qled-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون هوشمند ال جی OLED77C56 سایز ۷۷ اینچ Ultra HD 4K",
+        "brand": "ال جی",
+        "size": "۷۷ اینچ",
+        "tech": "OLED",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/0ebe5167-5749-40c9-8bf1-6c357da07771/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D9%87%D9%88%D8%B4%D9%85%D9%86%D8%AF-%D8%A7%D9%84-%D8%AC%DB%8C-oled77c56-%D8%B3%D8%A7%DB%8C%D8%B2-77-%D8%A7%DB%8C%D9%86%DA%86-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون ال جی QNED89 سایز ۹۸ اینچ Ultra HD 4K",
+        "brand": "ال جی",
+        "size": "۹۸ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/06855304-1edc-4361-bd98-2513d3e25677/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%A7%D9%84-%D8%AC%DB%8C-qned89-%D8%B3%D8%A7%DB%8C%D8%B2-98-%D8%A7%DB%8C%D9%86%DA%86-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون ال جی C3 سایز ۸۳ اینچ اولد Ultra HD 4K",
+        "brand": "ال جی",
+        "size": "۸۳ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/0aecf469-5c05-4fc4-828c-ffb744169f24/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%A7%D9%84-%D8%AC%DB%8C-c3-%D8%B3%D8%A7%DB%8C%D8%B2-83-%D8%A7%DB%8C%D9%86%DA%86-%D8%A7%D9%88%D9%84%D8%AF-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون سامسونگ مدل LS03 سایز ۸۵ اینچ Ultra HD 4K",
+        "brand": "سامسونگ",
+        "size": "۸۵ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/728b69d1-19f3-4cc5-b811-1c0b57fa8761/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-%D9%85%D8%AF%D9%84-ls03-%D8%B3%D8%A7%DB%8C%D8%B2-85-%D8%A7%DB%8C%D9%86%DA%86-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون سامسونگ QN900D سایز ۶۵ اینچ کیفیت Ultra HD 4K نوع QLED",
+        "brand": "سامسونگ",
+        "size": "۶۵ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/17c29189-72bb-4192-a5cb-84a5b711239d/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-qn900d-%D8%B3%D8%A7%DB%8C%D8%B2-65-%D8%A7%DB%8C%D9%86%DA%86-%DA%A9%DB%8C%D9%81%DB%8C%D8%AA-ultra-hd-4k-%D9%86%D9%88%D8%B9-qled/"
+    },
+    {
+        "title": "تلویزیون سونی مدل XR70 سایز ۸۵ اینچ کیفیت تصویر Ultra HD 4K نوع نمایش QLED",
+        "brand": "سونی",
+        "size": "۸۵ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/3c59a004-763e-47c4-90a4-416d00824054/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D9%88%D9%86%DB%8C-%D9%85%D8%AF%D9%84-xr70-%D8%B3%D8%A7%DB%8C%D8%B2-85-%D8%A7%DB%8C%D9%86%DA%86-%DA%A9%DB%8C%D9%81%DB%8C%D8%AA-%D8%AA%D8%B5%D9%88%DB%8C%D8%B1-ultra-hd-4k-%D9%86%D9%88%D8%B9-%D9%86%D9%85%D8%A7%DB%8C%D8%B4-qled/"
+    },
+    {
+        "title": "تلویزیون سامسونگ مدل QN900C سایز ۷۵ اینچ Ultra HD 4K QLED",
+        "brand": "سامسونگ",
+        "size": "۷۵ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/606ce52a-b686-451e-a12f-a9ed22652226/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-%D9%85%D8%AF%D9%84-qn900c-%D8%B3%D8%A7%DB%8C%D8%B2-75-%D8%A7%DB%8C%D9%86%DA%86-ultra-hd-4k-qled/"
+    },
+    {
+        "title": "تلویزیون ال جی QNED99 سایز ۸۶ اینچ Ultra HD 4K",
+        "brand": "ال جی",
+        "size": "۸۶ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/92aa07a3-b8b7-4cdd-b6c6-04ed79d7b9a9/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%A7%D9%84-%D8%AC%DB%8C-qned99-%D8%B3%D8%A7%DB%8C%D8%B2-86-%D8%A7%DB%8C%D9%86%DA%86-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون ال جی مدل G5 سایز ۷۷ اینچ OLED Ultra HD 4K",
+        "brand": "ال جی",
+        "size": "۷۷ اینچ",
+        "tech": "OLED",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/3fa826f0-dd1a-4aef-b047-eb660896cec3/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%A7%D9%84-%D8%AC%DB%8C-%D9%85%D8%AF%D9%84-g5-%D8%B3%D8%A7%DB%8C%D8%B2-77-%D8%A7%DB%8C%D9%86%DA%86-oled-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون سونی مدل RX70 سایز ۸۵ اینچ",
+        "brand": "سونی",
+        "size": "۸۵ اینچ",
+        "tech": "نامشخص",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/4918e3d1-27f6-4978-aedb-8812f1c54bdc/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D9%88%D9%86%DB%8C-%D9%85%D8%AF%D9%84-rx70-%D8%B3%D8%A7%DB%8C%D8%B2-85-%D8%A7%DB%8C%D9%86%DA%86/"
+    },
+    {
+        "title": "تلویزیون ال جی G4 سایز ۷۷ اینچ اولد Ultra HD 4K",
+        "brand": "ال جی",
+        "size": "۷۷ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/a7a3d230-a6a1-445f-b040-c82e91c2bf25/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%A7%D9%84-%D8%AC%DB%8C-g4-%D8%B3%D8%A7%DB%8C%D8%B2-77-%D8%A7%DB%8C%D9%86%DA%86-%D8%A7%D9%88%D9%84%D8%AF-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون سامسونگ S90D سایز ۷۷ اینچ OLED Ultra HD 4K",
+        "brand": "سامسونگ",
+        "size": "۷۷ اینچ",
+        "tech": "OLED",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/87051b28-21bd-4eef-8507-3708fb2a08db/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-s90d-%D8%B3%D8%A7%DB%8C%D8%B2-77-%D8%A7%DB%8C%D9%86%DA%86-oled-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون سونی A80L سایز ۶۵ اینچ OLED کیفیت تصویر Ultra HD 4K",
+        "brand": "سونی",
+        "size": "۶۵ اینچ",
+        "tech": "OLED",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/12f113c3-57d3-4c75-88d9-5793100735c7/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D9%88%D9%86%DB%8C-a80l-%D8%B3%D8%A7%DB%8C%D8%B2-65-%D8%A7%DB%8C%D9%86%DA%86-oled-%DA%A9%DB%8C%D9%81%DB%8C%D8%AA-%D8%AA%D8%B5%D9%88%DB%8C%D8%B1-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون هایسنس مدل Q7Q سایز ۱۰۰ اینچ Ultra HD 4K",
+        "brand": "هایسنس",
+        "size": "۱۰۰ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/52450caf-3ffe-45d5-91b5-fa6f785e3aeb/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D9%87%D8%A7%DB%8C%D8%B3%D9%86%D8%B3-%D9%85%D8%AF%D9%84-q7q-%D8%B3%D8%A7%DB%8C%D8%B2-100-%D8%A7%DB%8C%D9%86%DA%86-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون سامسونگ QN800C سایز ۷۵ اینچ QLED Ultra HD 4K",
+        "brand": "سامسونگ",
+        "size": "۷۵ اینچ",
+        "tech": "QLED",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/ffdc4662-2d9b-4a3c-b65b-38467715a28a/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-qn800c-%D8%B3%D8%A7%DB%8C%D8%B2-75-%D8%A7%DB%8C%D9%86%DA%86-qled-ultra-hd-4k/"
+    },
+    {
+        "title": "تلویزیون ال جی مدل C5 سایز ۷۷ اینچ OLED Ultra HD 4K",
+        "brand": "ال جی",
+        "size": "۷۷ اینچ",
+        "tech": "OLED",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "نامشخص",
+        "link": "https://torob.com/p/8e721eb1-40ed-45c7-b77f-6d9b2fd02af3/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%A7%D9%84-%D8%AC%DB%8C-%D9%85%D8%AF%D9%84-c5-%D8%B3%D8%A7%DB%8C%D8%B2-77-%D8%A7%DB%8C%D9%86%DA%86-oled-ultra-hd-4k/"
     }
 ]
