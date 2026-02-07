@@ -1,5 +1,5 @@
 let currentData = [];
-let displayedRows = 20; // تعداد اولیه ردیف‌ها
+let displayedRows = 20;
 let sortCol = null;
 let sortDir = 'asc';
 
@@ -58,7 +58,6 @@ function loadData(raw) {
         };
     }).filter(d => d.price_num > 0);
 
-    console.log(`داده معتبر: ${currentData.length} ردیف`);
     updateUI();
 }
 
@@ -83,7 +82,7 @@ function updateUI() {
     document.getElementById('brand-filter').innerHTML = '<option value="">همه برندها</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
 
     renderTable(data);
-    updateChart(data); // ← اینجا چارت‌ها لود می‌شن!
+    updateChart(data);
 }
 
 function renderTable(data, limit = displayedRows) {
@@ -160,22 +159,24 @@ function sortTable(col) {
 }
 
 function applyFilters() {
-    displayedRows = 20; // ریست lazy load
+    displayedRows = 20;
     const filteredData = getFilteredData();
     updateStats(filteredData);
     renderTable(filteredData);
-    updateChart(filteredData); // ← چارت‌ها با فیلتر بروز می‌شن
+    updateChart(filteredData);
 }
 
 function updateChart(data) {
     console.log("به‌روزرسانی چارت‌ها با", data.length, "ردیف");
 
-    // Bar Chart: قیمت میانگین بر اساس برند
+    // Bar Chart: میانگین قیمت بر اساس برند
     const brandAvg = {};
     data.forEach(item => {
-        if (!brandAvg[item.brand]) brandAvg[item.brand] = { sum: 0, count: 0 };
-        brandAvg[item.brand].sum += item.price_num;
-        brandAvg[item.brand].count++;
+        if (item.brand !== 'نامشخص') {
+            if (!brandAvg[item.brand]) brandAvg[item.brand] = { sum: 0, count: 0 };
+            brandAvg[item.brand].sum += item.price_num;
+            brandAvg[item.brand].count++;
+        }
     });
     const labels = Object.keys(brandAvg);
     const avgPrices = labels.map(b => Math.round(brandAvg[b].sum / brandAvg[b].count));
@@ -186,12 +187,12 @@ function updateChart(data) {
         window.brandChart = new Chart(brandCtx, {
             type: 'bar',
             data: {
-                labels: labels,
+                labels,
                 datasets: [{
                     label: 'میانگین قیمت (تومان)',
                     data: avgPrices,
-                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75,192,192,0.6)',
+                    borderColor: 'rgba(75,192,192,1)',
                     borderWidth: 1
                 }]
             },
@@ -205,7 +206,9 @@ function updateChart(data) {
 
     // Pie Chart: توزیع برندها
     const brandCount = {};
-    data.forEach(item => brandCount[item.brand] = (brandCount[item.brand] || 0) + 1);
+    data.forEach(item => {
+        if (item.brand !== 'نامشخص') brandCount[item.brand] = (brandCount[item.brand] || 0) + 1;
+    });
     const pieCtx = document.getElementById('brand-pie-chart')?.getContext('2d');
     if (pieCtx) {
         if (window.pieChart) window.pieChart.destroy();
@@ -222,7 +225,7 @@ function updateChart(data) {
         });
     }
 
-    // Line Chart: میانگین قیمت بر اساس سایز (به عنوان روند فرضی)
+    // Line Chart: میانگین قیمت بر اساس سایز
     const sizes = [...new Set(data.map(item => item.size))].sort((a,b)=>+a-+b);
     const sizeAvg = sizes.map(s => {
         const items = data.filter(item => item.size === s);
