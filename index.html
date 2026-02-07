@@ -151,14 +151,13 @@
         </div>
         
         <div id="filter-section">
-            <label>حداقل قیمت: 
-                <input type="range" id="price-filter" min="0" max="500000000" value="0" step="5000000">
-                <span id="filter-value">۰ تومان</span>
-            </label>
+            <input type="range" id="price-filter" min="0" max="500000000" value="0" step="5000000">
+        <span id="filter-value">۰ تومان</span>
+    </label>
             <label>سایز: <select id="size-filter"></select></label>
-            <label>برند: <select id="brand-filter"></select></label>
-        </div>
-        
+    <label>برند: <select id="brand-filter"></select></label>
+    <button id="clear-filters" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;">حذف فیلترها</button>
+</div>        
         <div id="actions">
             <input type="file" id="file-input" accept=".json" />
             <button onclick="document.getElementById('file-input').click()">آپلود JSON جدید</button>
