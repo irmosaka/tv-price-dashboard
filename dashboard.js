@@ -291,7 +291,7 @@ function openModal(chartId) {
     const canvas = document.getElementById('modal-canvas');
     const ctx = canvas.getContext('2d');
 
-    // تنظیم اندازه canvas برای کیفیت بالا در تمام صفحه
+    // تنظیم اندازه canvas برای کیفیت بالا
     const pixelRatio = window.devicePixelRatio || 1;
     canvas.width = window.innerWidth * 0.92 * pixelRatio;
     canvas.height = window.innerHeight * 0.78 * pixelRatio;
@@ -304,7 +304,6 @@ function openModal(chartId) {
     // داده فیلترشده فعلی
     const filteredData = getFilteredData();
 
-    // ساخت مجدد چارت بر اساس chartId
     let chartInstance;
 
     if (chartId === 'brand-price-chart') {
