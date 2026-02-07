@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // بررسی وجود فایل داده واقعی
 async function checkForRealData() {
     try {
-        const response = await fetch('data/torob-data.json');
+        const response = await fetch('daily_prices.json');
         if (response.ok) {
             console.log('✅ فایل داده واقعی موجود است');
             // می‌توانی یک نوتیفیکیشن نشان بدهی
