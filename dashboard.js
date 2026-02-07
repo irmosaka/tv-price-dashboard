@@ -3,7 +3,6 @@ let displayedRows = 20;
 let sortCol = null;
 let sortDir = 'asc';
 
-// تبدیل اعداد انگلیسی به فارسی
 function toPersianDigits(num) {
     if (num === '—' || num === null || num === undefined) return '—';
     const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
@@ -285,7 +284,7 @@ function updateChart(data) {
     }
 }
 
-// Modal تمام صفحه با ساخت مجدد چارت
+// Modal تمام صفحه
 function openModal(chartId) {
     const modal = document.getElementById('chart-modal');
     const canvas = document.getElementById('modal-canvas');
@@ -298,19 +297,17 @@ function openModal(chartId) {
     canvas.style.width = '92%';
     canvas.style.height = '78vh';
 
-    // پاک کردن canvas قبلی
+    // پاک کردن canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // اگر چارت قبلی وجود داشت، destroy کن
+    // destroy چارت قبلی اگر وجود داشت
     if (window.modalChart) {
         window.modalChart.destroy();
         window.modalChart = null;
     }
 
-    // داده فیلترشده فعلی
     const filteredData = getFilteredData();
 
-    // ساخت چارت جدید بر اساس chartId
     let chartInstance;
 
     if (chartId === 'brand-price-chart') {
@@ -414,7 +411,6 @@ function openModal(chartId) {
         });
     }
 
-    // ذخیره instance برای destroy بعدی
     window.modalChart = chartInstance;
 
     modal.style.display = 'flex';
@@ -425,7 +421,6 @@ function closeModal() {
     const modal = document.getElementById('chart-modal');
     modal.classList.remove('show');
 
-    // destroy چارت modal برای جلوگیری از خطا در باز کردن بعدی
     if (window.modalChart) {
         window.modalChart.destroy();
         window.modalChart = null;
@@ -439,6 +434,14 @@ fetch('daily_prices.json')
     .then(r => r.json())
     .then(loadData)
     .catch(e => console.error("خطا در لود JSON:", e));
+
+// ایونت کلیک روی کارت‌ها
+document.querySelectorAll('.chart-card').forEach(card => {
+    card.addEventListener('click', () => {
+        const chartId = card.getAttribute('data-chart-id');
+        if (chartId) openModal(chartId);
+    });
+});
 
 document.querySelectorAll('th[data-col]').forEach(th => {
     th.addEventListener('click', () => sortTable(th.dataset.col));
