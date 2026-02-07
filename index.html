@@ -190,8 +190,35 @@
         </div>
         
         <div id="chart-container">
-            <canvas id="price-chart"></canvas>
-        </div>
+            <div id="charts-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 2rem;">
+    <div class="chart-card">
+        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--primary);">قیمت بر اساس برند</h3>
+        <canvas id="brand-price-chart"></canvas>
+    </div>
+    <div class="chart-card">
+        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--primary);">توزیع برندها</h3>
+        <canvas id="brand-pie-chart"></canvas>
+    </div>
+    <div class="chart-card">
+        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--primary);">روند قیمت (فرضی)</h3>
+        <canvas id="trend-line-chart"></canvas>
+    </div>
+    <div class="chart-card">
+        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--primary);">قیمت vs سایز</h3>
+        <canvas id="price-size-scatter"></canvas>
+    </div>
+</div>
+
+<style>
+    .chart-card {
+        background: white;
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    canvas { width: 100% !important; height: 250px !important; }
+    @media (max-width: 768px) { .chart-card { margin-bottom: 1rem; } }
+</style>
     </div>
     
     <script src="dashboard.js"></script>
