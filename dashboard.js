@@ -176,7 +176,6 @@ function applyFilters() {
 function updateChart(data) {
     console.log("به‌روزرسانی چارت‌ها با", data.length, "ردیف");
 
-    // Bar Chart
     const brandAvg = {};
     data.forEach(item => {
         if (item.brand !== 'نامشخص') {
@@ -206,8 +205,7 @@ function updateChart(data) {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } },
-                plugins: { legend: { display: true } }
+                scales: { y: { beginAtZero: true } }
             }
         });
     }
@@ -296,16 +294,17 @@ function openModal(chartId) {
     const canvas = document.getElementById('modal-canvas');
     const ctx = canvas.getContext('2d');
 
-    // تنظیم اندازه canvas برای کیفیت بالا
-    canvas.width = window.innerWidth * 0.9 * window.devicePixelRatio;
-    canvas.height = window.innerHeight * 0.7 * window.devicePixelRatio;
+    // تنظیم اندازه canvas برای کیفیت بالا در تمام صفحه
+    const pixelRatio = window.devicePixelRatio || 1;
+    canvas.width = window.innerWidth * 0.9 * pixelRatio;
+    canvas.height = window.innerHeight * 0.75 * pixelRatio;
     canvas.style.width = '90%';
-    canvas.style.height = '70vh';
+    canvas.style.height = '75vh';
 
-    // داده فیلترشده فعلی رو می‌گیریم
+    // داده فیلترشده فعلی
     const filteredData = getFilteredData();
 
-    // ساخت مجدد چارت در modal (مثال برای Bar Chart - برای بقیه هم مشابه)
+    // ساخت مجدد چارت در modal بر اساس chartId
     if (chartId === 'brand-price-chart') {
         const brandAvg = {};
         filteredData.forEach(item => {
@@ -339,8 +338,6 @@ function openModal(chartId) {
         });
     }
 
-    // برای چارت‌های دیگر هم می‌تونی مشابه همین بلوک if اضافه کنی
-    // مثلاً برای pie:
     if (chartId === 'brand-pie-chart') {
         const brandCount = {};
         filteredData.forEach(item => {
@@ -359,16 +356,64 @@ function openModal(chartId) {
         });
     }
 
-    // ... بقیه چارت‌ها رو هم مشابه اضافه کن
+    if (chartId === 'trend-line-chart') {
+        const sizes = [...new Set(filteredData.map(item => item.size))].sort((a,b)=>+a-+b);
+        const sizeAvg = sizes.map(s => {
+            const items = filteredData.filter(item => item.size === s);
+            return items.length ? Math.round(items.reduce((sum,i)=>sum+i.price_num,0)/items.length) : 0;
+        });
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: sizes,
+                datasets: [{
+                    label: 'میانگین قیمت بر اساس سایز',
+                    data: sizeAvg,
+                    borderColor: 'rgb(75,192,192)',
+                    tension: 0.1,
+                    fill: false
+                }]
+            },
+            options: { responsive: false, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+        });
+    }
+
+    if (chartId === 'price-size-scatter') {
+        const scatterData = filteredData.map(item => ({
+            x: +item.size.replace('نامشخص', '0'),
+            y: item.price_num
+        }));
+
+        new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'قیمت بر حسب سایز',
+                    data: scatterData,
+                    backgroundColor: 'rgba(54,162,235,0.6)',
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { type: 'linear', position: 'bottom', title: { display: true, text: 'سایز (اینچ)' } },
+                    y: { title: { display: true, text: 'قیمت (تومان)' } }
+                }
+            }
+        });
+    }
 
     modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('show'), 10); // انیمیشن fade-in
+    setTimeout(() => modal.classList.add('show'), 10);
 }
 
 function closeModal() {
     const modal = document.getElementById('chart-modal');
     modal.classList.remove('show');
-    setTimeout(() => modal.style.display = 'none', 300);
+    setTimeout(() => modal.style.display = 'none', 400);
 }
 
 // ایونت‌ها
