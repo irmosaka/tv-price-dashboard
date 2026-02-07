@@ -64,10 +64,6 @@ function loadData(raw) {
         };
     }).filter(d => d.price_num > 0);
 
-    // ذخیره در localStorage برای جایگزینی فایل اصلی
-    localStorage.setItem('daily_prices_data', JSON.stringify(currentData));
-    console.log('داده‌ها ذخیره شد در localStorage');
-
     updateUI();
 }
 
@@ -91,7 +87,7 @@ function updateUI() {
     const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'نامشخص'))].sort();
     document.getElementById('brand-filter').innerHTML = '<option value="">همه برندها</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
 
-    // سورت پیش‌فرض بر اساس قیمت فروش از کم به زیاد
+    // سورت پیش‌فرض: قیمت فروش از کم به زیاد
     data.sort((a, b) => a.price_num - b.price_num);
 
     renderTable(data);
@@ -297,7 +293,7 @@ function openModal(chartId) {
     const canvas = document.getElementById('modal-canvas');
     const ctx = canvas.getContext('2d');
 
-    // تنظیم اندازه canvas برای فول اسکرین
+    // تنظیم اندازه canvas برای فول اسکرین واقعی
     const pixelRatio = window.devicePixelRatio || 1;
     canvas.width = window.innerWidth * 0.95 * pixelRatio;
     canvas.height = window.innerHeight * 0.85 * pixelRatio;
@@ -306,6 +302,7 @@ function openModal(chartId) {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // destroy چارت قبلی
     if (window.modalChart) {
         window.modalChart.destroy();
         window.modalChart = null;
@@ -436,6 +433,9 @@ function closeModal() {
     setTimeout(() => {
         modal.style.display = 'none';
         modal.style.opacity = '0';
+        // دوباره رندر جدول و چارت‌ها برای فعال شدن سورت
+        renderTable(currentData);
+        updateChart(currentData);
     }, 450);
 }
 
@@ -445,21 +445,11 @@ fetch('daily_prices.json')
     .then(loadData)
     .catch(e => console.error("خطا در لود JSON:", e));
 
-// لود داده از localStorage (جایگزین فایل اصلی)
-const savedData = localStorage.getItem('daily_prices_data');
-if (savedData) {
-    const parsedData = JSON.parse(savedData);
-    currentData = parsedData;
-    updateUI();
-}
-
 // ایونت کلیک روی کارت‌ها
 document.querySelectorAll('.chart-card').forEach(card => {
     card.addEventListener('click', () => {
         const chartId = card.getAttribute('data-chart-id');
-        if (chartId) {
-            openModal(chartId);
-        }
+        if (chartId) openModal(chartId);
     });
 });
 
@@ -493,7 +483,7 @@ document.getElementById('file-input')?.addEventListener('change', e => {
         reader.onload = ev => {
             try {
                 const json = JSON.parse(ev.target.result);
-                loadData(json);  // جایگزین فایل اصلی
+                loadData(json);
                 alert('فایل JSON جدید لود شد و جایگزین شد!');
             } catch (err) {
                 alert('فایل JSON نامعتبر است');
