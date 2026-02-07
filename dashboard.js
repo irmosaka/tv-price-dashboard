@@ -297,10 +297,8 @@ function openModal(chartId) {
     canvas.style.width = '92%';
     canvas.style.height = '78vh';
 
-    // پاک کردن canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // destroy چارت قبلی اگر وجود داشت
     if (window.modalChart) {
         window.modalChart.destroy();
         window.modalChart = null;
@@ -419,6 +417,8 @@ function openModal(chartId) {
 
 function closeModal() {
     const modal = document.getElementById('chart-modal');
+    if (!modal) return;
+
     modal.classList.remove('show');
 
     if (window.modalChart) {
@@ -426,7 +426,10 @@ function closeModal() {
         window.modalChart = null;
     }
 
-    setTimeout(() => modal.style.display = 'none', 400);
+    setTimeout(() => {
+        modal.style.display = 'none';
+        modal.style.opacity = '0';
+    }, 450);
 }
 
 // ایونت‌ها
@@ -439,7 +442,9 @@ fetch('daily_prices.json')
 document.querySelectorAll('.chart-card').forEach(card => {
     card.addEventListener('click', () => {
         const chartId = card.getAttribute('data-chart-id');
-        if (chartId) openModal(chartId);
+        if (chartId) {
+            openModal(chartId);
+        }
     });
 });
 
@@ -475,6 +480,16 @@ document.getElementById('file-input')?.addEventListener('change', e => {
             }
         };
         reader.readAsText(file);
+    }
+});
+
+// ایونت بستن modal با ضربدر
+document.getElementById('close-modal')?.addEventListener('click', closeModal);
+
+// بستن با کلیک خارج از modal-content
+document.getElementById('chart-modal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
     }
 });
 
