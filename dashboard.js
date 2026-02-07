@@ -210,7 +210,6 @@ function updateChart(data) {
         });
     }
 
-    // Pie Chart
     const brandCount = {};
     data.forEach(item => {
         if (item.brand !== 'نامشخص') brandCount[item.brand] = (brandCount[item.brand] || 0) + 1;
@@ -231,7 +230,6 @@ function updateChart(data) {
         });
     }
 
-    // Line Chart
     const sizes = [...new Set(data.map(item => item.size))].sort((a,b)=>+a-+b);
     const sizeAvg = sizes.map(s => {
         const items = data.filter(item => item.size === s);
@@ -257,7 +255,6 @@ function updateChart(data) {
         });
     }
 
-    // Scatter Plot
     const scatterData = data.map(item => ({
         x: +item.size.replace('نامشخص', '0'),
         y: item.price_num
@@ -296,15 +293,20 @@ function openModal(chartId) {
 
     // تنظیم اندازه canvas برای کیفیت بالا در تمام صفحه
     const pixelRatio = window.devicePixelRatio || 1;
-    canvas.width = window.innerWidth * 0.9 * pixelRatio;
-    canvas.height = window.innerHeight * 0.75 * pixelRatio;
-    canvas.style.width = '90%';
-    canvas.style.height = '75vh';
+    canvas.width = window.innerWidth * 0.92 * pixelRatio;
+    canvas.height = window.innerHeight * 0.78 * pixelRatio;
+    canvas.style.width = '92%';
+    canvas.style.height = '78vh';
+
+    // پاک کردن canvas قبلی
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // داده فیلترشده فعلی
     const filteredData = getFilteredData();
 
-    // ساخت مجدد چارت در modal بر اساس chartId
+    // ساخت مجدد چارت بر اساس chartId
+    let chartInstance;
+
     if (chartId === 'brand-price-chart') {
         const brandAvg = {};
         filteredData.forEach(item => {
@@ -317,7 +319,7 @@ function openModal(chartId) {
         const labels = Object.keys(brandAvg);
         const avgPrices = labels.map(b => Math.round(brandAvg[b].sum / brandAvg[b].count));
 
-        new Chart(ctx, {
+        chartInstance = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels,
@@ -343,7 +345,7 @@ function openModal(chartId) {
         filteredData.forEach(item => {
             if (item.brand !== 'نامشخص') brandCount[item.brand] = (brandCount[item.brand] || 0) + 1;
         });
-        new Chart(ctx, {
+        chartInstance = new Chart(ctx, {
             type: 'pie',
             data: {
                 labels: Object.keys(brandCount),
@@ -363,7 +365,7 @@ function openModal(chartId) {
             return items.length ? Math.round(items.reduce((sum,i)=>sum+i.price_num,0)/items.length) : 0;
         });
 
-        new Chart(ctx, {
+        chartInstance = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: sizes,
@@ -385,14 +387,14 @@ function openModal(chartId) {
             y: item.price_num
         }));
 
-        new Chart(ctx, {
+        chartInstance = new Chart(ctx, {
             type: 'scatter',
             data: {
                 datasets: [{
                     label: 'قیمت بر حسب سایز',
                     data: scatterData,
                     backgroundColor: 'rgba(54,162,235,0.6)',
-                    pointRadius: 5
+                    pointRadius: 6
                 }]
             },
             options: {
