@@ -1,38 +1,52 @@
-console.log("اسکریپت dashboard.js - نسخه فیکس برند");
+console.log("dashboard.js - نسخه فیکس نهایی برند");
 
 function extractSizeAndBrand(title) {
-    // سایز: عدد قبل از "اینچ" یا "اینج" (قبلاً کار می‌کرد، نگه می‌داریم)
+    // سایز (این قسمت قبلاً خوب کار می‌کرد، نگه می‌داریم)
     const sizeMatch = title.match(/(\d{2,3})\s*(?:اینچ|اینج)/i);
     const size = sizeMatch ? sizeMatch[1] : 'نامشخص';
 
-    // برند: ساده‌تر و قوی‌تر
-    // ۱. اول سعی می‌کنیم متن بعد از "ال ای دی" تا "مدل" یا "سایز" یا انتها بگیریم
+    // برند - نسخه قوی‌تر برای موارد "ال ای دی هوشمند برند ..."
     let brand = 'نامشخص';
-    const brandPart = title.split(/ال\s*ای\s*دی/i)[1]; // بعد از "ال ای دی"
-    if (brandPart) {
-        // حذف قسمت‌های بعد از مدل/سایز/هوشمند و غیره
-        const cleaned = brandPart
-            .split(/\s*(مدل|سایز|هوشمند|\d{2,3}|اینچ|اینج)/i)[0]
+
+    // ۱. اول چک می‌کنیم آیا "ال ای دی هوشمند" داریم یا نه
+    const afterLed = title.split(/ال\s*ای\s*دی/i)[1];
+    if (afterLed) {
+        let cleaned = afterLed
+            .replace(/^\s*هوشمند\s*/i, '')          // حذف "هوشمند" در ابتدای بخش
+            .split(/\s*(مدل|سایز|اینچ|اینج|$)/i)[0] // تا مدل/سایز قطع کن
             .trim()
             .replace(/\s+/g, ' ');
 
-        if (cleaned && cleaned.length > 1) {
+        if (cleaned && cleaned.length > 1 && !/^[۰-۹]+$/.test(cleaned)) {
             brand = cleaned;
         }
     }
 
-    // اگر هنوز نامشخص بود، تخمین دوم: کلمه دوم یا سوم عنوان (معمولاً برند هست)
+    // ۲. اگر هنوز پیدا نشد، fallback: کلمه بعد از "ال ای دی" یا "هوشمند"
     if (brand === 'نامشخص') {
         const words = title.split(/\s+/);
-        if (words.length >= 3) {
-            // مثلاً "تلویزیون هوشمند ال ای دی سامسونگ ..." → سامسونگ
-            brand = words[3] || words[2] || 'نامشخص';
+        let found = false;
+        for (let i = 0; i < words.length - 1; i++) {
+            if (/ال\s*ای\s*دی/i.test(words[i] + ' ' + words[i+1])) {
+                // بعدش هوشمند باشه یا مستقیم برند
+                let nextWord = words[i+2] || words[i+1];
+                if (nextWord && !/هوشمند|مدل|سایز/i.test(nextWord)) {
+                    brand = nextWord;
+                    found = true;
+                    break;
+                } else if (/هوشمند/i.test(nextWord) && words[i+3]) {
+                    brand = words[i+3];
+                    found = true;
+                    break;
+                }
+            }
         }
     }
 
-    // تمیز نهایی برند
+    // تمیز نهایی
     brand = brand
         .replace(/هوشمند|ال\s*ای\s*دی/gi, '')
+        .replace(/[^آ-یa-zA-Z\s]/g, '')  // فقط حروف و فاصله نگه دار
         .replace(/\s+/g, ' ')
         .trim();
 
@@ -40,26 +54,23 @@ function extractSizeAndBrand(title) {
 }
 
 fetch('daily_prices.json')
-    .then(response => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        console.log("JSON دریافت شد");
-        return response.json();
+    .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        console.log("JSON OK");
+        return r.json();
     })
-    .then(rawData => {
-        console.log(`تعداد خام: ${rawData.length}`);
+    .then(raw => {
+        console.log(`خام: ${raw.length} آیتم`);
 
-        const data = rawData.map((item, idx) => {
+        const data = raw.map((item, i) => {
             const title = item['ellipsis-2'] || 'نامشخص';
             const { size, brand } = extractSizeAndBrand(title);
 
-            let pStr = (item['flex'] || '0').toString().replace(/[^0-9۰-۹]/g, '');
-            pStr = pStr.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+            let p = (item['flex'] || '0').toString().replace(/[^0-9۰-۹]/g, '');
+            p = p.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
 
-            let oStr = (item['text-neutral-300'] || pStr).toString().replace(/[^0-9۰-۹]/g, '');
-            oStr = oStr.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
-
-            const price_num = parseInt(pStr) || 0;
-            const original_price_num = parseInt(oStr) || price_num;
+            let o = (item['text-neutral-300'] || p).toString().replace(/[^0-9۰-۹]/g, '');
+            o = o.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
 
             return {
                 name: title,
@@ -67,74 +78,66 @@ fetch('daily_prices.json')
                 stock: item['text-caption'] || 'نامشخص',
                 rating: item['text-body2-strong'] || '—',
                 discount: item['text-body2-strong (2)'] || '—',
-                price_num,
-                original_price_num,
+                price_num: parseInt(p) || 0,
+                original_price_num: parseInt(o) || 0,
                 sellers: /موجود|باقی مانده/i.test(item['text-caption'] || '') ? 1 : 0,
                 size,
                 brand
             };
-        }).filter(item => item.price_num > 0);
+        }).filter(d => d.price_num > 0);
 
-        console.log(`تعداد معتبر: ${data.length}`);
+        console.log(`معتبر: ${data.length}`);
 
-        const sizes = [...new Set(data.map(i => i.size).filter(s => s !== 'نامشخص'))].sort((a,b)=>+a-+b);
-        const brands = [...new Set(data.map(i => i.brand).filter(b => b !== 'نامشخص'))].sort();
+        const sizes = [...new Set(data.map(d => d.size).filter(s => s !== 'نامشخص'))].sort((a,b)=>+a-+b);
+        const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'نامشخص'))].sort();
 
         console.log("سایزها:", sizes);
         console.log("برندها:", brands);
 
-        // پر کردن select سایز
-        document.getElementById('size-filter').innerHTML = 
-            '<option value="">همه سایزها</option>' + 
+        document.getElementById('size-filter').innerHTML = '<option value="">همه سایزها</option>' +
             sizes.map(s => `<option value="${s}">${s} اینچ</option>`).join('');
 
-        // پر کردن select برند
-        document.getElementById('brand-filter').innerHTML = 
-            '<option value="">همه برندها</option>' + 
+        document.getElementById('brand-filter').innerHTML = '<option value="">همه برندها</option>' +
             brands.map(b => `<option value="${b}">${b}</option>`).join('');
 
-        // رندر و فیلترها (بقیه کد بدون تغییر - فقط بخش‌های لازم رو خلاصه کردم)
-        function render(filtered) {
-            // آمار
-            const avg = filtered.length ? Math.round(filtered.reduce((s,i)=>s+i.price_num,0)/filtered.length) : 0;
+        function render(f) {
+            const avg = f.length ? Math.round(f.reduce((s,d)=>s+d.price_num,0)/f.length) : 0;
             document.getElementById('avg-price').textContent = avg.toLocaleString('fa-IR') + ' تومان';
-            document.getElementById('total-items').textContent = filtered.length;
-            document.getElementById('total-sellers').textContent = filtered.reduce((s,i)=>s+i.sellers,0);
+            document.getElementById('total-items').textContent = f.length;
+            document.getElementById('total-sellers').textContent = f.reduce((s,d)=>s+d.sellers,0);
 
-            // جدول
-            const tbody = document.querySelector('#product-table tbody');
-            tbody.innerHTML = filtered.map(item => `
+            document.querySelector('#product-table tbody').innerHTML = f.map(d => `
                 <tr>
-                    <td>${item.name}</td>
-                    <td>${item.price_num.toLocaleString('fa-IR')} تومان</td>
-                    <td>${item.original_price_num.toLocaleString('fa-IR')} تومان</td>
-                    <td>${item.discount}</td>
-                    <td>${item.rating}</td>
-                    <td>${item.stock}</td>
-                    <td><a href="${item.link}" target="_blank">مشاهده</a></td>
+                    <td>${d.name}</td>
+                    <td>${d.price_num.toLocaleString('fa-IR')} تومان</td>
+                    <td>${d.original_price_num.toLocaleString('fa-IR')} تومان</td>
+                    <td>${d.discount}</td>
+                    <td>${d.rating}</td>
+                    <td>${d.stock}</td>
+                    <td><a href="${d.link}" target="_blank">مشاهده</a></td>
                 </tr>
             `).join('');
-
-            // چارت (اگر نیاز داری نگه دار)
         }
 
         render(data);
 
-        // فیلترها
-        const apply = () => {
+        const applyFilter = () => {
             let f = data;
-            const min = +document.getElementById('price-filter').value || 0;
-            f = f.filter(i => i.price_num >= min);
-            const sz = document.getElementById('size-filter').value;
-            if (sz) f = f.filter(i => i.size === sz);
-            const br = document.getElementById('brand-filter').value;
-            if (br) f = f.filter(i => i.brand === br);
+            const minP = +document.getElementById('price-filter')?.value || 0;
+            f = f.filter(d => d.price_num >= minP);
+
+            const sz = document.getElementById('size-filter')?.value;
+            if (sz) f = f.filter(d => d.size === sz);
+
+            const br = document.getElementById('brand-filter')?.value;
+            if (br) f = f.filter(d => d.brand === br);
+
             render(f);
         };
 
-        ['price-filter', 'size-filter', 'brand-filter'].forEach(id => {
-            document.getElementById(id)?.addEventListener('change', apply);
-            document.getElementById(id)?.addEventListener('input', apply);
+        ['price-filter','size-filter','brand-filter'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener(id.includes('input') ? 'input' : 'change', applyFilter);
         });
     })
     .catch(e => console.error("خطا:", e));
