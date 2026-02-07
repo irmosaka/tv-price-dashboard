@@ -176,6 +176,7 @@ function applyFilters() {
 function updateChart(data) {
     console.log("به‌روزرسانی چارت‌ها با", data.length, "ردیف");
 
+    // Bar Chart
     const brandAvg = {};
     data.forEach(item => {
         if (item.brand !== 'نامشخص') {
@@ -205,7 +206,8 @@ function updateChart(data) {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } }
+                scales: { y: { beginAtZero: true } },
+                plugins: { legend: { display: true } }
             }
         });
     }
@@ -288,28 +290,85 @@ function updateChart(data) {
     }
 }
 
-// Modal تمام صفحه
+// Modal تمام صفحه با ساخت مجدد چارت
 function openModal(chartId) {
     const modal = document.getElementById('chart-modal');
     const canvas = document.getElementById('modal-canvas');
     const ctx = canvas.getContext('2d');
 
-    // کپی چارت اصلی به modal با کیفیت بالا
-    const originalCanvas = document.getElementById(chartId);
-    if (originalCanvas && ctx) {
-        canvas.width = originalCanvas.width * 2;  // برای کیفیت بالاتر
-        canvas.height = originalCanvas.height * 2;
-        canvas.style.width = '100%';
-        canvas.style.height = '100%';
-        ctx.scale(2, 2);  // مقیاس ۲ برابر برای کیفیت
-        ctx.drawImage(originalCanvas, 0, 0);
+    // تنظیم اندازه canvas برای کیفیت بالا
+    canvas.width = window.innerWidth * 0.9 * window.devicePixelRatio;
+    canvas.height = window.innerHeight * 0.7 * window.devicePixelRatio;
+    canvas.style.width = '90%';
+    canvas.style.height = '70vh';
+
+    // داده فیلترشده فعلی رو می‌گیریم
+    const filteredData = getFilteredData();
+
+    // ساخت مجدد چارت در modal (مثال برای Bar Chart - برای بقیه هم مشابه)
+    if (chartId === 'brand-price-chart') {
+        const brandAvg = {};
+        filteredData.forEach(item => {
+            if (item.brand !== 'نامشخص') {
+                if (!brandAvg[item.brand]) brandAvg[item.brand] = { sum: 0, count: 0 };
+                brandAvg[item.brand].sum += item.price_num;
+                brandAvg[item.brand].count++;
+            }
+        });
+        const labels = Object.keys(brandAvg);
+        const avgPrices = labels.map(b => Math.round(brandAvg[b].sum / brandAvg[b].count));
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'میانگین قیمت (تومان)',
+                    data: avgPrices,
+                    backgroundColor: 'rgba(75,192,192,0.6)',
+                    borderColor: 'rgba(75,192,192,1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true } },
+                plugins: { legend: { display: true, position: 'top' } }
+            }
+        });
     }
 
+    // برای چارت‌های دیگر هم می‌تونی مشابه همین بلوک if اضافه کنی
+    // مثلاً برای pie:
+    if (chartId === 'brand-pie-chart') {
+        const brandCount = {};
+        filteredData.forEach(item => {
+            if (item.brand !== 'نامشخص') brandCount[item.brand] = (brandCount[item.brand] || 0) + 1;
+        });
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(brandCount),
+                datasets: [{
+                    data: Object.values(brandCount),
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
+                }]
+            },
+            options: { responsive: false, maintainAspectRatio: false }
+        });
+    }
+
+    // ... بقیه چارت‌ها رو هم مشابه اضافه کن
+
     modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 10); // انیمیشن fade-in
 }
 
 function closeModal() {
-    document.getElementById('chart-modal').style.display = 'none';
+    const modal = document.getElementById('chart-modal');
+    modal.classList.remove('show');
+    setTimeout(() => modal.style.display = 'none', 300);
 }
 
 // ایونت‌ها
