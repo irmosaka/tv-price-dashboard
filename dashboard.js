@@ -3,6 +3,13 @@ let displayedRows = 20;
 let sortCol = null;
 let sortDir = 'asc';
 
+// تبدیل اعداد انگلیسی به فارسی
+function toPersianDigits(num) {
+    if (num === '—' || num === null || num === undefined) return '—';
+    const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
+    return num.toString().replace(/[0-9]/g, w => persianDigits[+w]);
+}
+
 function extractSizeAndBrand(title) {
     const sizeMatch = title.match(/(\d{2,3})\s*(?:اینچ|اینج)/i);
     const size = sizeMatch ? sizeMatch[1] : 'نامشخص';
@@ -64,10 +71,10 @@ function loadData(raw) {
 function updateStats(data) {
     const prices = data.map(item => item.price_num).filter(p => p > 0);
     const avgPrice = prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0;
-    document.getElementById('avg-price').textContent = avgPrice.toLocaleString('fa-IR') + ' تومان';
-    document.getElementById('total-items').textContent = data.length;
-    document.getElementById('total-sellers').textContent = data.reduce((sum, item) => sum + item.sellers, 0);
-    document.getElementById('total-brands').textContent = [...new Set(data.map(item => item.brand))].length;
+    document.getElementById('avg-price').textContent = toPersianDigits(avgPrice) + ' تومان';
+    document.getElementById('total-items').textContent = toPersianDigits(data.length);
+    document.getElementById('total-sellers').textContent = toPersianDigits(data.reduce((sum, item) => sum + item.sellers, 0));
+    document.getElementById('total-brands').textContent = toPersianDigits([...new Set(data.map(item => item.brand))].length);
 }
 
 function updateUI() {
@@ -94,8 +101,8 @@ function renderTable(data, limit = displayedRows) {
         <tr>
             <td>${item.name}</td>
             <td>${item.brand}</td>
-            <td>${item.price_num.toLocaleString('fa-IR')} تومان</td>
-            <td>${item.original_price_num.toLocaleString('fa-IR')} تومان</td>
+            <td>${toPersianDigits(item.price_num)} تومان</td>
+            <td>${toPersianDigits(item.original_price_num)} تومان</td>
             <td>${item.discount}</td>
             <td>${item.rating}</td>
             <td>${item.stock}</td>
@@ -150,7 +157,7 @@ function sortTable(col) {
         } else {
             va = (va || '').toString();
             vb = (vb || '').toString();
-            return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+            return sortDir === 'asc' ? va.localeCompare(vb, 'fa') : vb.localeCompare(va, 'fa');
         }
     });
 
@@ -169,7 +176,7 @@ function applyFilters() {
 function updateChart(data) {
     console.log("به‌روزرسانی چارت‌ها با", data.length, "ردیف");
 
-    // Bar Chart: میانگین قیمت بر اساس برند
+    // Bar Chart
     const brandAvg = {};
     data.forEach(item => {
         if (item.brand !== 'نامشخص') {
@@ -199,12 +206,13 @@ function updateChart(data) {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } }
+                scales: { y: { beginAtZero: true } },
+                plugins: { legend: { display: true } }
             }
         });
     }
 
-    // Pie Chart: توزیع برندها
+    // Pie Chart
     const brandCount = {};
     data.forEach(item => {
         if (item.brand !== 'نامشخص') brandCount[item.brand] = (brandCount[item.brand] || 0) + 1;
@@ -225,7 +233,7 @@ function updateChart(data) {
         });
     }
 
-    // Line Chart: میانگین قیمت بر اساس سایز
+    // Line Chart
     const sizes = [...new Set(data.map(item => item.size))].sort((a,b)=>+a-+b);
     const sizeAvg = sizes.map(s => {
         const items = data.filter(item => item.size === s);
@@ -251,7 +259,7 @@ function updateChart(data) {
         });
     }
 
-    // Scatter Plot: قیمت vs سایز
+    // Scatter Plot
     const scatterData = data.map(item => ({
         x: +item.size.replace('نامشخص', '0'),
         y: item.price_num
@@ -280,6 +288,27 @@ function updateChart(data) {
             }
         });
     }
+}
+
+// Modal برای تمام صفحه
+function openModal(chartId) {
+    const modal = document.getElementById('chart-modal');
+    const canvas = document.getElementById('modal-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // کپی چارت اصلی به modal
+    const originalCanvas = document.getElementById(chartId);
+    if (originalCanvas && ctx) {
+        canvas.width = originalCanvas.width;
+        canvas.height = originalCanvas.height;
+        ctx.drawImage(originalCanvas, 0, 0);
+    }
+
+    modal.style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('chart-modal').style.display = 'none';
 }
 
 // ایونت‌ها
