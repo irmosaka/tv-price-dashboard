@@ -1,4 +1,6 @@
 let currentData = [];
+let displayedRows = 20;  // تعداد اولیه ردیف‌ها
+let allData = [];  // داده کامل
 let sortCol = null;
 let sortDir = 'asc';
 
@@ -87,21 +89,58 @@ function updateUI() {
     renderTable(data);
 }
 
-function renderTable(data) {
+function renderTable(data, limit = displayedRows) {
     const tbody = document.querySelector('#product-table tbody');
-    tbody.innerHTML = data.map(d => `
+    const footer = document.getElementById('table-footer');
+    
+    // فقط limit ردیف نشون بده
+    const visibleData = data.slice(0, limit);
+    tbody.innerHTML = visibleData.map(item => `
         <tr>
-            <td>${d.name}</td>
-            <td>${d.brand}</td>
-            <td>${d.price_num.toLocaleString('fa-IR')} تومان</td>
-            <td>${d.original_price_num.toLocaleString('fa-IR')} تومان</td>
-            <td>${d.discount}</td>
-            <td>${d.rating}</td>
-            <td>${d.stock}</td>
-            <td><a href="${d.link}" target="_blank">مشاهده</a></td>
+            <td>${item.name}</td>
+            <td>${item.brand}</td>
+            <td>${item.price_num.toLocaleString('fa-IR')} تومان</td>
+            <td>${item.original_price_num.toLocaleString('fa-IR')} تومان</td>
+            <td>${item.discount}</td>
+            <td>${item.rating}</td>
+            <td>${item.stock}</td>
+            <td><a href="${item.link}" target="_blank">مشاهده</a></td>
         </tr>
     `).join('');
+
+    // اگر داده بیشتری هست، دکمه نشون بده
+    if (data.length > limit) {
+        footer.style.display = 'table-row-group';
+    } else {
+        footer.style.display = 'none';
+    }
 }
+
+function loadMoreRows() {
+    displayedRows += 20;  // ۲۰ ردیف بیشتر لود کن
+    const filteredData = getFilteredData();  // داده فیلترشده رو بگیر
+    renderTable(filteredData, displayedRows);
+    
+    if (filteredData.length <= displayedRows) {
+        document.getElementById('load-more').textContent = 'همه داده‌ها لود شد';
+        document.getElementById('load-more').disabled = true;
+    }
+}
+
+function getFilteredData() {
+    let filtered = currentData;
+    const minPrice = parseInt(document.getElementById('price-filter').value) || 0;
+    filtered = filtered.filter(item => item.price_num >= minPrice);
+
+    const selectedSize = document.getElementById('size-filter').value;
+    if (selectedSize) filtered = filtered.filter(item => item.size === selectedSize);
+
+    const selectedBrand = document.getElementById('brand-filter').value;
+    if (selectedBrand) filtered = filtered.filter(item => item.brand === selectedBrand);
+
+    return filtered;
+}
+
 
 function sortTable(col) {
     if (sortCol === col) {
@@ -140,10 +179,10 @@ function applyFilters() {
     if (selectedBrand) filtered = filtered.filter(item => item.brand === selectedBrand);
 
     // بروزرسانی آمار برای داده فیلترشده
-    updateStats(filtered);
-
-    renderTable(filtered);
-    updateChart(filtered);
+displayedRows = 20;  // ریست به ۲۰ ردیف
+    const filteredData = getFilteredData();
+    updateStats(filteredData);
+    renderTable(filteredData);
 }
 
 document.getElementById('clear-filters').addEventListener('click', () => {
