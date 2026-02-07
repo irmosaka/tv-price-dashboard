@@ -94,12 +94,20 @@
             </div>
         </div>
         
-        <div id="filter-section">
-            <label>حداقل قیمت: 
-                <input type="range" id="price-filter" min="0" max="500000000" value="0" step="5000000">
-                <span id="filter-value">۰ تومان</span>
-            </label>
-        </div>
+<div id="filter-section" style="margin: 1.5rem 0; text-align: center; display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem;">
+    <label>حداقل قیمت: 
+        <input type="range" id="price-filter" min="0" max="500000000" value="0" step="5000000">
+        <span id="filter-value">۰ تومان</span>
+    </label>
+    
+    <label>سایز: 
+        <select id="size-filter"></select>
+    </label>
+    
+    <label>برند: 
+        <select id="brand-filter"></select>
+    </label>
+</div>
         
         <table id="product-table">
             <thead>
