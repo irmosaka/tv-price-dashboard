@@ -1,6 +1,5 @@
 let currentData = [];
-let displayedRows = 20;  // تعداد اولیه ردیف‌ها
-let allData = [];  // داده کامل
+let displayedRows = 20; // تعداد اولیه ردیف‌ها
 let sortCol = null;
 let sortDir = 'asc';
 
@@ -58,6 +57,8 @@ function loadData(raw) {
             size
         };
     }).filter(d => d.price_num > 0);
+
+    console.log(`داده معتبر: ${currentData.length} ردیف`);
     updateUI();
 }
 
@@ -72,12 +73,7 @@ function updateStats(data) {
 
 function updateUI() {
     const data = currentData;
-    const prices = data.map(d => d.price_num);
-    const avg = prices.length ? Math.round(prices.reduce((a,b)=>a+b,0)/prices.length) : 0;
-    document.getElementById('avg-price').textContent = avg.toLocaleString('fa-IR') + ' تومان';
-    document.getElementById('total-items').textContent = data.length;
-    document.getElementById('total-sellers').textContent = data.reduce((s,d)=>s+d.sellers,0);
-    document.getElementById('total-brands').textContent = [...new Set(data.map(d => d.brand))].length;
+    updateStats(data);
     document.getElementById('last-update').textContent = `آخرین بروزرسانی: ${new Date().toLocaleString('fa-IR')}`;
 
     const sizes = [...new Set(data.map(d => d.size).filter(s => s !== 'نامشخص'))].sort((a,b)=>+a-+b);
@@ -87,13 +83,13 @@ function updateUI() {
     document.getElementById('brand-filter').innerHTML = '<option value="">همه برندها</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
 
     renderTable(data);
+    updateChart(data); // ← اینجا چارت‌ها لود می‌شن!
 }
 
 function renderTable(data, limit = displayedRows) {
     const tbody = document.querySelector('#product-table tbody');
     const footer = document.getElementById('table-footer');
     
-    // فقط limit ردیف نشون بده
     const visibleData = data.slice(0, limit);
     tbody.innerHTML = visibleData.map(item => `
         <tr>
@@ -108,7 +104,6 @@ function renderTable(data, limit = displayedRows) {
         </tr>
     `).join('');
 
-    // اگر داده بیشتری هست، دکمه نشون بده
     if (data.length > limit) {
         footer.style.display = 'table-row-group';
     } else {
@@ -117,8 +112,8 @@ function renderTable(data, limit = displayedRows) {
 }
 
 function loadMoreRows() {
-    displayedRows += 20;  // ۲۰ ردیف بیشتر لود کن
-    const filteredData = getFilteredData();  // داده فیلترشده رو بگیر
+    displayedRows += 20;
+    const filteredData = getFilteredData();
     renderTable(filteredData, displayedRows);
     
     if (filteredData.length <= displayedRows) {
@@ -131,16 +126,12 @@ function getFilteredData() {
     let filtered = currentData;
     const minPrice = parseInt(document.getElementById('price-filter').value) || 0;
     filtered = filtered.filter(item => item.price_num >= minPrice);
-
     const selectedSize = document.getElementById('size-filter').value;
     if (selectedSize) filtered = filtered.filter(item => item.size === selectedSize);
-
     const selectedBrand = document.getElementById('brand-filter').value;
     if (selectedBrand) filtered = filtered.filter(item => item.brand === selectedBrand);
-
     return filtered;
 }
-
 
 function sortTable(col) {
     if (sortCol === col) {
@@ -165,37 +156,155 @@ function sortTable(col) {
     });
 
     renderTable(sorted);
+    updateChart(sorted);
 }
 
 function applyFilters() {
-    let filtered = currentData;
-    const minPrice = parseInt(document.getElementById('price-filter').value) || 0;
-    filtered = filtered.filter(item => item.price_num >= minPrice);
-
-    const selectedSize = document.getElementById('size-filter').value;
-    if (selectedSize) filtered = filtered.filter(item => item.size === selectedSize);
-
-    const selectedBrand = document.getElementById('brand-filter').value;
-    if (selectedBrand) filtered = filtered.filter(item => item.brand === selectedBrand);
-
-    // بروزرسانی آمار برای داده فیلترشده
-displayedRows = 20;  // ریست به ۲۰ ردیف
+    displayedRows = 20; // ریست lazy load
     const filteredData = getFilteredData();
     updateStats(filteredData);
     renderTable(filteredData);
+    updateChart(filteredData); // ← چارت‌ها با فیلتر بروز می‌شن
 }
 
-document.getElementById('clear-filters').addEventListener('click', () => {
+function updateChart(data) {
+    console.log("به‌روزرسانی چارت‌ها با", data.length, "ردیف");
+
+    // Bar Chart: قیمت میانگین بر اساس برند
+    const brandAvg = {};
+    data.forEach(item => {
+        if (!brandAvg[item.brand]) brandAvg[item.brand] = { sum: 0, count: 0 };
+        brandAvg[item.brand].sum += item.price_num;
+        brandAvg[item.brand].count++;
+    });
+    const labels = Object.keys(brandAvg);
+    const avgPrices = labels.map(b => Math.round(brandAvg[b].sum / brandAvg[b].count));
+
+    const brandCtx = document.getElementById('brand-price-chart')?.getContext('2d');
+    if (brandCtx) {
+        if (window.brandChart) window.brandChart.destroy();
+        window.brandChart = new Chart(brandCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'میانگین قیمت (تومان)',
+                    data: avgPrices,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+
+    // Pie Chart: توزیع برندها
+    const brandCount = {};
+    data.forEach(item => brandCount[item.brand] = (brandCount[item.brand] || 0) + 1);
+    const pieCtx = document.getElementById('brand-pie-chart')?.getContext('2d');
+    if (pieCtx) {
+        if (window.pieChart) window.pieChart.destroy();
+        window.pieChart = new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(brandCount),
+                datasets: [{
+                    data: Object.values(brandCount),
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    // Line Chart: میانگین قیمت بر اساس سایز (به عنوان روند فرضی)
+    const sizes = [...new Set(data.map(item => item.size))].sort((a,b)=>+a-+b);
+    const sizeAvg = sizes.map(s => {
+        const items = data.filter(item => item.size === s);
+        return items.length ? Math.round(items.reduce((sum,i)=>sum+i.price_num,0)/items.length) : 0;
+    });
+
+    const lineCtx = document.getElementById('trend-line-chart')?.getContext('2d');
+    if (lineCtx) {
+        if (window.lineChart) window.lineChart.destroy();
+        window.lineChart = new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: sizes,
+                datasets: [{
+                    label: 'میانگین قیمت بر اساس سایز',
+                    data: sizeAvg,
+                    borderColor: 'rgb(75,192,192)',
+                    tension: 0.1,
+                    fill: false
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+        });
+    }
+
+    // Scatter Plot: قیمت vs سایز
+    const scatterData = data.map(item => ({
+        x: +item.size.replace('نامشخص', '0'),
+        y: item.price_num
+    }));
+
+    const scatterCtx = document.getElementById('price-size-scatter')?.getContext('2d');
+    if (scatterCtx) {
+        if (window.scatterChart) window.scatterChart.destroy();
+        window.scatterChart = new Chart(scatterCtx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'قیمت بر حسب سایز',
+                    data: scatterData,
+                    backgroundColor: 'rgba(54,162,235,0.6)',
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { type: 'linear', position: 'bottom', title: { display: true, text: 'سایز (اینچ)' } },
+                    y: { title: { display: true, text: 'قیمت (تومان)' } }
+                }
+            }
+        });
+    }
+}
+
+// ایونت‌ها
+fetch('daily_prices.json')
+    .then(r => r.json())
+    .then(loadData)
+    .catch(e => console.error("خطا در لود JSON:", e));
+
+document.querySelectorAll('th[data-col]').forEach(th => {
+    th.addEventListener('click', () => sortTable(th.dataset.col));
+});
+
+['price-filter','size-filter','brand-filter'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', applyFilters);
+    document.getElementById(id)?.addEventListener('change', applyFilters);
+});
+
+document.getElementById('clear-filters')?.addEventListener('click', () => {
     document.getElementById('price-filter').value = 0;
     document.getElementById('size-filter').value = '';
     document.getElementById('brand-filter').value = '';
     document.getElementById('filter-value').textContent = '۰ تومان';
-    updateStats(currentData);  // آمار کامل
+    updateStats(currentData);
     renderTable(currentData);
     updateChart(currentData);
 });
 
-document.getElementById('file-input').addEventListener('change', e => {
+document.getElementById('file-input')?.addEventListener('change', e => {
     const file = e.target.files[0];
     if (file) {
         const reader = new FileReader();
@@ -217,67 +326,3 @@ function downloadExcel() {
     XLSX.utils.book_append_sheet(wb, ws, "تلویزیون‌ها");
     XLSX.writeFile(wb, "tv_prices.xlsx");
 }
-
-function updateChart(data) {
-    // ۱. Bar Chart: قیمت میانگین بر اساس برند
-    const brandAvg = {};
-    data.forEach(item => {
-        brandAvg[item.brand] = (brandAvg[item.brand] || 0) + item.price_num;
-    });
-    Object.keys(brandAvg).forEach(brand => {
-        brandAvg[brand] /= data.filter(item => item.brand === brand).length;
-    });
-    const brandCtx = document.getElementById('brand-price-chart')?.getContext('2d');
-    if (brandCtx) new Chart(brandCtx, {
-        type: 'bar',
-        data: {
-            labels: Object.keys(brandAvg),
-            datasets: [{ label: 'میانگین قیمت (تومان)', data: Object.values(brandAvg), backgroundColor: 'rgba(75,192,192,0.6)' }]
-        },
-        options: { responsive: true, scales: { y: { beginAtZero: true } } }
-    });
-
-    // ۲. Pie Chart: توزیع برندها
-    const brandCount = {};
-    data.forEach(item => brandCount[item.brand] = (brandCount[item.brand] || 0) + 1);
-    const pieCtx = document.getElementById('brand-pie-chart')?.getContext('2d');
-    if (pieCtx) new Chart(pieCtx, {
-        type: 'pie',
-        data: {
-            labels: Object.keys(brandCount),
-            datasets: [{ data: Object.values(brandCount), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] }]
-        },
-        options: { responsive: true }
-    });
-
-    // ۳. Line Chart: روند قیمت (فرضی - بر اساس سایز به عنوان زمان)
-    const lineCtx = document.getElementById('trend-line-chart')?.getContext('2d');
-    if (lineCtx) new Chart(lineCtx, {
-        type: 'line',
-        data: {
-            labels: [...new Set(data.map(item => item.size))].sort((a,b)=>+a-+b),
-            datasets: [{ label: 'روند قیمت', data: [...new Set(data.map(item => item.size))].map(s => data.filter(i => i.size === s).reduce((sum,i)=>sum+i.price_num,0)/data.filter(i => i.size === s).length || 0), borderColor: 'rgb(75,192,192)', tension: 0.1 }]
-        },
-        options: { responsive: true, scales: { y: { beginAtZero: true } } }
-    });
-
-    // ۴. Scatter Plot: قیمت vs سایز
-    const scatterCtx = document.getElementById('price-size-scatter')?.getContext('2d');
-    if (scatterCtx) new Chart(scatterCtx, {
-        type: 'scatter',
-        data: {
-            datasets: [{ label: 'قیمت vs سایز', data: data.map(item => ({ x: +item.size.replace('نامشخص', '0'), y: item.price_num })), backgroundColor: 'rgba(54,162,235,0.6)' }]
-        },
-        options: { responsive: true, scales: { x: { type: 'linear', position: 'bottom' } } }
-    });
-}
-
-// ایونت‌ها
-fetch('daily_prices.json').then(r => r.json()).then(loadData).catch(e => console.error(e));
-document.querySelectorAll('th[data-col]').forEach(th => {
-    th.addEventListener('click', () => sortTable(th.dataset.col));
-});
-['price-filter','size-filter','brand-filter'].forEach(id => {
-    document.getElementById(id)?.addEventListener('input', applyFilters);
-    document.getElementById(id)?.addEventListener('change', applyFilters);
-});
