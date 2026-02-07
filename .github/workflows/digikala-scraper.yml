@@ -1,0 +1,44 @@
+name: Scrape Digikala TV Prices
+
+on:
+  schedule:
+    # هر روز ساعت 6 صبح به وقت تهران
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # اجرای دستی
+  push:
+    branches: [ main ]
+
+jobs:
+  scrape-digikala:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        pip install requests beautifulsoup4
+        
+    - name: Run Digikala scraper
+      run: |
+        python scripts/digikala-scraper.py
+        
+    - name: Check if data changed
+      id: check-changes
+      run: |
+        git diff --quiet data/digikala-data.json || echo "changed=true" >> $GITHUB_OUTPUT
+        
+    - name: Commit and push if changed
+      if: steps.check-changes.outputs.changed == 'true'
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add data/digikala-data.json
+        git commit -m "🔄 Update Digikala prices - $(date +'%Y-%m-%d %H:%M')"
+        git push
