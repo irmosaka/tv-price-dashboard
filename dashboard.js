@@ -438,13 +438,15 @@ fetch('daily_prices.json')
     .then(loadData)
     .catch(e => console.error("خطا در لود JSON:", e));
 
-// ایونت کلیک روی کارت‌ها
-document.querySelectorAll('.chart-card').forEach(card => {
-    card.addEventListener('click', () => {
-        const chartId = card.getAttribute('data-chart-id');
-        if (chartId) {
-            openModal(chartId);
-        }
+// ایونت کلیک روی کارت‌ها (قوی‌تر)
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.chart-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const chartId = card.getAttribute('data-chart-id');
+            if (chartId) {
+                openModal(chartId);
+            }
+        });
     });
 });
 
@@ -467,6 +469,10 @@ document.getElementById('clear-filters')?.addEventListener('click', () => {
     updateChart(currentData);
 });
 
+document.getElementById('upload-btn')?.addEventListener('click', () => {
+    document.getElementById('file-input').click();
+});
+
 document.getElementById('file-input')?.addEventListener('change', e => {
     const file = e.target.files[0];
     if (file) {
@@ -483,10 +489,9 @@ document.getElementById('file-input')?.addEventListener('change', e => {
     }
 });
 
-// ایونت بستن modal با ضربدر
+// ایونت بستن modal
 document.getElementById('close-modal')?.addEventListener('click', closeModal);
 
-// بستن با کلیک خارج از modal-content
 document.getElementById('chart-modal')?.addEventListener('click', function(e) {
     if (e.target === this) {
         closeModal();
