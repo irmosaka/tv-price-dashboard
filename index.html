@@ -5,18 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>داشبورد قیمت تلویزیون</title>
 
-    <!-- فونت وزیر -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- SheetJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
@@ -91,7 +86,6 @@
             border: 1px solid #d1d5db;
             border-radius: 10px;
             font-size: 1rem;
-            background: #f9fafb;
         }
 
         #clear-filters {
@@ -168,19 +162,14 @@
             box-shadow: var(--shadow);
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
         }
 
-        .chart-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(37,99,235,0.15);
-        }
+        .chart-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(37,99,235,0.15); }
 
         .chart-card h3 { text-align: center; margin-bottom: 1rem; color: var(--primary); font-weight: 600; }
 
         canvas { width: 100% !important; height: 280px !important; }
 
-        /* Modal تمام صفحه - بهبود کیفیت */
         #chart-modal {
             display: none;
             position: fixed;
@@ -210,7 +199,7 @@
         }
 
         @keyframes modalFadeIn {
-            from { transform: scale(0.95); opacity: 0; }
+            from { transform: scale(0.92); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
         }
 
@@ -236,7 +225,7 @@
             border-top: 1px solid #e5e7eb;
         }
 
-        footer strong { color: var(--primary); }
+        footer strong { color: var(--primary); font-weight: 600; }
 
         @media (max-width: 768px) {
             h1 { font-size: 1.8rem; }
