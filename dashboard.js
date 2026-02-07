@@ -9,53 +9,60 @@ fetch('daily_prices.json')
         return response.json();
     })
     .then(rawData => {
-        console.log(`تعداد آیتم‌های خام: ${rawData.length}`);
+        console.log(`تعداد آیتم‌های خام دریافتی: ${rawData.length}`);
 
         const data = rawData
             .map((item, index) => {
                 try {
                     const title = item['ellipsis-2'] || 'نامشخص';
+
+                    // parse قیمت فروش (flex)
                     let priceStr = item['flex'] || '0';
                     priceStr = priceStr
-    .replace(/[^0-9۰-۹]/g, '')           // فقط عدد نگه دار (فارسی + انگلیسی)
-    .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));  // تبدیل ۰-۹ فارسی به لاتین
+                        .replace(/[^0-9۰-۹]/g, '')                    // حذف همه غیرعدد
+                        .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)); // فارسی → انگلیسی
+
+                    // parse قیمت اصلی
                     let origStr = item['text-neutral-300'] || priceStr;
-origStr = origStr
-    .replace(/[^0-9۰-۹]/g, '')
-    .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+                    origStr = origStr
+                        .replace(/[^0-9۰-۹]/g, '')
+                        .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
 
-const price_num = parseInt(priceStr) || 0;
-const original_price_num = parseInt(origStr) || price_num;
+                    const price_num = parseInt(priceStr) || 0;
+                    const original_price_num = parseInt(origStr) || price_num;
 
-if (price_num === 0) {
-                console.warn(`آیتم ${index}: قیمت صفر بعد از parse - عنوان: ${title} | flex خام: "${item['flex']}"`);
-            }
+                    if (price_num === 0) {
+                        console.warn(`آیتم ${index}: قیمت صفر یا نامعتبر بعد از parse → عنوان: ${title} | flex خام: "${item['flex']}"`);
+                    }
 
-            return {
-                name: title,
-                link: item['block href'] || '#',
-                stock: item['text-caption'] || 'نامشخص',
-                rating: item['text-body2-strong'] || '—',
-                discount: item['text-body2-strong (2)'] || '—',
-                price_num,
-                original_price_num,
-                sellers: (item['text-caption'] || '').includes('موجود') || (item['text-caption'] || '').includes('باقی مانده') ? 1 : 0
-            };
-        } catch (e) {
-            console.error(`خطا در پردازش آیتم ${index}:`, e);
-            return null;
-        }
-    }))
-            .filter(item => item !== null && item.price_num > 0);
+                    return {
+                        name: title,
+                        link: item['block href'] || '#',
+                        stock: item['text-caption'] || 'نامشخص',
+                        rating: item['text-body2-strong'] || '—',
+                        discount: item['text-body2-strong (2)'] || '—',
+                        price_num,
+                        original_price_num,
+                        sellers: (item['text-caption'] || '').includes('موجود') || (item['text-caption'] || '').includes('باقی مانده') ? 1 : 0
+                    };
+                } catch (e) {
+                    console.error(`خطا در پردازش آیتم ${index}:`, e);
+                    return null;
+                }
+            })
+            .filter(item => item !== null);   // فقط آیتم‌های بدون خطا
 
-        console.log(`تعداد آیتم‌های معتبر بعد از فیلتر: ${data.length}`);
+        console.log(`تعداد آیتم‌های پردازش‌شده بدون خطا: ${data.length}`);
 
-        if (data.length === 0) {
-            document.body.innerHTML += '<p style="color: red; text-align: center; font-size: 1.3rem; margin: 2rem;">هیچ محصول معتبری پیدا نشد. لطفاً چک کنید که فیلد "flex" (قیمت) در JSON وجود داشته باشد و عدد باشد.</p>';
+        // اگر همه قیمت‌ها صفر بودن، پیام واضح نشون بده
+        const validData = data.filter(item => item.price_num > 0);
+        if (validData.length === 0) {
+            document.body.innerHTML += '<p style="color: red; text-align: center; font-size: 1.3rem; margin: 2rem; direction: rtl;">هیچ محصول با قیمت معتبر پیدا نشد. لطفاً کنسول مرورگر (F12) را چک کنید و متن warnها را ببینید (مثلاً flex خام چه چیزی است؟).</p>';
+            console.error("هیچ آیتمی قیمت معتبر نداشت → احتمالاً فیلد flex خالی یا فرمت اشتباه است");
             return;
         }
 
-        // تابع رندر (بدون تغییر زیاد)
+        // تابع رندر
         function render(filteredData) {
             const prices = filteredData.map(i => i.price_num);
             const avg = prices.length ? Math.round(prices.reduce((a,b)=>a+b,0) / prices.length) : 0;
@@ -81,7 +88,7 @@ if (price_num === 0) {
                 tbody.appendChild(row);
             });
 
-            // چارت (اگر خالی باشه چارت نمی‌سازه)
+            // چارت فقط اگر داده باشه
             if (filteredData.length > 0) {
                 const ctx = document.getElementById('price-chart').getContext('2d');
                 if (window.myChart) window.myChart.destroy();
@@ -106,21 +113,21 @@ if (price_num === 0) {
             }
         }
 
-        // رندر اولیه
-        render(data);
+        // رندر اولیه با داده‌های معتبر
+        render(validData);
 
         // فیلتر قیمت
         document.getElementById('price-filter').addEventListener('input', (e) => {
-            document.getElementById('filter-value').textContent = Number(e.target.value).toLocaleString('fa-IR') + ' تومان';
-            const minPrice = parseInt(e.target.value);
-            const filtered = data.filter(item => item.price_num >= minPrice);
+            const minPrice = parseInt(e.target.value) || 0;
+            document.getElementById('filter-value').textContent = minPrice.toLocaleString('fa-IR') + ' تومان';
+            const filtered = validData.filter(item => item.price_num >= minPrice);
             render(filtered);
         });
     })
     .catch(err => {
-        console.error('خطای کلی:', err);
-        document.body.innerHTML += `<p style="color: red; text-align: center; font-size: 1.3rem; margin: 2rem;">
-            خطا در بارگذاری یا پردازش داده‌ها: ${err.message}<br>
-            لطفاً کنسول مرورگر (F12 → Console) را چک کنید و خطاها را بفرستید.
+        console.error('خطای کلی در fetch یا پردازش:', err);
+        document.body.innerHTML += `<p style="color: red; text-align: center; font-size: 1.3rem; margin: 2rem; direction: rtl;">
+            خطا در بارگذاری داده‌ها: ${err.message}<br>
+            لطفاً کنسول مرورگر (F12 → Console) را چک کنید.
         </p>`;
     });
