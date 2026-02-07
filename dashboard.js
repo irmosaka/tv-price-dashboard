@@ -176,7 +176,6 @@ function applyFilters() {
 function updateChart(data) {
     console.log("به‌روزرسانی چارت‌ها با", data.length, "ردیف");
 
-    // Bar Chart
     const brandAvg = {};
     data.forEach(item => {
         if (item.brand !== 'نامشخص') {
@@ -206,8 +205,7 @@ function updateChart(data) {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } },
-                plugins: { legend: { display: true } }
+                scales: { y: { beginAtZero: true } }
             }
         });
     }
@@ -290,17 +288,20 @@ function updateChart(data) {
     }
 }
 
-// Modal برای تمام صفحه
+// Modal تمام صفحه
 function openModal(chartId) {
     const modal = document.getElementById('chart-modal');
     const canvas = document.getElementById('modal-canvas');
     const ctx = canvas.getContext('2d');
 
-    // کپی چارت اصلی به modal
+    // کپی چارت اصلی به modal با کیفیت بالا
     const originalCanvas = document.getElementById(chartId);
     if (originalCanvas && ctx) {
-        canvas.width = originalCanvas.width;
-        canvas.height = originalCanvas.height;
+        canvas.width = originalCanvas.width * 2;  // برای کیفیت بالاتر
+        canvas.height = originalCanvas.height * 2;
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        ctx.scale(2, 2);  // مقیاس ۲ برابر برای کیفیت
         ctx.drawImage(originalCanvas, 0, 0);
     }
 
