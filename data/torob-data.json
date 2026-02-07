@@ -1,0 +1,40 @@
+{
+  "last_updated": "۱۴۰۳/۰۱/۲۷ - ۱۴:۳۰",
+  "products": [
+    {
+      "name": "تلویزیون سامسونگ 55 اینچ QLED 4K UA55Q70A",
+      "price": "32,450,000",
+      "seller": "دیجی‌کالا",
+      "date": "۱۴۰۳/۰۱/۲۷",
+      "url": "https://torob.com/p/123456"
+    },
+    {
+      "name": "تلویزیون ال جی 65 اینچ 4K UHD 65NANO75",
+      "price": "38,900,000",
+      "seller": "ترب",
+      "date": "۱۴۰۳/۰۱/۲۷",
+      "url": "https://torob.com/p/654321"
+    },
+    {
+      "name": "تلویزیون سونی 50 اینچ 4K Bravia XR",
+      "price": "41,500,000",
+      "seller": "بانه مارکت",
+      "date": "۱۴۰۳/۰۱/۲۷",
+      "url": "https://torob.com/p/789012"
+    },
+    {
+      "name": "تلویزیون شیائومی 43 اینچ 4K Android TV",
+      "price": "18,500,000",
+      "seller": "شیائومی استور",
+      "date": "۱۴۰۳/۰۱/۲۷",
+      "url": "https://torob.com/p/345678"
+    },
+    {
+      "name": "تلویزیون TCL 50 اینچ 4K QLED",
+      "price": "24,500,000",
+      "seller": "ترب",
+      "date": "۱۴۰۳/۰۱/۲۷",
+      "url": "https://torob.com/p/901234"
+    }
+  ]
+}
