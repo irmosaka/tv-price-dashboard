@@ -301,9 +301,16 @@ function openModal(chartId) {
     // پاک کردن canvas قبلی
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // اگر چارت قبلی وجود داشت، destroy کن
+    if (window.modalChart) {
+        window.modalChart.destroy();
+        window.modalChart = null;
+    }
+
     // داده فیلترشده فعلی
     const filteredData = getFilteredData();
 
+    // ساخت چارت جدید بر اساس chartId
     let chartInstance;
 
     if (chartId === 'brand-price-chart') {
@@ -407,6 +414,9 @@ function openModal(chartId) {
         });
     }
 
+    // ذخیره instance برای destroy بعدی
+    window.modalChart = chartInstance;
+
     modal.style.display = 'flex';
     setTimeout(() => modal.classList.add('show'), 10);
 }
@@ -414,6 +424,13 @@ function openModal(chartId) {
 function closeModal() {
     const modal = document.getElementById('chart-modal');
     modal.classList.remove('show');
+
+    // destroy چارت modal برای جلوگیری از خطا در باز کردن بعدی
+    if (window.modalChart) {
+        window.modalChart.destroy();
+        window.modalChart = null;
+    }
+
     setTimeout(() => modal.style.display = 'none', 400);
 }
 
