@@ -63,12 +63,12 @@
         "link": ""
     },
     {
-        "title": "تلویزیون هوشمند بلانتون مدل BEW-TV6523 سایز 65 اینچ 4K",
+        "title": "تلویزیون هوشمند فیلیپس مدل OLED908 سایز ۶۵ اینچ Ultra HD 4K",
         "brand": "نامشخص",
-        "size": "65 اینچ",
-        "tech": "4K",
+        "size": "۶۵ اینچ",
+        "tech": "OLED",
         "num_sellers": "نامشخص",
-        "avg_price_top5": "766 تومان",
+        "avg_price_top5": "743 تومان",
         "link": ""
     },
     {
@@ -148,7 +148,7 @@
         "brand": "سامسونگ",
         "size": "۱۰۰ اینچ",
         "tech": "4K",
-        "num_sellers": "۴",
+        "num_sellers": "۳",
         "avg_price_top5": "581 تومان",
         "link": ""
     },
@@ -159,15 +159,6 @@
         "tech": "4K",
         "num_sellers": "۳",
         "avg_price_top5": "577 تومان",
-        "link": ""
-    },
-    {
-        "title": "تلویزیون هوشمند بلانتون ۵۸ اینچ مدل BEF-TV5840",
-        "brand": "نامشخص",
-        "size": "۵۸ اینچ",
-        "tech": "نامشخص",
-        "num_sellers": "نامشخص",
-        "avg_price_top5": "576 تومان",
         "link": ""
     },
     {
@@ -292,44 +283,53 @@
         "brand": "هایسنس",
         "size": "۸۵ اینچ",
         "tech": "4K",
-        "num_sellers": "۲",
+        "num_sellers": "۳",
         "avg_price_top5": "428 تومان",
+        "link": ""
+    },
+    {
+        "title": "تلویزیون سامسونگ S90D سایز ۷۷ اینچ OLED Ultra HD 4K",
+        "brand": "سامسونگ",
+        "size": "۷۷ اینچ",
+        "tech": "OLED",
+        "num_sellers": "۲",
+        "avg_price_top5": "427 تومان",
         "link": "https://torob.com/browse/246/تلویزیون-tv/b/4616/gplus-%D8%AC%DB%8C-%D9%BE%D9%84%D8%A7%D8%B3/"
     },
     {
-        "title": "تلویزیون هایسنس UX سایز ۸۵ اینچ Ultra HD 4K LED",
-        "brand": "هایسنس",
-        "size": "۸۵ اینچ",
-        "tech": "4K",
+        "title": "تلویزیون سامسونگ S90D سایز ۷۷ اینچ OLED Ultra HD 4K",
+        "brand": "سامسونگ",
+        "size": "۷۷ اینچ",
+        "tech": "OLED",
         "num_sellers": "۲",
-        "avg_price_top5": "428 تومان",
+        "avg_price_top5": "427 تومان",
         "link": "https://torob.com/"
     },
     {
-        "title": "تلویزیون هایسنس UX سایز ۸۵ اینچ Ultra HD 4K LED",
-        "brand": "هایسنس",
-        "size": "۸۵ اینچ",
-        "tech": "4K",
+        "title": "تلویزیون سامسونگ S90D سایز ۷۷ اینچ OLED Ultra HD 4K",
+        "brand": "سامسونگ",
+        "size": "۷۷ اینچ",
+        "tech": "OLED",
         "num_sellers": "۲",
-        "avg_price_top5": "428 تومان",
-        "link": "https://torob.com/p/199f38f8-2152-4837-a484-4814764912e5/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D9%87%D8%A7%DB%8C%D8%B3%D9%86%D8%B3-ux-%D8%B3%D8%A7%DB%8C%D8%B2-85-%D8%A7%DB%8C%D9%86%DA%86-ultra-hd-4k-led/"
+        "avg_price_top5": "427 تومان",
+        "link": "https://torob.com/p/87051b28-21bd-4eef-8507-3708fb2a08db/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-s90d-%D8%B3%D8%A7%DB%8C%D8%B2-77-%D8%A7%DB%8C%D9%86%DA%86-oled-ultra-hd-4k/"
     },
     {
-        "title": "تلویزیون هایسنس UX سایز ۸۵ اینچ Ultra HD 4K LED",
-        "brand": "هایسنس",
-        "size": "۸۵ اینچ",
-        "tech": "4K",
+        "title": "تلویزیون سامسونگ S90D سایز ۷۷ اینچ OLED Ultra HD 4K",
+        "brand": "سامسونگ",
+        "size": "۷۷ اینچ",
+        "tech": "OLED",
         "num_sellers": "۲",
-        "avg_price_top5": "428 تومان",
-        "link": "https://torob.com/p/199f38f8-2152-4837-a484-4814764912e5/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D9%87%D8%A7%DB%8C%D8%B3%D9%86%D8%B3-ux-%D8%B3%D8%A7%DB%8C%D8%B2-85-%D8%A7%DB%8C%D9%86%DA%86-ultra-hd-4k-led/"
+        "avg_price_top5": "427 تومان",
+        "link": "https://torob.com/p/87051b28-21bd-4eef-8507-3708fb2a08db/%D8%AA%D9%84%D9%88%DB%8C%D8%B2%DB%8C%D9%88%D9%86-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-s90d-%D8%B3%D8%A7%DB%8C%D8%B2-77-%D8%A7%DB%8C%D9%86%DA%86-oled-ultra-hd-4k/"
     },
     {
-        "title": "تلویزیون هایسنس UX سایز ۸۵ اینچ Ultra HD 4K LED",
-        "brand": "هایسنس",
-        "size": "۸۵ اینچ",
-        "tech": "4K",
+        "title": "تلویزیون سامسونگ S90D سایز ۷۷ اینچ OLED Ultra HD 4K",
+        "brand": "سامسونگ",
+        "size": "۷۷ اینچ",
+        "tech": "OLED",
         "num_sellers": "۲",
-        "avg_price_top5": "428 تومان",
+        "avg_price_top5": "427 تومان",
         "link": ""
     },
     {
@@ -409,7 +409,7 @@
         "brand": "سونی",
         "size": "۸۵ اینچ",
         "tech": "4K",
-        "num_sellers": "۱۴",
+        "num_sellers": "۱۳",
         "avg_price_top5": "399 تومان",
         "link": ""
     },
@@ -429,6 +429,15 @@
         "tech": "4K",
         "num_sellers": "۲",
         "avg_price_top5": "397 تومان",
+        "link": ""
+    },
+    {
+        "title": "تلویزیون سونی مدل 75RX90 سایز ۷۵ اینچ",
+        "brand": "سونی",
+        "size": "۷۵ اینچ",
+        "tech": "نامشخص",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "394 تومان",
         "link": ""
     },
     {
@@ -459,11 +468,11 @@
         "link": ""
     },
     {
-        "title": "تلویزیون سامسونگ S90D سایز ۷۷ اینچ OLED Ultra HD 4K",
-        "brand": "سامسونگ",
-        "size": "۷۷ اینچ",
-        "tech": "OLED",
-        "num_sellers": "۳",
+        "title": "تلویزیون سونی مدل XR70 سایز ۷۵ اینچ کیفیت تصویر Ultra HD 4K نوع نمایش QLED",
+        "brand": "سونی",
+        "size": "۷۵ اینچ",
+        "tech": "4K",
+        "num_sellers": "۱۸",
         "avg_price_top5": "374 تومان",
         "link": ""
     },
@@ -474,6 +483,15 @@
         "tech": "OLED",
         "num_sellers": "نامشخص",
         "avg_price_top5": "373 تومان",
+        "link": ""
+    },
+    {
+        "title": "تلویزیون هوشمند ایکس ویژن مدل X15 سایز ۱۰۰ اینچ QLED Ultra HD 4K",
+        "brand": "ایکس ویژن",
+        "size": "۱۰۰ اینچ",
+        "tech": "QLED",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "365 تومان",
         "link": ""
     },
     {
@@ -510,15 +528,6 @@
         "tech": "نامشخص",
         "num_sellers": "نامشخص",
         "avg_price_top5": "357 تومان",
-        "link": ""
-    },
-    {
-        "title": "تلویزیون هوشمند ایکس ویژن مدل X15 سایز ۱۰۰ اینچ QLED Ultra HD 4K",
-        "brand": "ایکس ویژن",
-        "size": "۱۰۰ اینچ",
-        "tech": "QLED",
-        "num_sellers": "۲",
-        "avg_price_top5": "350 تومان",
         "link": ""
     },
     {
@@ -564,15 +573,6 @@
         "tech": "نامشخص",
         "num_sellers": "نامشخص",
         "avg_price_top5": "340 تومان",
-        "link": ""
-    },
-    {
-        "title": "تلویزیون سونی مدل XR70 سایز ۷۵ اینچ کیفیت تصویر Ultra HD 4K نوع نمایش QLED",
-        "brand": "سونی",
-        "size": "۷۵ اینچ",
-        "tech": "4K",
-        "num_sellers": "۱۸",
-        "avg_price_top5": "339 تومان",
         "link": ""
     },
     {
@@ -666,6 +666,15 @@
         "link": ""
     },
     {
+        "title": "تلویزیون فیلیپس مدل 65OLED848 سایز ۶۵ اینچ OLED Ultra HD 4K",
+        "brand": "نامشخص",
+        "size": "۶۵ اینچ",
+        "tech": "OLED",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "321 تومان",
+        "link": ""
+    },
+    {
         "title": "تلویزیون  ال‌جی مدل 77C3 صفحه نمایش 77 اینچ",
         "brand": "ال‌جی",
         "size": "77 اینچ",
@@ -699,15 +708,6 @@
         "tech": "4K",
         "num_sellers": "نامشخص",
         "avg_price_top5": "315 تومان",
-        "link": ""
-    },
-    {
-        "title": "تلویزیون هوشمند هایسنس مدل WR6BE سایز ۶۵ اینچ Ultra HD 4K",
-        "brand": "هایسنس",
-        "size": "۶۵ اینچ",
-        "tech": "4K",
-        "num_sellers": "نامشخص",
-        "avg_price_top5": "313 تومان",
         "link": ""
     },
     {
@@ -751,7 +751,7 @@
         "brand": "ال جی",
         "size": "۶۵ اینچ",
         "tech": "OLED",
-        "num_sellers": "۷",
+        "num_sellers": "۸",
         "avg_price_top5": "302 تومان",
         "link": ""
     },
@@ -769,7 +769,7 @@
         "brand": "هایسنس",
         "size": "۱۰۰ اینچ",
         "tech": "QLED",
-        "num_sellers": "۸",
+        "num_sellers": "۷",
         "avg_price_top5": "295 تومان",
         "link": ""
     },
@@ -810,21 +810,21 @@
         "link": ""
     },
     {
-        "title": "تلویزیون هوشمند ۵۰ اینچ Crystal UHD سری TU-8000 سامسونگ – 4K HDR، مجهز به الکسا (مدل UN50TU8000FXZA، سال ۲۰۲۰)",
-        "brand": "سامسونگ",
-        "size": "۵۰ اینچ",
-        "tech": "UHD",
-        "num_sellers": "نامشخص",
-        "avg_price_top5": "288 تومان",
-        "link": ""
-    },
-    {
         "title": "تلویزیون سامسونگ QN85D سایز ۸۵ اینچ Ultra HD 4K QLED",
         "brand": "سامسونگ",
         "size": "۸۵ اینچ",
         "tech": "4K",
         "num_sellers": "۳",
         "avg_price_top5": "288 تومان",
+        "link": ""
+    },
+    {
+        "title": "تلویزیون هوشمند ۵۰ اینچ Crystal UHD سری TU-8000 سامسونگ – 4K HDR، مجهز به الکسا (مدل UN50TU8000FXZA، سال ۲۰۲۰)",
+        "brand": "سامسونگ",
+        "size": "۵۰ اینچ",
+        "tech": "UHD",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "285 تومان",
         "link": ""
     },
     {
@@ -841,7 +841,7 @@
         "brand": "نامشخص",
         "size": "۱۰۰ اینچ",
         "tech": "QLED",
-        "num_sellers": "۱۱",
+        "num_sellers": "۹",
         "avg_price_top5": "284 تومان",
         "link": ""
     },
@@ -850,17 +850,26 @@
         "brand": "تی سی ال",
         "size": "۸۵ اینچ",
         "tech": "4K",
-        "num_sellers": "۱۶",
+        "num_sellers": "۱۵",
         "avg_price_top5": "281 تومان",
         "link": ""
     },
     {
-        "title": "تلویزیون هوشمند شیائومی مدل S سایز ۸۵ اینچ LED",
+        "title": "تلویزیون هوشمند فیلیپس مدل 55PUS7906 سایز ۵۵ اینچ Ultra HD 4K با Ambilight",
         "brand": "نامشخص",
-        "size": "۸۵ اینچ",
-        "tech": "LED",
+        "size": "۵۵ اینچ",
+        "tech": "4K",
         "num_sellers": "نامشخص",
-        "avg_price_top5": "280 تومان",
+        "avg_price_top5": "277 تومان",
+        "link": ""
+    },
+    {
+        "title": "تلویزیون فیلیپس مدل PUS8848 سایز ۷۵ اینچ Ultra HD 4K",
+        "brand": "نامشخص",
+        "size": "۷۵ اینچ",
+        "tech": "4K",
+        "num_sellers": "نامشخص",
+        "avg_price_top5": "273 تومان",
         "link": ""
     },
     {
@@ -888,15 +897,6 @@
         "tech": "4K",
         "num_sellers": "نامشخص",
         "avg_price_top5": "268 تومان",
-        "link": ""
-    },
-    {
-        "title": "تلویزیون هوشمند جنرال برلین مدل 98QNED80 سایز ۹۸ اینچ QLED Ultra HD 4K",
-        "brand": "نامشخص",
-        "size": "۹۸ اینچ",
-        "tech": "QLED",
-        "num_sellers": "نامشخص",
-        "avg_price_top5": "267 تومان",
         "link": ""
     }
 ]
