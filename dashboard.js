@@ -1,44 +1,44 @@
-// لود JSON خام
 fetch('daily_prices.json')
     .then(response => response.json())
     .then(rawData => {
-        // استخراج و پردازش فیلدهای مورد نظر (بدون تمیز دستی)
-        let data = rawData.map(item => ({
-            name: item['ellipsis-2'] || 'نامشخص',
-            link: item['block href'] || '#',
-            stock: item['text-caption'] || 'نامشخص',
-            rating: item['text-body2-strong'] || '---',
-            discount: item['text-body2-strong (2)'] || '۰٪',
-            price: item['flex'] || '۰',
-            original_price: item['text-neutral-300'] || item['flex'] || '۰'
-        }));
-        
-        // تبدیل قیمت به عدد (رفع باگ string به int، حذف کاما و تومان)
-        data.forEach(item => {
-            item.price_num = parseInt(item.price.replace(/[,\s]/g, '')) || 0;
-            item.original_price_num = parseInt(item.original_price.replace(/[,\s]/g, '')) || item.price_num;
-            // تعداد فروشنده از موجودی (ساده: اگر موجود باشه = ۱)
-            item.sellers = (item.stock.includes('موجود') || item.stock.includes('باقی مانده')) ? 1 : 0;
-        });
-        
-        // تابع رندر (برای فیلتر دینامیک)
-        function render(data) {
-            // محاسبات آمار (رفع باگ میانگین)
-            let prices = data.map(item => item.price_num).filter(p => p > 0);
-            let avgPrice = prices.reduce((sum, p) => sum + p, 0) / prices.length || 0;
-            let totalSellers = data.reduce((sum, item) => sum + item.sellers, 0);
-            let totalItems = data.length;
+        // پردازش داده خام - فقط فیلدهای مهم
+        const data = rawData.map(item => {
+            // قیمت فروش (flex)
+            let priceStr = item['flex'] || '0';
+            priceStr = priceStr.replace(/[^0-9]/g, ''); // فقط عدد نگه دار
             
-            // نمایش آمار
-            document.getElementById('avg-price').textContent = avgPrice.toLocaleString('fa-IR');
-            document.getElementById('total-items').textContent = totalItems;
+            // قیمت اصلی (text-neutral-300)
+            let origStr = item['text-neutral-300'] || priceStr;
+            origStr = origStr.replace(/[^0-9]/g, '');
+            
+            return {
+                name: item['ellipsis-2'] || 'نامشخص',
+                link: item['block href'] || '#',
+                stock: item['text-caption'] || 'نامشخص',
+                rating: item['text-body2-strong'] || '—',
+                discount: item['text-body2-strong (2)'] || '—',
+                price_num: parseInt(priceStr) || 0,
+                original_price_num: parseInt(origStr) || 0,
+                sellers: (item['text-caption'] || '').includes('موجود') || (item['text-caption'] || '').includes('باقی مانده') ? 1 : 0
+            };
+        }).filter(item => item.price_num > 0); // محصولات بدون قیمت حذف
+
+        // تابع رندر
+        function render(filteredData) {
+            // آمار
+            const prices = filteredData.map(i => i.price_num);
+            const avg = prices.length ? (prices.reduce((a,b)=>a+b,0) / prices.length).toFixed(0) : 0;
+            const totalSellers = filteredData.reduce((sum, i) => sum + i.sellers, 0);
+            
+            document.getElementById('avg-price').textContent = Number(avg).toLocaleString('fa-IR') + ' تومان';
+            document.getElementById('total-items').textContent = filteredData.length;
             document.getElementById('total-sellers').textContent = totalSellers;
-            
-            // ساخت جدول (لینک clickable)
-            let tbody = document.querySelector('#product-table tbody');
+
+            // جدول
+            const tbody = document.querySelector('#product-table tbody');
             tbody.innerHTML = '';
-            data.forEach(item => {
-                let row = document.createElement('tr');
+            filteredData.forEach(item => {
+                const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${item.name}</td>
                     <td>${item.price_num.toLocaleString('fa-IR')} تومان</td>
@@ -46,44 +46,48 @@ fetch('daily_prices.json')
                     <td>${item.discount}</td>
                     <td>${item.rating}</td>
                     <td>${item.stock}</td>
-                    <td><a href="${item.link}" target="_blank">مشاهده</a></td>
+                    <td><a href="${item.link}" target="_blank" rel="noopener">مشاهده</a></td>
                 `;
                 tbody.appendChild(row);
             });
-            
-            // چارت قیمت‌ها
-            let ctx = document.getElementById('price-chart').getContext('2d');
-            if (window.myChart) window.myChart.destroy();  // پاک کردن چارت قبلی
+
+            // چارت
+            const ctx = document.getElementById('price-chart').getContext('2d');
+            if (window.myChart) window.myChart.destroy();
             window.myChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: data.map(item => item.name.substring(0, 20) + '...'),
+                    labels: filteredData.map(i => i.name.substring(0, 25) + (i.name.length > 25 ? '...' : '')),
                     datasets: [{
                         label: 'قیمت فروش (تومان)',
-                        data: data.map(item => item.price_num),
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
+                        data: filteredData.map(i => i.price_num),
+                        backgroundColor: 'rgba(37, 99, 235, 0.35)',
+                        borderColor: 'rgba(37, 99, 235, 0.8)',
                         borderWidth: 1
                     }]
                 },
                 options: {
-                    scales: { y: { beginAtZero: true } },
-                    responsive: true
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
                 }
             });
         }
-        
+
         // رندر اولیه
         render(data);
-        
-        // فیلتر دینامیک با slider
-        document.getElementById('price-filter').addEventListener('input', (e) => {
-            document.getElementById('filter-value').textContent = e.target.value.toLocaleString('fa-IR') + ' تومان';
-            let filtered = data.filter(item => item.price_num >= parseInt(e.target.value));
+
+        // فیلتر زنده
+        const slider = document.getElementById('price-filter');
+        const valueSpan = document.getElementById('filter-value');
+        slider.addEventListener('input', () => {
+            const minPrice = parseInt(slider.value);
+            valueSpan.textContent = minPrice.toLocaleString('fa-IR') + ' تومان';
+            const filtered = data.filter(item => item.price_num >= minPrice);
             render(filtered);
         });
     })
-    .catch(error => {
-        console.error('خطا در لود JSON:', error);
-        document.body.innerHTML += '<p>خطا: فایل daily_prices.json پیدا نشد. آپلود کن.</p>';
+    .catch(err => {
+        console.error(err);
+        document.body.innerHTML += '<p style="color:red; text-align:center;">خطا در بارگذاری داده‌ها. مطمئن شوید فایل daily_prices.json در ریپو وجود دارد.</p>';
     });
