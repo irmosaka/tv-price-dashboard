@@ -185,36 +185,42 @@
 
         #chart-modal.show { opacity: 1; }
 
-        #modal-content {
-            background: white;
-            border-radius: 20px;
-            padding: 1.5rem;
-            width: 95%;
-            max-width: 1600px;
-            height: 90vh;
+        .modal-canvas-wrapper {
+            width: 100%;
+            height: 90%;
             position: relative;
-            overflow: hidden;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.4);
-            animation: modalFadeIn 0.4s ease;
         }
 
-        @keyframes modalFadeIn {
-            from { transform: scale(0.92); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+        .modal-canvas-wrapper canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .modal-canvas-wrapper > canvas {
+            display: none;
+        }
+
+        .modal-canvas-wrapper > canvas.active {
+            display: block;
         }
 
         #close-modal {
             position: absolute;
             top: 15px;
             right: 20px;
-            font-size: 2.8rem;
+            font-size: 3rem;
             cursor: pointer;
-            color: var(--gray);
-            z-index: 10000;
-            transition: color 0.2s;
+            color: white;
+            z-index: 10001;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
         }
 
-        #close-modal:hover { color: #ef4444; }
+        #close-modal:hover { background: #ef4444; }
 
         footer {
             text-align: center;
@@ -309,11 +315,16 @@
             </div>
         </div>
 
-        <!-- Modal تمام صفحه -->
+        <!-- Modal تمام صفحه با ۴ canvas جداگانه -->
         <div id="chart-modal">
             <div id="modal-content">
                 <span id="close-modal" title="بستن">×</span>
-                <canvas id="modal-canvas"></canvas>
+                <div class="modal-canvas-wrapper">
+                    <canvas id="modal-brand-price"></canvas>
+                    <canvas id="modal-brand-pie"></canvas>
+                    <canvas id="modal-trend-line"></canvas>
+                    <canvas id="modal-price-size"></canvas>
+                </div>
             </div>
         </div>
 
