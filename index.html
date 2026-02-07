@@ -3,122 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>قیمت تلویزیون از ترب</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/vazir-font@32.102.0/dist/font-face.css" rel="stylesheet">
+    <title>📊 داشبورد حرفه‌ای قیمت تلویزیون ترب</title>
+    
+    <!-- استایل‌های اصلی -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Chart.js برای نمودارها -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- فونت فارسی -->
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Vazir', sans-serif; background: #f8f9fa; }
-        h1 { color: #0d6efd; }
-        .price { color: #dc3545; font-weight: bold; }
-        .filter-group { margin-bottom: 20px; }
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+            --dark-color: #2b2d42;
+        }
+        
+        * {
+            font-family: 'Vazir', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding-bottom: 50px;
+        }
+        
+        /* نوار بالایی */
+        .navbar-custom {
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        /* کارت‌های آماری */
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.12);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-icon.blue { background: rgba(67, 97, 238, 0.1); color: var(--primary-color); }
+        .stat-icon.green { background: rgba(76, 201, 240, 0.1); color: var(--success-color); }
+        .stat-icon.red { background: rgba(247, 37, 133, 0.1); color: var(--warning-color); }
+        .stat-icon.orange { background: rgba(255, 183, 3, 0.1); color: #ffb703; }
+        
+        /* نمودارها */
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            height: 100%;
+        }
+        
+        /* جدول */
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        }
+        
+        .table-custom thead {
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+        }
+        
+        .table-custom tbody tr:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        /* دکمه‌ها */
+        .btn-custom {
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            padding: 10px 20px;
+            transition: all 0.3s;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(67, 97, 238, 0.3);
+            color: white;
+        }
+        
+        /* بدنه محتوا */
+        .content-wrapper {
+            padding-top: 30px;
+        }
+        
+        /* قیمت‌ها */
+        .price-badge {
+            background: linear-gradient(90deg, #4cc9f0 0%, #4361ee 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        /* اسکلت بارگذاری */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
     </style>
 </head>
-<body class="container my-5">
-    <h1 class="text-center mb-4">قیمت‌های به‌روز تلویزیون (از ترب)</h1>
-    <p class="text-center text-muted">آخرین آپدیت: <span id="update-time">در حال لود...</span></p>
+<body>
+    <!-- نوار بالایی -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <i class="bi bi-tv-fill me-2" style="font-size: 1.8rem;"></i>
+                <div>
+                    <h4 class="mb-0">داشبورد قیمت تلویزیون</h4>
+                    <small class="opacity-75">بررسی زنده قیمت‌ها از سایت ترب</small>
+                </div>
+            </a>
+            
+            <div class="d-flex align-items-center">
+                <div class="text-white text-end me-3 d-none d-md-block">
+                    <div id="current-date" class="small">در حال بارگذاری...</div>
+                    <div id="data-source" class="small opacity-75">منبع: torob.com</div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-gear"></i> تنظیمات
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="refreshData()"><i class="bi bi-arrow-clockwise"></i> بروزرسانی داده</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="exportToExcel()"><i class="bi bi-file-earmark-excel"></i> خروجی Excel</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="https://github.com/faridhasani7/Torob-Price-Scraper" target="_blank"><i class="bi bi-github"></i> سورس اسکریپت</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-    <!-- فیلترها -->
-    <div class="filter-group row">
-        <div class="col-md-4">
-            <label for="brand-filter">برند:</label>
-            <select id="brand-filter" class="form-select">
-                <option value="">همه</option>
-            </select>
+    <!-- محتوای اصلی -->
+    <div class="container content-wrapper">
+        <!-- ردیف اول: آمار کلی -->
+        <div class="row mb-4">
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="stat-card p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon blue me-3">
+                            <i class="bi bi-tv"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">تعداد محصولات</h6>
+                            <h3 id="total-products" class="mb-0">۰</h3>
+                            <small id="total-change" class="text-success"><i class="bi bi-arrow-up"></i> ۰٪</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="stat-card p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon green me-3">
+                            <i class="bi bi-currency-exchange"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">میانگین قیمت</h6>
+                            <h3 id="avg-price" class="mb-0">۰ تومان</h3>
+                            <small id="avg-change" class="text-success"><i class="bi bi-arrow-up"></i> ۰٪</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="stat-card p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon red me-3">
+                            <i class="bi bi-shop"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">تعداد فروشنده</h6>
+                            <h3 id="total-sellers" class="mb-0">۰</h3>
+                            <small id="seller-change" class="text-success"><i class="bi bi-arrow-up"></i> ۰٪</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="stat-card p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon orange me-3">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">بیشترین قیمت</h6>
+                            <h3 id="max-price" class="mb-0">۰ تومان</h3>
+                            <small id="max-change" class="text-success"><i class="bi bi-arrow-up"></i> ۰٪</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="col-md-4">
-            <label for="size-filter">سایز:</label>
-            <select id="size-filter" class="form-select">
-                <option value="">همه</option>
-            </select>
+
+        <!-- ردیف دوم: نمودارها -->
+        <div class="row mb-4">
+            <div class="col-lg-8 mb-4">
+                <div class="chart-container">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>توزیع قیمت تلویزیون‌ها</h5>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary active" onclick="changeChartType('bar')">نمودار میله‌ای</button>
+                            <button class="btn btn-outline-primary" onclick="changeChartType('line')">نمودار خطی</button>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="priceDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="chart-container">
+                    <h5 class="mb-3"><i class="bi bi-pie-chart me-2"></i>توزیع بر اساس برند</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="brandDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="col-md-4">
-            <label for="tech-filter">تکنولوژی:</label>
-            <select id="tech-filter" class="form-select">
-                <option value="">همه</option>
-            </select>
+
+        <!-- ردیف سوم: فیلتر و جستجو -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="chart-container">
+                    <h5 class="mb-3"><i class="bi bi-funnel me-2"></i>فیلتر و جستجوی پیشرفته</h5>
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label">جستجوی محصول:</label>
+                            <input type="text" class="form-control" id="search-product" placeholder="نام تلویزیون...">
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <label class="form-label">از قیمت:</label>
+                            <input type="number" class="form-control" id="min-price-filter" placeholder="حداقل">
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <label class="form-label">تا قیمت:</label>
+                            <input type="number" class="form-control" id="max-price-filter" placeholder="حداکثر">
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label">فروشنده:</label>
+                            <select class="form-control" id="seller-filter">
+                                <option value="">همه فروشندگان</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-2 d-flex align-items-end">
+                            <button class="btn btn-custom w-100" onclick="applyFilters()">
+                                <i class="bi bi-funnel"></i> اعمال فیلتر
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ردیف چهارم: جدول محصولات -->
+        <div class="row">
+            <div class="col-12">
+                <div class="table-container">
+                    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                        <h5 class="mb-0"><i class="bi bi-table me-2"></i>لیست قیمت تلویزیون‌ها</h5>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-success" onclick="loadSampleData()">
+                                <i class="bi bi-download"></i> داده نمونه
+                            </button>
+                            <button class="btn btn-sm btn-success" onclick="loadRealData()">
+                                <i class="bi bi-database"></i> داده واقعی
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover table-custom mb-0">
+                            <thead>
+                                <tr>
+                                    <th width="50">#</th>
+                                    <th>نام محصول</th>
+                                    <th width="150">قیمت (تومان)</th>
+                                    <th width="120">فروشنده</th>
+                                    <th width="120">برند</th>
+                                    <th width="100">سایز</th>
+                                    <th width="100">تاریخ</th>
+                                    <th width="80">عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="products-table">
+                                <!-- داده‌ها اینجا لود می‌شوند -->
+                                <tr>
+                                    <td colspan="8" class="text-center py-5">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">در حال بارگذاری...</span>
+                                        </div>
+                                        <p class="mt-2 text-muted">در حال بارگذاری داده‌ها...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- پاورقی جدول -->
+                    <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                        <div class="text-muted">
+                            نمایش <span id="showing-count">0</span> از <span id="total-count">0</span> محصول
+                        </div>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0" id="pagination">
+                                <!-- صفحات اینجا ساخته می‌شوند -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-striped table-hover" id="tv-table">
-            <thead class="table-dark">
-                <tr>
-                    <th>عنوان</th>
-                    <th>برند</th>
-                    <th>سایز</th>
-                    <th>تکنولوژی</th>
-                    <th>تعداد فروشندگان</th>
-                    <th>میانگین قیمت ۵ فروشنده اول</th>
-                    <th>لینک</th>
-                </tr>
-            </thead>
-            <tbody id="table-body"></tbody>
-        </table>
-    </div>
-
+    <!-- اسکریپت‌ها -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="real-data.js"></script>
+    
     <script>
-        fetch('tv_prices.json?t=' + new Date().getTime())
-            .then(res => res.json())
-            .then(data => {
-                const tbody = document.getElementById('table-body');
-                const brandFilter = document.getElementById('brand-filter');
-                const sizeFilter = document.getElementById('size-filter');
-                const techFilter = document.getElementById('tech-filter');
-
-                // جمع‌آوری گزینه‌های منحصربه‌فرد برای فیلترها
-                const brands = new Set(data.map(item => item.brand));
-                const sizes = new Set(data.map(item => item.size));
-                const techs = new Set(data.map(item => item.tech));
-
-                brands.forEach(b => { const opt = document.createElement('option'); opt.value = b; opt.text = b; brandFilter.appendChild(opt); });
-                sizes.forEach(s => { const opt = document.createElement('option'); opt.value = s; opt.text = s; sizeFilter.appendChild(opt); });
-                techs.forEach(t => { const opt = document.createElement('option'); opt.value = t; opt.text = t; techFilter.appendChild(opt); });
-
-                // نمایش اولیه جدول
-                function renderTable(filteredData) {
-                    tbody.innerHTML = '';
-                    filteredData.forEach(item => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>${item.title}</td>
-                            <td>${item.brand}</td>
-                            <td>${item.size}</td>
-                            <td>${item.tech}</td>
-                            <td>${item.num_sellers}</td>
-                            <td class="price">${item.avg_price_top5}</td>
-                            <td><a href="${item.link}" target="_blank" class="btn btn-sm btn-primary">مشاهده</a></td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
+        // توابع عمومی
+        function formatPrice(price) {
+            if (!price) return '۰ تومان';
+            return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " تومان";
+        }
+        
+        function showLoading() {
+            document.getElementById('products-table').innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2 text-muted">در حال بارگذاری...</p>
+                    </td>
+                </tr>
+            `;
+        }
+        
+        // وقتی صفحه لود شد
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('داشبورد حرفه‌ای آماده است!');
+            
+            // ابتدا داده نمونه را لود کن
+            setTimeout(() => {
+                if (typeof loadSampleData === 'function') {
+                    loadSampleData();
                 }
-
-                renderTable(data);
-
-                // فیلتر کردن جدول
-                function applyFilters() {
-                    const selectedBrand = brandFilter.value.toLowerCase(); // case-insensitive
-                    const selectedSize = sizeFilter.value;
-                    const selectedTech = techFilter.value;
-
-                    const filtered = data.filter(item => {
-                        return (!selectedBrand || item.brand.toLowerCase() === selectedBrand) && // case-insensitive
-                               (!selectedSize || item.size === selectedSize) &&
-                               (!selectedTech || item.tech === selectedTech);
-                    });
-
-                    renderTable(filtered);
-                }
-
-                brandFilter.addEventListener('change', applyFilters);
-                sizeFilter.addEventListener('change', applyFilters);
-                techFilter.addEventListener('change', applyFilters);
-
-                document.getElementById('update-time').textContent = new Date().toLocaleString('fa-IR');
-            })
-            .catch(err => {
-                document.getElementById('update-time').textContent = 'خطا در لود';
-                console.error(err);
-            });
+            }, 1000);
+        });
     </script>
 </body>
 </html>
