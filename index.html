@@ -2,47 +2,124 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>داشبورد قیمت تلویزیون</title>
+    
+    <!-- فونت وزیر -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
-        body { font-family: Arial; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        #stats { display: flex; justify-content: space-around; margin: 10px 0; }
+        :root {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --gray: #6b7280;
+            --light: #f3f4f6;
+            --dark: #1f2937;
+        }
+        
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Vazirmatn', system-ui, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 2rem; color: var(--primary); }
+        
+        #stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .card h3 { font-size: 1.1rem; color: var(--gray); margin-bottom: 0.5rem; }
+        .card .value { font-size: 1.8rem; font-weight: 600; color: var(--primary); }
+        
+        #filter-section { margin: 1.5rem 0; text-align: center; }
+        #price-filter { width: 60%; max-width: 400px; }
+        
+        #product-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        th, td { padding: 12px 10px; text-align: right; border-bottom: 1px solid #e5e7eb; }
+        th { background: var(--primary); color: white; font-weight: 500; }
+        tr:hover { background: #f8fafc; }
+        a { color: var(--primary); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        
+        #chart-container { margin-top: 2.5rem; background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        
+        @media (max-width: 768px) {
+            #stats { grid-template-columns: 1fr; }
+            th, td { font-size: 0.9rem; padding: 10px 6px; }
+        }
     </style>
 </head>
 <body>
-    <h1>داشبورد حرفه‌ای قیمت تلویزیون‌ها</h1>
-    
-    <!-- آمار -->
-    <div id="stats">
-        <p>میانگین قیمت فروش: <span id="avg-price">---</span> تومان</p>
-        <p>تعداد محصولات: <span id="total-items">---</span></p>
-        <p>تعداد فروشنده کل: <span id="total-sellers">---</span></p>
+    <div class="container">
+        <h1>داشبورد قیمت تلویزیون‌ها</h1>
+        
+        <div id="stats">
+            <div class="card">
+                <h3>میانگین قیمت فروش</h3>
+                <div class="value" id="avg-price">—</div>
+            </div>
+            <div class="card">
+                <h3>تعداد محصولات</h3>
+                <div class="value" id="total-items">—</div>
+            </div>
+            <div class="card">
+                <h3>تعداد فروشنده کل</h3>
+                <div class="value" id="total-sellers">—</div>
+            </div>
+        </div>
+        
+        <div id="filter-section">
+            <label>حداقل قیمت: 
+                <input type="range" id="price-filter" min="0" max="500000000" value="0" step="5000000">
+                <span id="filter-value">۰ تومان</span>
+            </label>
+        </div>
+        
+        <table id="product-table">
+            <thead>
+                <tr>
+                    <th>نام محصول</th>
+                    <th>قیمت فروش</th>
+                    <th>قیمت اصلی</th>
+                    <th>تخفیف</th>
+                    <th>امتیاز</th>
+                    <th>موجودی</th>
+                    <th>لینک</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        
+        <div id="chart-container">
+            <canvas id="price-chart"></canvas>
+        </div>
     </div>
-    
-    <!-- فیلتر -->
-    <label>حداقل قیمت: <input type="range" id="price-filter" min="0" max="500000000" value="0" step="1000000"></label>
-    <span id="filter-value">۰ تومان</span>
-    
-    <!-- جدول -->
-    <table id="product-table">
-        <thead>
-            <tr>
-                <th>نام محصول</th>
-                <th>قیمت فروش</th>
-                <th>قیمت اصلی</th>
-                <th>تخفیف</th>
-                <th>امتیاز</th>
-                <th>موجودی</th>
-                <th>لینک</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-    
-    <!-- چارت -->
-    <canvas id="price-chart" width="800" height="400"></canvas>
     
     <script src="dashboard.js"></script>
 </body>
