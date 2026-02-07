@@ -185,42 +185,36 @@
 
         #chart-modal.show { opacity: 1; }
 
-        .modal-canvas-wrapper {
-            width: 100%;
-            height: 90%;
+        #modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            width: 95%;
+            max-width: 1600px;
+            height: 90vh;
             position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.4);
+            animation: modalFadeIn 0.4s ease;
         }
 
-        .modal-canvas-wrapper canvas {
-            width: 100% !important;
-            height: 100% !important;
-        }
-
-        .modal-canvas-wrapper > canvas {
-            display: none;
-        }
-
-        .modal-canvas-wrapper > canvas.active {
-            display: block;
+        @keyframes modalFadeIn {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
 
         #close-modal {
             position: absolute;
             top: 15px;
             right: 20px;
-            font-size: 3rem;
+            font-size: 2.8rem;
             cursor: pointer;
-            color: white;
-            z-index: 10001;
-            background: rgba(0,0,0,0.5);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            line-height: 50px;
-            text-align: center;
+            color: var(--gray);
+            z-index: 10000;
+            transition: color 0.2s;
         }
 
-        #close-modal:hover { background: #ef4444; }
+        #close-modal:hover { color: #ef4444; }
 
         footer {
             text-align: center;
@@ -315,21 +309,16 @@
             </div>
         </div>
 
-        <!-- Modal تمام صفحه با ۴ canvas جداگانه -->
+        <!-- Modal تمام صفحه -->
         <div id="chart-modal">
             <div id="modal-content">
                 <span id="close-modal" title="بستن">×</span>
-                <div class="modal-canvas-wrapper">
-                    <canvas id="modal-brand-price"></canvas>
-                    <canvas id="modal-brand-pie"></canvas>
-                    <canvas id="modal-trend-line"></canvas>
-                    <canvas id="modal-price-size"></canvas>
-                </div>
+                <canvas id="modal-canvas" style="width:100%; height:100%;"></canvas>
             </div>
         </div>
 
         <footer>
-            ساخته شده با ❤️ توسط <strong>محمد صادقی کاجی</strong> - زمستان ۱۴۰۴
+            ساخته شده با ❤️ توسط <strong>محمد صادق کاجی</strong> - زمستان ۱۴۰۴
         </footer>
     </div>
 
