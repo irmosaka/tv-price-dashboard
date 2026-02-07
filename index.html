@@ -5,15 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>داشبورد قیمت تلویزیون</title>
     
-    <!-- فونت وزیر -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- SheetJS برای اکسل (CDN) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <style>
@@ -24,111 +20,134 @@
             --light: #f3f4f6;
             --dark: #1f2937;
         }
-        
-        * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            font-family: 'Vazirmatn', system-ui, sans-serif;
+            font-family: 'Vazirmatn', sans-serif;
             background: var(--light);
             color: var(--dark);
-            padding: 20px;
+            padding: 16px;
+            margin: 0;
             line-height: 1.6;
         }
-        .container { max-width: 1400px; margin: 0 auto; }
-        h1 { text-align: center; margin-bottom: 2rem; color: var(--primary); }
+        .container { max-width: 100%; margin: 0 auto; }
+        h1 { text-align: center; margin: 1rem 0; font-size: 1.8rem; color: var(--primary); }
         
         #stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin: 1rem 0;
         }
         .card {
             background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             text-align: center;
         }
-        .card h3 { font-size: 1.1rem; color: var(--gray); margin-bottom: 0.5rem; }
-        .card .value { font-size: 1.8rem; font-weight: 600; color: var(--primary); }
+        .card h3 { font-size: 0.95rem; color: var(--gray); margin-bottom: 0.4rem; }
+        .card .value { font-size: 1.4rem; font-weight: 600; color: var(--primary); }
         
-        #last-update { text-align: center; margin: 1rem 0; color: var(--gray); font-size: 0.9rem; }
+        #last-update { text-align: center; color: var(--gray); font-size: 0.9rem; margin: 0.8rem 0; }
         
-        #filter-section { 
-            margin: 1.5rem 0; 
-            text-align: center; 
-            display: flex; 
-            flex-wrap: wrap; 
-            justify-content: center; 
-            gap: 1.5rem; 
+        #filter-section {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin: 1rem 0;
+            padding: 0 8px;
         }
-        #filter-section label { display: flex; align-items: center; gap: 0.5rem; }
-        #price-filter { width: 200px; }
-        select { padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px; }
+        #filter-section label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.95rem;
+        }
+        select, input[type="range"] {
+            padding: 6px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        input[type="range"] { width: 160px; }
         
-        #actions { text-align: center; margin: 1.5rem 0; }
-        #actions button { 
-            background: var(--primary); 
-            color: white; 
-            border: none; 
-            padding: 0.75rem 1.5rem; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            margin: 0 0.5rem; 
-            font-size: 1rem; 
+        #actions {
+            text-align: center;
+            margin: 1rem 0;
+        }
+        #actions button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 6px;
+            font-size: 0.95rem;
         }
         #actions button:hover { background: var(--primary-light); }
         #file-input { display: none; }
         
         #product-table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+            border-collapse: collapse;
             background: white;
-            border-radius: 12px;
+            border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-top: 1rem;
         }
-        th, td { padding: 12px 10px; text-align: right; border-bottom: 1px solid #e5e7eb; }
-        th { background: var(--primary); color: white; font-weight: 500; position: relative; cursor: pointer; }
+        th, td {
+            padding: 10px 8px;
+            text-align: right;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.95rem;
+        }
+        th {
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            position: relative;
+        }
         th:hover { background: var(--primary-light); }
-        .sort-arrow { font-size: 0.8rem; margin-right: 0.2rem; }
+        .sort-arrow { font-size: 0.8rem; margin-right: 4px; opacity: 0.7; }
+        .sort-asc::after { content: " ↑"; opacity: 1; }
+        .sort-desc::after { content: " ↓"; opacity: 1; }
         tr:hover { background: #f8fafc; }
         a { color: var(--primary); text-decoration: none; }
         a:hover { text-decoration: underline; }
         
-        #chart-container { margin-top: 2.5rem; background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        #chart-container {
+            margin-top: 2rem;
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            height: 300px;
+        }
         
         @media (max-width: 768px) {
             #stats { grid-template-columns: 1fr; }
-            #filter-section { flex-direction: column; align-items: center; }
-            th, td { font-size: 0.9rem; padding: 10px 6px; }
+            #filter-section { flex-direction: column; align-items: stretch; }
+            #filter-section label { justify-content: space-between; }
+            input[type="range"] { width: 100%; }
+            th, td { font-size: 0.85rem; padding: 8px 6px; }
+            /* جدول موبایل فرندلی - اسکرول افقی */
+            .table-wrapper { overflow-x: auto; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>داشبورد حرفه‌ای قیمت تلویزیون‌ها</h1>
+        <h1>داشبورد قیمت تلویزیون‌ها</h1>
         
         <p id="last-update">آخرین بروزرسانی: —</p>
         
         <div id="stats">
-            <div class="card">
-                <h3>میانگین قیمت فروش</h3>
-                <div class="value" id="avg-price">— تومان</div>
-            </div>
-            <div class="card">
-                <h3>تعداد محصولات</h3>
-                <div class="value" id="total-items">—</div>
-            </div>
-            <div class="card">
-                <h3>تعداد فروشنده کل</h3>
-                <div class="value" id="total-sellers">—</div>
-            </div>
-            <div class="card">
-                <h3>تعداد برندها</h3>
-                <div class="value" id="total-brands">—</div>
-            </div>
+            <div class="card"><h3>میانگین قیمت فروش</h3><div class="value" id="avg-price">— تومان</div></div>
+            <div class="card"><h3>تعداد محصولات</h3><div class="value" id="total-items">—</div></div>
+            <div class="card"><h3>تعداد فروشنده کل</h3><div class="value" id="total-sellers">—</div></div>
+            <div class="card"><h3>تعداد برندها</h3><div class="value" id="total-brands">—</div></div>
         </div>
         
         <div id="filter-section">
@@ -146,21 +165,23 @@
             <button onclick="downloadExcel()">دانلود اکسل</button>
         </div>
         
-        <table id="product-table">
-            <thead>
-                <tr>
-                    <th onclick="sortTable('name')">نام محصول</th>
-                    <th onclick="sortTable('price_num')">قیمت فروش</th>
-                    <th onclick="sortTable('original_price_num')">قیمت اصلی <span class="sort-arrow">↑↓</span></th>
-                    <th onclick="sortTable('brand')">برند <span class="sort-arrow">↑↓</span></th>
-                    <th onclick="sortTable('discount')">تخفیف</th>
-                    <th onclick="sortTable('rating')">امتیاز</th>
-                    <th>موجودی</th>
-                    <th>لینک</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <div class="table-wrapper">
+            <table id="product-table">
+                <thead>
+                    <tr>
+                        <th data-col="name">نام محصول</th>
+                        <th data-col="brand">برند</th>
+                        <th data-col="price_num">قیمت فروش</th>
+                        <th data-col="original_price_num">قیمت اصلی</th>
+                        <th data-col="discount">تخفیف</th>
+                        <th data-col="rating">امتیاز</th>
+                        <th>موجودی</th>
+                        <th>لینک</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
         
         <div id="chart-container">
             <canvas id="price-chart"></canvas>
