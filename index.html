@@ -38,8 +38,10 @@
             color: var(--dark);
             min-height: 100vh;
             padding: 1.5rem 1rem;
+            margin: 0;
         }
-        .container { max-width: 1400px; margin: 0 auto; }
+
+        .container { max-width: 1440px; margin: 0 auto; }
 
         h1 { text-align: center; font-size: clamp(1.8rem, 5vw, 2.5rem); color: var(--primary); margin-bottom: 1.5rem; }
 
@@ -47,63 +49,70 @@
 
         #stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
         }
+
         .stat-card {
             background: white;
             border-radius: 16px;
-            padding: 1.2rem;
+            padding: 1.5rem;
             box-shadow: var(--shadow);
             text-align: center;
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease;
         }
-        .stat-card:hover { transform: translateY(-6px); }
+
+        .stat-card:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(37,99,235,0.15); }
+
         .stat-card i { font-size: 2.2rem; color: var(--primary); margin-bottom: 0.8rem; }
-        .stat-card h3 { font-size: 1rem; color: var(--gray); margin-bottom: 0.5rem; }
-        .stat-card .value { font-size: 2rem; font-weight: 700; color: var(--primary-dark); }
+
+        .stat-card h3 { font-size: 1rem; color: var(--gray); margin-bottom: 0.6rem; }
+
+        .stat-card .value { font-size: 2.1rem; font-weight: 700; color: var(--primary-dark); }
 
         #filter-section {
             background: white;
             border-radius: 16px;
-            padding: 1.2rem;
+            padding: 1.5rem;
             box-shadow: var(--shadow);
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             display: flex;
             flex-wrap: wrap;
             gap: 1rem;
             align-items: center;
             justify-content: center;
         }
+
         #filter-section label { display: flex; align-items: center; gap: 0.6rem; font-weight: 500; }
+
         select, input[type="range"] {
-            padding: 0.6rem 1rem;
+            padding: 0.7rem 1rem;
             border: 1px solid #d1d5db;
             border-radius: 10px;
             font-size: 1rem;
+            background: #f9fafb;
         }
+
         #clear-filters {
             background: #ef4444;
             color: white;
             border: none;
-            padding: 0.6rem 1.2rem;
+            padding: 0.7rem 1.4rem;
             border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.2s;
         }
+
         #clear-filters:hover { background: #dc2626; transform: scale(1.03); }
 
-        #actions {
-            text-align: center;
-            margin: 1rem 0;
-        }
+        #actions { text-align: center; margin: 1.5rem 0; }
+
         #actions button {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 0.8rem 1.5rem;
+            padding: 0.8rem 1.6rem;
             border-radius: 12px;
             cursor: pointer;
             margin: 0.5rem;
@@ -111,9 +120,11 @@
             font-weight: 600;
             transition: all 0.2s;
         }
+
         #actions button:hover { background: var(--primary-light); transform: translateY(-2px); }
 
-        .table-wrapper { overflow-x: auto; margin: 1rem 0; }
+        .table-wrapper { overflow-x: auto; margin: 1.5rem 0; }
+
         #product-table {
             width: 100%;
             border-collapse: collapse;
@@ -122,9 +133,13 @@
             overflow: hidden;
             box-shadow: var(--shadow);
         }
-        th, td { padding: 12px 10px; text-align: right; border-bottom: 1px solid #e5e7eb; }
+
+        th, td { padding: 14px 12px; text-align: right; border-bottom: 1px solid #e5e7eb; }
+
         th { background: var(--primary); color: white; cursor: pointer; }
+
         th:hover { background: var(--primary-light); }
+
         tr:hover { background: rgba(37,99,235,0.03); }
 
         #load-more {
@@ -136,6 +151,7 @@
             cursor: pointer;
             font-size: 1.1rem;
         }
+
         #load-more:hover { background: #059669; }
 
         #charts-section {
@@ -144,6 +160,7 @@
             gap: 1.5rem;
             margin-top: 2rem;
         }
+
         .chart-card {
             background: white;
             border-radius: 16px;
@@ -151,47 +168,82 @@
             box-shadow: var(--shadow);
             cursor: pointer;
             transition: all 0.3s ease;
+            position: relative;
         }
-        .chart-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(37,99,235,0.15); }
-        .chart-card h3 { text-align: center; margin-bottom: 1rem; color: var(--primary); }
+
+        .chart-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(37,99,235,0.15);
+        }
+
+        .chart-card h3 { text-align: center; margin-bottom: 1rem; color: var(--primary); font-weight: 600; }
 
         canvas { width: 100% !important; height: 280px !important; }
 
+        /* Modal تمام صفحه - بهبود کیفیت */
         #chart-modal {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.75);
+            background: rgba(0,0,0,0.85);
             z-index: 9999;
             align-items: center;
             justify-content: center;
             padding: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
+
+        #chart-modal.show { opacity: 1; }
+
         #modal-content {
             background: white;
             border-radius: 20px;
             padding: 1.5rem;
             width: 95%;
-            max-width: 1400px;
+            max-width: 1600px;
             height: 90vh;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.4);
+            animation: modalFadeIn 0.4s ease;
         }
+
+        @keyframes modalFadeIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
         #close-modal {
             position: absolute;
             top: 15px;
             right: 20px;
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             cursor: pointer;
             color: var(--gray);
             z-index: 10000;
+            transition: color 0.2s;
         }
+
+        #close-modal:hover { color: var(--danger); }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem 0;
+            color: var(--gray);
+            font-size: 0.95rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        footer a { color: var(--primary); text-decoration: none; font-weight: 600; }
 
         @media (max-width: 768px) {
             h1 { font-size: 1.8rem; }
             #filter-section { flex-direction: column; }
+            .chart-card { padding: 1rem; }
             canvas { height: 220px !important; }
+            #modal-content { padding: 1rem; height: 85vh; }
         }
     </style>
 </head>
@@ -272,9 +324,13 @@
         <div id="chart-modal">
             <div id="modal-content">
                 <span id="close-modal" onclick="closeModal()">×</span>
-                <canvas id="modal-canvas" style="width:100%; height:80vh;"></canvas>
+                <canvas id="modal-canvas"></canvas>
             </div>
         </div>
+
+        <footer>
+            ساخته شده با ❤️ توسط <strong>محمد صادق کاجی</strong> - زمستان ۱۴۰۴
+        </footer>
     </div>
 
     <script src="dashboard.js"></script>
