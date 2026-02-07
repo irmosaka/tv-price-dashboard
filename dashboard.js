@@ -59,6 +59,15 @@ function loadData(raw) {
     updateUI();
 }
 
+function updateStats(data) {
+    const prices = data.map(item => item.price_num).filter(p => p > 0);
+    const avgPrice = prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0;
+    document.getElementById('avg-price').textContent = avgPrice.toLocaleString('fa-IR') + ' تومان';
+    document.getElementById('total-items').textContent = data.length;
+    document.getElementById('total-sellers').textContent = data.reduce((sum, item) => sum + item.sellers, 0);
+    document.getElementById('total-brands').textContent = [...new Set(data.map(item => item.brand))].length;
+}
+
 function updateUI() {
     const data = currentData;
     const prices = data.map(d => d.price_num);
@@ -120,15 +129,32 @@ function sortTable(col) {
 }
 
 function applyFilters() {
-    let f = currentData;
-    const min = +document.getElementById('price-filter').value || 0;
-    f = f.filter(d => d.price_num >= min);
-    const sz = document.getElementById('size-filter').value;
-    if (sz) f = f.filter(d => d.size === sz);
-    const br = document.getElementById('brand-filter').value;
-    if (br) f = f.filter(d => d.brand === br);
-    renderTable(f);
+    let filtered = currentData;
+    const minPrice = parseInt(document.getElementById('price-filter').value) || 0;
+    filtered = filtered.filter(item => item.price_num >= minPrice);
+
+    const selectedSize = document.getElementById('size-filter').value;
+    if (selectedSize) filtered = filtered.filter(item => item.size === selectedSize);
+
+    const selectedBrand = document.getElementById('brand-filter').value;
+    if (selectedBrand) filtered = filtered.filter(item => item.brand === selectedBrand);
+
+    // بروزرسانی آمار برای داده فیلترشده
+    updateStats(filtered);
+
+    renderTable(filtered);
+    updateChart(filtered);
 }
+
+document.getElementById('clear-filters').addEventListener('click', () => {
+    document.getElementById('price-filter').value = 0;
+    document.getElementById('size-filter').value = '';
+    document.getElementById('brand-filter').value = '';
+    document.getElementById('filter-value').textContent = '۰ تومان';
+    updateStats(currentData);  // آمار کامل
+    renderTable(currentData);
+    updateChart(currentData);
+});
 
 document.getElementById('file-input').addEventListener('change', e => {
     const file = e.target.files[0];
