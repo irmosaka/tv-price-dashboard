@@ -218,6 +218,60 @@ function downloadExcel() {
     XLSX.writeFile(wb, "tv_prices.xlsx");
 }
 
+function updateChart(data) {
+    // ۱. Bar Chart: قیمت میانگین بر اساس برند
+    const brandAvg = {};
+    data.forEach(item => {
+        brandAvg[item.brand] = (brandAvg[item.brand] || 0) + item.price_num;
+    });
+    Object.keys(brandAvg).forEach(brand => {
+        brandAvg[brand] /= data.filter(item => item.brand === brand).length;
+    });
+    const brandCtx = document.getElementById('brand-price-chart')?.getContext('2d');
+    if (brandCtx) new Chart(brandCtx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(brandAvg),
+            datasets: [{ label: 'میانگین قیمت (تومان)', data: Object.values(brandAvg), backgroundColor: 'rgba(75,192,192,0.6)' }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+
+    // ۲. Pie Chart: توزیع برندها
+    const brandCount = {};
+    data.forEach(item => brandCount[item.brand] = (brandCount[item.brand] || 0) + 1);
+    const pieCtx = document.getElementById('brand-pie-chart')?.getContext('2d');
+    if (pieCtx) new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+            labels: Object.keys(brandCount),
+            datasets: [{ data: Object.values(brandCount), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] }]
+        },
+        options: { responsive: true }
+    });
+
+    // ۳. Line Chart: روند قیمت (فرضی - بر اساس سایز به عنوان زمان)
+    const lineCtx = document.getElementById('trend-line-chart')?.getContext('2d');
+    if (lineCtx) new Chart(lineCtx, {
+        type: 'line',
+        data: {
+            labels: [...new Set(data.map(item => item.size))].sort((a,b)=>+a-+b),
+            datasets: [{ label: 'روند قیمت', data: [...new Set(data.map(item => item.size))].map(s => data.filter(i => i.size === s).reduce((sum,i)=>sum+i.price_num,0)/data.filter(i => i.size === s).length || 0), borderColor: 'rgb(75,192,192)', tension: 0.1 }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+
+    // ۴. Scatter Plot: قیمت vs سایز
+    const scatterCtx = document.getElementById('price-size-scatter')?.getContext('2d');
+    if (scatterCtx) new Chart(scatterCtx, {
+        type: 'scatter',
+        data: {
+            datasets: [{ label: 'قیمت vs سایز', data: data.map(item => ({ x: +item.size.replace('نامشخص', '0'), y: item.price_num })), backgroundColor: 'rgba(54,162,235,0.6)' }]
+        },
+        options: { responsive: true, scales: { x: { type: 'linear', position: 'bottom' } } }
+    });
+}
+
 // ایونت‌ها
 fetch('daily_prices.json').then(r => r.json()).then(loadData).catch(e => console.error(e));
 document.querySelectorAll('th[data-col]').forEach(th => {
