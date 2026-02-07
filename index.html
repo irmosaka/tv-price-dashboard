@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>داشبورد قیمت تلویزیون</title>
     
+    <!-- فونت وزیر -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- SheetJS برای اکسل -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <style>
@@ -20,8 +24,15 @@
             --light: #f3f4f6;
             --dark: #1f2937;
         }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, button, select, input, span, div, p, h1, h3, td, th {
+            font-family: 'Vazirmatn', system-ui, -apple-system, sans-serif !important;
+        }
         body {
-            font-family: 'Vazirmatn', sans-serif;
             background: var(--light);
             color: var(--dark);
             padding: 16px;
@@ -45,7 +56,7 @@
             text-align: center;
         }
         .card h3 { font-size: 0.95rem; color: var(--gray); margin-bottom: 0.4rem; }
-        .card .value { font-size: 1.4rem; font-weight: 600; color: var(--primary); }
+        .card .value { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
         
         #last-update { text-align: center; color: var(--gray); font-size: 0.9rem; margin: 0.8rem 0; }
         
@@ -75,7 +86,7 @@
             text-align: center;
             margin: 1rem 0;
         }
-        #actions button {
+        #actions button, #clear-filters {
             background: var(--primary);
             color: white;
             border: none;
@@ -84,10 +95,13 @@
             cursor: pointer;
             margin: 6px;
             font-size: 0.95rem;
+            font-family: 'Vazirmatn', sans-serif !important;
         }
-        #actions button:hover { background: var(--primary-light); }
+        #actions button:hover, #clear-filters:hover { background: var(--primary-light); }
+        #clear-filters { background: #ef4444; }
         #file-input { display: none; }
         
+        .table-wrapper { overflow-x: auto; margin-top: 1rem; }
         #product-table {
             width: 100%;
             border-collapse: collapse;
@@ -95,7 +109,6 @@
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            margin-top: 1rem;
         }
         th, td {
             padding: 10px 8px;
@@ -107,7 +120,6 @@
             background: var(--primary);
             color: white;
             cursor: pointer;
-            position: relative;
         }
         th:hover { background: var(--primary-light); }
         .sort-arrow { font-size: 0.8rem; margin-right: 4px; opacity: 0.7; }
@@ -123,17 +135,20 @@
             padding: 1rem;
             border-radius: 10px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            height: 300px;
         }
+        .chart-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        canvas { width: 100% !important; height: 250px !important; }
         
         @media (max-width: 768px) {
             #stats { grid-template-columns: 1fr; }
             #filter-section { flex-direction: column; align-items: stretch; }
-            #filter-section label { justify-content: space-between; }
             input[type="range"] { width: 100%; }
             th, td { font-size: 0.85rem; padding: 8px 6px; }
-            /* جدول موبایل فرندلی - اسکرول افقی */
-            .table-wrapper { overflow-x: auto; }
         }
     </style>
 </head>
@@ -151,13 +166,15 @@
         </div>
         
         <div id="filter-section">
-            <input type="range" id="price-filter" min="0" max="500000000" value="0" step="5000000">
-        <span id="filter-value">۰ تومان</span>
-    </label>
+            <label>حداقل قیمت: 
+                <input type="range" id="price-filter" min="0" max="500000000" value="0" step="5000000">
+                <span id="filter-value">۰ تومان</span>
+            </label>
             <label>سایز: <select id="size-filter"></select></label>
-    <label>برند: <select id="brand-filter"></select></label>
-    <button id="clear-filters" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;">حذف فیلترها</button>
-</div>        
+            <label>برند: <select id="brand-filter"></select></label>
+            <button id="clear-filters">حذف فیلترها</button>
+        </div>
+        
         <div id="actions">
             <input type="file" id="file-input" accept=".json" />
             <button onclick="document.getElementById('file-input').click()">آپلود JSON جدید</button>
@@ -180,45 +197,35 @@
                 </thead>
                 <tbody></tbody>
                 <tfoot id="table-footer" style="display: none;">
-    <tr>
-        <td colspan="8" style="text-align: center; padding: 20px;">
-            <button id="load-more" onclick="loadMoreRows()" style="padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer;">بارگذاری بیشتر</button>
-        </td>
-    </tr>
-</tfoot>
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 20px;">
+                            <button id="load-more" onclick="loadMoreRows()">بارگذاری بیشتر</button>
+                        </td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
         
         <div id="chart-container">
             <div id="charts-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 2rem;">
-    <div class="chart-card">
-        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--primary);">قیمت بر اساس برند</h3>
-        <canvas id="brand-price-chart"></canvas>
-    </div>
-    <div class="chart-card">
-        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--primary);">توزیع برندها</h3>
-        <canvas id="brand-pie-chart"></canvas>
-    </div>
-    <div class="chart-card">
-        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--primary);">روند قیمت (فرضی)</h3>
-        <canvas id="trend-line-chart"></canvas>
-    </div>
-    <div class="chart-card">
-        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--primary);">قیمت vs سایز</h3>
-        <canvas id="price-size-scatter"></canvas>
-    </div>
-</div>
-
-<style>
-    .chart-card {
-        background: white;
-        padding: 1rem;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-    canvas { width: 100% !important; height: 250px !important; }
-    @media (max-width: 768px) { .chart-card { margin-bottom: 1rem; } }
-</style>
+                <div class="chart-card">
+                    <h3 style="text-align: center; margin-bottom: 1rem; color: var(--primary);">قیمت بر اساس برند</h3>
+                    <canvas id="brand-price-chart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3 style="text-align: center; margin-bottom: 1rem; color: var(--primary);">توزیع برندها</h3>
+                    <canvas id="brand-pie-chart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3 style="text-align: center; margin-bottom: 1rem; color: var(--primary);">روند قیمت (فرضی)</h3>
+                    <canvas id="trend-line-chart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3 style="text-align: center; margin-bottom: 1rem; color: var(--primary);">قیمت vs سایز</h3>
+                    <canvas id="price-size-scatter"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
     
     <script src="dashboard.js"></script>
