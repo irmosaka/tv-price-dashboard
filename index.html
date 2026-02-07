@@ -13,6 +13,9 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <!-- SheetJS برای اکسل (CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <style>
         :root {
             --primary: #2563eb;
@@ -37,7 +40,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 1rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
         }
         .card {
             background: white;
@@ -49,8 +52,33 @@
         .card h3 { font-size: 1.1rem; color: var(--gray); margin-bottom: 0.5rem; }
         .card .value { font-size: 1.8rem; font-weight: 600; color: var(--primary); }
         
-        #filter-section { margin: 1.5rem 0; text-align: center; }
-        #price-filter { width: 60%; max-width: 400px; }
+        #last-update { text-align: center; margin: 1rem 0; color: var(--gray); font-size: 0.9rem; }
+        
+        #filter-section { 
+            margin: 1.5rem 0; 
+            text-align: center; 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 1.5rem; 
+        }
+        #filter-section label { display: flex; align-items: center; gap: 0.5rem; }
+        #price-filter { width: 200px; }
+        select { padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px; }
+        
+        #actions { text-align: center; margin: 1.5rem 0; }
+        #actions button { 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            padding: 0.75rem 1.5rem; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            margin: 0 0.5rem; 
+            font-size: 1rem; 
+        }
+        #actions button:hover { background: var(--primary-light); }
+        #file-input { display: none; }
         
         #product-table {
             width: 100%;
@@ -62,7 +90,9 @@
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
         th, td { padding: 12px 10px; text-align: right; border-bottom: 1px solid #e5e7eb; }
-        th { background: var(--primary); color: white; font-weight: 500; }
+        th { background: var(--primary); color: white; font-weight: 500; position: relative; cursor: pointer; }
+        th:hover { background: var(--primary-light); }
+        .sort-arrow { font-size: 0.8rem; margin-right: 0.2rem; }
         tr:hover { background: #f8fafc; }
         a { color: var(--primary); text-decoration: none; }
         a:hover { text-decoration: underline; }
@@ -71,18 +101,21 @@
         
         @media (max-width: 768px) {
             #stats { grid-template-columns: 1fr; }
+            #filter-section { flex-direction: column; align-items: center; }
             th, td { font-size: 0.9rem; padding: 10px 6px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>داشبورد قیمت تلویزیون‌ها</h1>
+        <h1>داشبورد حرفه‌ای قیمت تلویزیون‌ها</h1>
+        
+        <p id="last-update">آخرین بروزرسانی: —</p>
         
         <div id="stats">
             <div class="card">
                 <h3>میانگین قیمت فروش</h3>
-                <div class="value" id="avg-price">—</div>
+                <div class="value" id="avg-price">— تومان</div>
             </div>
             <div class="card">
                 <h3>تعداد محصولات</h3>
@@ -92,31 +125,36 @@
                 <h3>تعداد فروشنده کل</h3>
                 <div class="value" id="total-sellers">—</div>
             </div>
+            <div class="card">
+                <h3>تعداد برندها</h3>
+                <div class="value" id="total-brands">—</div>
+            </div>
         </div>
         
-<div id="filter-section" style="margin: 1.5rem 0; text-align: center; display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem;">
-    <label>حداقل قیمت: 
-        <input type="range" id="price-filter" min="0" max="500000000" value="0" step="5000000">
-        <span id="filter-value">۰ تومان</span>
-    </label>
-    
-    <label>سایز: 
-        <select id="size-filter"></select>
-    </label>
-    
-    <label>برند: 
-        <select id="brand-filter"></select>
-    </label>
-</div>
+        <div id="filter-section">
+            <label>حداقل قیمت: 
+                <input type="range" id="price-filter" min="0" max="500000000" value="0" step="5000000">
+                <span id="filter-value">۰ تومان</span>
+            </label>
+            <label>سایز: <select id="size-filter"></select></label>
+            <label>برند: <select id="brand-filter"></select></label>
+        </div>
+        
+        <div id="actions">
+            <input type="file" id="file-input" accept=".json" />
+            <button onclick="document.getElementById('file-input').click()">آپلود JSON جدید</button>
+            <button onclick="downloadExcel()">دانلود اکسل</button>
+        </div>
         
         <table id="product-table">
             <thead>
                 <tr>
-                    <th>نام محصول</th>
-                    <th>قیمت فروش</th>
-                    <th>قیمت اصلی</th>
-                    <th>تخفیف</th>
-                    <th>امتیاز</th>
+                    <th onclick="sortTable('name')">نام محصول</th>
+                    <th onclick="sortTable('price_num')">قیمت فروش</th>
+                    <th onclick="sortTable('original_price_num')">قیمت اصلی <span class="sort-arrow">↑↓</span></th>
+                    <th onclick="sortTable('brand')">برند <span class="sort-arrow">↑↓</span></th>
+                    <th onclick="sortTable('discount')">تخفیف</th>
+                    <th onclick="sortTable('rating')">امتیاز</th>
                     <th>موجودی</th>
                     <th>لینک</th>
                 </tr>
