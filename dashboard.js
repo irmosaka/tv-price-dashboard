@@ -16,32 +16,36 @@ fetch('daily_prices.json')
                 try {
                     const title = item['ellipsis-2'] || 'نامشخص';
                     let priceStr = item['flex'] || '0';
-                    priceStr = priceStr.replace(/[^0-9۰-۹]/g, ''); // حذف همه غیرعدد + تبدیل اعداد فارسی
+                    priceStr = priceStr
+    .replace(/[^0-9۰-۹]/g, '')           // فقط عدد نگه دار (فارسی + انگلیسی)
+    .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));  // تبدیل ۰-۹ فارسی به لاتین
                     let origStr = item['text-neutral-300'] || priceStr;
-                    origStr = origStr.replace(/[^0-9۰-۹]/g, '');
+origStr = origStr
+    .replace(/[^0-9۰-۹]/g, '')
+    .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
 
-                    const price_num = parseInt(priceStr) || 0;
-                    const original_price_num = parseInt(origStr) || price_num;
+const price_num = parseInt(priceStr) || 0;
+const original_price_num = parseInt(origStr) || price_num;
 
-                    if (price_num === 0) {
-                        console.warn(`آیتم ${index}: قیمت صفر یا نامعتبر - ${title}`);
-                    }
+if (price_num === 0) {
+                console.warn(`آیتم ${index}: قیمت صفر بعد از parse - عنوان: ${title} | flex خام: "${item['flex']}"`);
+            }
 
-                    return {
-                        name: title,
-                        link: item['block href'] || '#',
-                        stock: item['text-caption'] || 'نامشخص',
-                        rating: item['text-body2-strong'] || '—',
-                        discount: item['text-body2-strong (2)'] || '—',
-                        price_num,
-                        original_price_num,
-                        sellers: (item['text-caption'] || '').includes('موجود') || (item['text-caption'] || '').includes('باقی مانده') ? 1 : 0
-                    };
-                } catch (e) {
-                    console.error(`خطا در پردازش آیتم ${index}:`, e);
-                    return null;
-                }
-            })
+            return {
+                name: title,
+                link: item['block href'] || '#',
+                stock: item['text-caption'] || 'نامشخص',
+                rating: item['text-body2-strong'] || '—',
+                discount: item['text-body2-strong (2)'] || '—',
+                price_num,
+                original_price_num,
+                sellers: (item['text-caption'] || '').includes('موجود') || (item['text-caption'] || '').includes('باقی مانده') ? 1 : 0
+            };
+        } catch (e) {
+            console.error(`خطا در پردازش آیتم ${index}:`, e);
+            return null;
+        }
+    }))
             .filter(item => item !== null && item.price_num > 0);
 
         console.log(`تعداد آیتم‌های معتبر بعد از فیلتر: ${data.length}`);
