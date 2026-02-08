@@ -148,6 +148,11 @@
 
         #load-more:hover { background: #059669; }
 
+        #load-more:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+        }
+
         #charts-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -166,7 +171,7 @@
             border-radius: 16px;
             padding: 1.5rem;
             box-shadow: var(--shadow);
-            cursor: default; /* کلیک حذف شد */
+            cursor: default;
         }
 
         .chart-card h3 { text-align: center; margin-bottom: 1rem; color: var(--primary); font-weight: 600; }
@@ -270,15 +275,15 @@
                 <canvas id="price-size-scatter"></canvas>
             </div>
 
-            <!-- توزیع برندها، ارتفاع دو ردیف، فول عرض -->
+            <!-- توزیع برندها، فول عرض و فول ارتفاع -->
             <div class="chart-card full-width">
                 <h3><i class="fas fa-chart-pie"></i> توزیع برندها</h3>
-                <canvas id="brand-pie-chart" style="height: 560px !important;"></canvas>
+                <canvas id="brand-pie-chart" style="height: 600px !important;"></canvas>
             </div>
         </div>
 
         <footer>
-            ساخته شده با ❤️ توسط <strong>محمد صادقی کاجی</strong> - زمستان ۱۴۰۴
+            ساخته شده با ❤️ توسط <strong>محمد صادق کاجی</strong> - زمستان ۱۴۰۴
         </footer>
     </div>
 
