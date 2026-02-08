@@ -13,8 +13,16 @@ function extractSizeAndBrand(title) {
     const size = sizeMatch ? sizeMatch[1] : 'نامشخص';
 
     let brand = 'نامشخص';
-    const techMatch = title.match(/ال\s*ای\s*دی|کیو\s*ال\s*ای\s*دی|اولد/i);
-    const tech = techMatch ? techMatch[0].replace(/\s*/g, '').toLowerCase() : 'ال ای دی';
+    let tech = 'LED';
+    
+    // استخراج تکنولوژی
+    if (title.match(/ال\s*ای\s*دی|الایدی/i)) {
+        tech = 'LED';
+    } else if (title.match(/کیو\s*ال\s*ای\s*دی|کیوالایدی/i)) {
+        tech = 'QLED';
+    } else if (title.match(/اولد/i)) {
+        tech = 'OLED';
+    }
 
     const afterLed = title.split(/ال\s*ای\s*دی/i)[1];
     if (afterLed) {
@@ -136,6 +144,7 @@ function renderTable(data, limit = displayedRows) {
 }
 
 function loadMoreRows() {
+    if (document.getElementById('load-more').disabled) return;
     displayedRows += 20;
     const filteredData = getFilteredData();
     renderTable(filteredData, displayedRows);
@@ -225,7 +234,11 @@ function updateChart(data) {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } }
+                scales: { y: { beginAtZero: true } },
+                plugins: {
+                    legend: { display: true },
+                },
+                font: { family: 'Vazirmatn' }
             }
         });
     }
@@ -249,7 +262,8 @@ function updateChart(data) {
             options: { 
                 responsive: true, 
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } }  // حذف legend (پای چارت)
+                plugins: { legend: { display: false } },
+                font: { family: 'Vazirmatn' }
             }
         });
     }
@@ -278,7 +292,11 @@ function updateChart(data) {
                 scales: {
                     x: { type: 'linear', position: 'bottom', title: { display: true, text: 'سایز (اینچ)' } },
                     y: { title: { display: true, text: 'قیمت (تومان)' } }
-                }
+                },
+                plugins: {
+                    legend: { display: true },
+                },
+                font: { family: 'Vazirmatn' }
             }
         });
     }
@@ -338,6 +356,8 @@ document.getElementById('file-input')?.addEventListener('change', e => {
         reader.readAsText(file);
     }
 });
+
+document.getElementById('load-more')?.addEventListener('click', loadMoreRows);
 
 function downloadExcel() {
     const ws = XLSX.utils.json_to_sheet(currentData);
