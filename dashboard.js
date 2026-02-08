@@ -3,6 +3,7 @@ let displayedRows = 20;
 let sortCol = null;
 let sortDir = 'asc';
 
+// تبدیل اعداد انگلیسی به فارسی + کاما هر ۳ رقم
 function toPersianDigits(num) {
     if (num === '—' || num === null || num === undefined) return '—';
     return num.toLocaleString('fa-IR');
@@ -14,11 +15,11 @@ function extractSizeAndBrand(title) {
 
     let brand = 'نامشخص';
     let tech = 'LED';
-    
+
     // تکنولوژی با regex قوی‌تر
     if (title.match(/ال\s*ای\s*دی|الایدی/i)) {
         tech = 'LED';
-    } else if (title.match(/کیو\s*ال\s*ای\s*دی|کیوالایدی|qled/i)) {
+    } else if (title.match(/کیو\s*ال\s*ای\s*دی|کیوالایدی|qled|کیو ال ای دی/i)) {
         tech = 'QLED';
     } else if (title.match(/اولد|oled/i)) {
         tech = 'OLED';
@@ -49,7 +50,7 @@ function extractSizeAndBrand(title) {
         }
     }
     brand = brand.replace(/هوشمند|ال\s*ای\s*دی/gi, '').replace(/\s+/g, ' ').trim();
-    
+
     // فیکس پاناسونیک
     if (brand.includes('پاناسونیک')) brand = 'پاناسونیک';
 
@@ -106,6 +107,7 @@ function updateUI() {
     const techs = [...new Set(data.map(d => d.tech))].sort();
     document.getElementById('tech-filter').innerHTML = '<option value="">همه تکنولوژی‌ها</option>' + techs.map(t => `<option value="${t}">${t}</option>`).join('');
 
+    // سورت پیش‌فرض: قیمت فروش از کم به زیاد
     data.sort((a, b) => a.price_num - b.price_num);
 
     renderTable(data);
@@ -199,6 +201,7 @@ function applyFilters() {
 function updateChart(data) {
     console.log("به‌روزرسانی چارت‌ها با", data.length, "ردیف");
 
+    // Bar Chart
     const brandAvg = {};
     data.forEach(item => {
         if (item.brand !== 'نامشخص') {
@@ -241,6 +244,7 @@ function updateChart(data) {
         });
     }
 
+    // Pie Chart
     const brandCount = {};
     data.forEach(item => {
         if (item.brand !== 'نامشخص') brandCount[item.brand] = (brandCount[item.brand] || 0) + 1;
@@ -268,10 +272,11 @@ function updateChart(data) {
         });
     }
 
+    // Scatter Plot - برند به عنوان label نقطه
     const scatterData = data.map(item => ({
         x: +item.size.replace('نامشخص', '0'),
         y: item.price_num,
-        model: item.name.substring(0, 30) + (item.name.length > 30 ? '...' : '')  // کد مدل کوتاه
+        brand: item.brand
     }));
 
     const scatterCtx = document.getElementById('price-size-scatter')?.getContext('2d');
@@ -298,10 +303,11 @@ function updateChart(data) {
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return `${context.raw.model} - ${toPersianDigits(context.raw.y)} تومان`;
+                                return `${context.raw.brand} - ${toPersianDigits(context.raw.y)} تومان`;
                             }
                         }
-                    }
+                    },
+                    legend: { labels: { font: { family: 'Vazirmatn' } } }
                 }
             }
         });
