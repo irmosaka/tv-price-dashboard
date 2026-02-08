@@ -61,29 +61,58 @@ function extractSizeAndBrand(title) {
 }
 
 function loadData(raw, source = 'digikala') {
-    currentData[source] = raw.map(item => {
-        const title = item['ellipsis-2'] || 'نامشخص';
-        const { size, brand, tech } = extractSizeAndBrand(title);
-        let p = (item['flex'] || '0').toString().replace(/[^0-9۰-۹]/g, '');
-        p = p.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
-        let o = (item['text-neutral-300'] || p).toString().replace(/[^0-9۰-۹]/g, '');
-        o = o.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
-        return {
-            name: title,
-            brand,
-            link: item['block href'] || '#',
-            stock: item['text-caption'] || 'نامشخص',
-            rating: item['text-body2-strong'] || '—',
-            discount: item['text-body2-strong (2)'] || '—',
-            price_num: parseInt(p) || 0,
-            original_price_num: parseInt(o) || 0,
-            sellers: /موجود|باقی مانده/i.test(item['text-caption'] || '') ? 1 : 0,
-            size,
-            tech
-        };
-    }).filter(d => d.price_num > 0 && d.brand !== 'ایلیا');
+    let processedData = [];
+    if (source === 'torob') {
+        // پردازش داده‌های ترب با فیلدهای جدید
+        processedData = raw.map(item => {
+            const title = item['ProductCard_desktop_product-name__JwqeK'] || 'نامشخص';
+            const { size, brand, tech } = extractSizeAndBrand(title);  // برند، سایز، تکنولوژی از نام محصول
+            let p = (item['ProductCard_desktop_product-price-text__y20OV'] || '0').toString().replace(/[^0-9۰-۹]/g, '');
+            p = p.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+            let sellers = (item['ProductCard_desktop_shops__mbtsF'] || '0').toString().replace(/[^0-9۰-۹]/g, '');
+            sellers = parseInt(sellers) || 0;
+            const link = item['ProductCards_cards__MYvdn href'] || '#';
+            return {
+                name: title,
+                brand,
+                link,
+                stock: 'نامشخص',  // از ترب موجودی نداریم، خالی بذار
+                rating: '—',
+                discount: '—',
+                price_num: parseInt(p) || 0,
+                original_price_num: 0,  // قیمت اصلی نمی‌خوایم، 0 بذار
+                sellers,
+                size,
+                tech
+            };
+        }).filter(d => d.price_num > 0 && d.brand !== 'ایلیا');
+    } else {
+        // پردازش دیجی‌کالا (کد قبلی)
+        processedData = raw.map(item => {
+            const title = item['ellipsis-2'] || 'نامشخص';
+            const { size, brand, tech } = extractSizeAndBrand(title);
+            let p = (item['flex'] || '0').toString().replace(/[^0-9۰-۹]/g, '');
+            p = p.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+            let o = (item['text-neutral-300'] || p).toString().replace(/[^0-9۰-۹]/g, '');
+            o = o.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+            return {
+                name: title,
+                brand,
+                link: item['block href'] || '#',
+                stock: item['text-caption'] || 'نامشخص',
+                rating: item['text-body2-strong'] || '—',
+                discount: item['text-body2-strong (2)'] || '—',
+                price_num: parseInt(p) || 0,
+                original_price_num: parseInt(o) || 0,
+                sellers: /موجود|باقی مانده/i.test(item['text-caption'] || '') ? 1 : 0,
+                size,
+                tech
+            };
+        }).filter(d => d.price_num > 0 && d.brand !== 'ایلیا');
+    }
 
-    localStorage.setItem(`daily_prices_${source}`, JSON.stringify(currentData[source]));
+    currentData[source] = processedData;
+    localStorage.setItem(`daily_prices_${source}`, JSON.stringify(processedData));
     updateUI();
 }
 
@@ -160,18 +189,6 @@ function changePage(page) {
     currentPage = page;
     const filteredData = getFilteredData();
     renderTable(filteredData, page);
-}
-
-function loadMoreRows() {
-    if (document.getElementById('load-more').disabled) return;
-    displayedRows += 20;
-    const filteredData = getFilteredData();
-    renderTable(filteredData);
-    
-    if (filteredData.length <= displayedRows) {
-        document.getElementById('load-more').textContent = 'همه داده‌ها لود شد';
-        document.getElementById('load-more').disabled = true;
-    }
 }
 
 function getFilteredData() {
@@ -352,7 +369,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     });
 });
 
-// ایونت‌های دیگر (همان قبلی)
+// ایونت‌های دیگر
 document.querySelectorAll('th[data-col]').forEach(th => {
     th.addEventListener('click', () => sortTable(th.dataset.col));
 });
