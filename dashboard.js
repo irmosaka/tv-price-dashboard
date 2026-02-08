@@ -63,7 +63,7 @@ function loadData(raw) {
         };
     }).filter(d => d.price_num > 0);
 
-    // آپلود جدید → جایگزین دائمی در localStorage
+    // ذخیره در localStorage برای جایگزینی دائمی
     localStorage.setItem('daily_prices_data', JSON.stringify(currentData));
 
     updateUI();
@@ -264,132 +264,8 @@ function updateChart(data) {
     }
 }
 
-// Modal تمام صفحه
-function openModal(chartId) {
-    const modal = document.getElementById('chart-modal');
-    const canvas = document.getElementById('modal-canvas');
-    const ctx = canvas.getContext('2d');
-
-    const pixelRatio = window.devicePixelRatio || 1;
-    canvas.width = window.innerWidth * 0.95 * pixelRatio;
-    canvas.height = window.innerHeight * 0.85 * pixelRatio;
-    canvas.style.width = '95%';
-    canvas.style.height = '85vh';
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (window.modalChart) {
-        window.modalChart.destroy();
-        window.modalChart = null;
-    }
-
-    const filteredData = getFilteredData();
-
-    let chartInstance;
-
-    if (chartId === 'brand-price-chart') {
-        const brandAvg = {};
-        filteredData.forEach(item => {
-            if (item.brand !== 'نامشخص') {
-                if (!brandAvg[item.brand]) brandAvg[item.brand] = { sum: 0, count: 0 };
-                brandAvg[item.brand].sum += item.price_num;
-                brandAvg[item.brand].count++;
-            }
-        });
-        const labels = Object.keys(brandAvg);
-        const avgPrices = labels.map(b => Math.round(brandAvg[b].sum / brandAvg[b].count));
-
-        chartInstance = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels,
-                datasets: [{
-                    label: 'میانگین قیمت (تومان)',
-                    data: avgPrices,
-                    backgroundColor: 'rgba(75,192,192,0.6)',
-                    borderColor: 'rgba(75,192,192,1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: false,
-                maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } },
-                plugins: { legend: { display: true, position: 'top' } }
-            }
-        });
-    }
-
-    if (chartId === 'brand-pie-chart') {
-        const brandCount = {};
-        filteredData.forEach(item => {
-            if (item.brand !== 'نامشخص') brandCount[item.brand] = (brandCount[item.brand] || 0) + 1;
-        });
-        chartInstance = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: Object.keys(brandCount),
-                datasets: [{
-                    data: Object.values(brandCount),
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
-                }]
-            },
-            options: { responsive: false, maintainAspectRatio: false }
-        });
-    }
-
-    if (chartId === 'price-size-scatter') {
-        const scatterData = filteredData.map(item => ({
-            x: +item.size.replace('نامشخص', '0'),
-            y: item.price_num
-        }));
-
-        chartInstance = new Chart(ctx, {
-            type: 'scatter',
-            data: {
-                datasets: [{
-                    label: 'قیمت بر حسب سایز',
-                    data: scatterData,
-                    backgroundColor: 'rgba(54,162,235,0.6)',
-                    pointRadius: 6
-                }]
-            },
-            options: {
-                responsive: false,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { type: 'linear', position: 'bottom', title: { display: true, text: 'سایز (اینچ)' } },
-                    y: { title: { display: true, text: 'قیمت (تومان)' } }
-                }
-            }
-        });
-    }
-
-    window.modalChart = chartInstance;
-
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('show'), 10);
-}
-
-function closeModal() {
-    const modal = document.getElementById('chart-modal');
-    if (!modal) return;
-
-    modal.classList.remove('show');
-
-    if (window.modalChart) {
-        window.modalChart.destroy();
-        window.modalChart = null;
-    }
-
-    setTimeout(() => {
-        modal.style.display = 'none';
-        modal.style.opacity = '0';
-        // دوباره فعال کردن سورت جدول
-        renderTable(currentData);
-        updateChart(currentData);
-    }, 450);
-}
+// حذف کامل modal و کلیک بزرگنمایی
+// دیگر نیازی به openModal و closeModal نیست
 
 // ایونت‌ها
 fetch('daily_prices.json')
@@ -397,20 +273,13 @@ fetch('daily_prices.json')
     .then(loadData)
     .catch(e => console.error("خطا در لود JSON:", e));
 
-// لود از localStorage (جایگزین فایل اصلی)
+// لود از localStorage (اگر آپلود جدید شده باشد)
 const savedData = localStorage.getItem('daily_prices_data');
 if (savedData) {
     const parsedData = JSON.parse(savedData);
     currentData = parsedData;
     updateUI();
 }
-
-document.querySelectorAll('.chart-card').forEach(card => {
-    card.addEventListener('click', () => {
-        const chartId = card.getAttribute('data-chart-id');
-        if (chartId) openModal(chartId);
-    });
-});
 
 document.querySelectorAll('th[data-col]').forEach(th => {
     th.addEventListener('click', () => sortTable(th.dataset.col));
@@ -450,12 +319,6 @@ document.getElementById('file-input')?.addEventListener('change', e => {
         };
         reader.readAsText(file);
     }
-});
-
-document.getElementById('close-modal')?.addEventListener('click', closeModal);
-
-document.getElementById('chart-modal')?.addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
 });
 
 function downloadExcel() {
