@@ -5,7 +5,7 @@ let sortDir = 'asc';
 
 function toPersianDigits(num) {
     if (num === '—' || num === null || num === undefined) return '—';
-    return num.toLocaleString('fa-IR');  // کاما هر ۳ رقم + اعداد فارسی
+    return num.toLocaleString('fa-IR');
 }
 
 function extractSizeAndBrand(title) {
@@ -15,12 +15,12 @@ function extractSizeAndBrand(title) {
     let brand = 'نامشخص';
     let tech = 'LED';
     
-    // استخراج تکنولوژی
+    // تکنولوژی با regex قوی‌تر
     if (title.match(/ال\s*ای\s*دی|الایدی/i)) {
         tech = 'LED';
-    } else if (title.match(/کیو\s*ال\s*ای\s*دی|کیوالایدی/i)) {
+    } else if (title.match(/کیو\s*ال\s*ای\s*دی|کیوالایدی|qled/i)) {
         tech = 'QLED';
-    } else if (title.match(/اولد/i)) {
+    } else if (title.match(/اولد|oled/i)) {
         tech = 'OLED';
     }
 
@@ -51,9 +51,7 @@ function extractSizeAndBrand(title) {
     brand = brand.replace(/هوشمند|ال\s*ای\s*دی/gi, '').replace(/\s+/g, ' ').trim();
     
     // فیکس پاناسونیک
-    if (brand.includes('پاناسونیک')) {
-        brand = 'پاناسونیک';
-    }
+    if (brand.includes('پاناسونیک')) brand = 'پاناسونیک';
 
     return { size, brand: brand || 'نامشخص', tech };
 }
@@ -66,7 +64,7 @@ function loadData(raw) {
         p = p.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
         let o = (item['text-neutral-300'] || p).toString().replace(/[^0-9۰-۹]/g, '');
         o = o.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
-        const newItem = {
+        return {
             name: title,
             brand,
             link: item['block href'] || '#',
@@ -79,12 +77,9 @@ function loadData(raw) {
             size,
             tech
         };
-        return newItem;
-    }).filter(d => d.price_num > 0 && d.brand !== 'ایلیا');  // حذف ایلیا
+    }).filter(d => d.price_num > 0 && d.brand !== 'ایلیا');
 
-    // ذخیره در localStorage برای جایگزین دائمی
     localStorage.setItem('daily_prices_data', JSON.stringify(currentData));
-
     updateUI();
 }
 
@@ -111,7 +106,6 @@ function updateUI() {
     const techs = [...new Set(data.map(d => d.tech))].sort();
     document.getElementById('tech-filter').innerHTML = '<option value="">همه تکنولوژی‌ها</option>' + techs.map(t => `<option value="${t}">${t}</option>`).join('');
 
-    // سورت پیش‌فرض: قیمت فروش از کم به زیاد
     data.sort((a, b) => a.price_num - b.price_num);
 
     renderTable(data);
@@ -234,11 +228,15 @@ function updateChart(data) {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } },
-                plugins: {
-                    legend: { display: true },
+                scales: {
+                    y: { beginAtZero: true },
+                    x: { ticks: { font: { family: 'Vazirmatn' } } },
+                    y: { ticks: { font: { family: 'Vazirmatn' } } }
                 },
-                font: { family: 'Vazirmatn' }
+                plugins: {
+                    legend: { labels: { font: { family: 'Vazirmatn' } } },
+                    tooltip: { titleFont: { family: 'Vazirmatn' }, bodyFont: { family: 'Vazirmatn' } }
+                }
             }
         });
     }
@@ -262,15 +260,18 @@ function updateChart(data) {
             options: { 
                 responsive: true, 
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                font: { family: 'Vazirmatn' }
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: { titleFont: { family: 'Vazirmatn' }, bodyFont: { family: 'Vazirmatn' } }
+                }
             }
         });
     }
 
     const scatterData = data.map(item => ({
         x: +item.size.replace('نامشخص', '0'),
-        y: item.price_num
+        y: item.price_num,
+        model: item.name.substring(0, 30) + (item.name.length > 30 ? '...' : '')  // کد مدل کوتاه
     }));
 
     const scatterCtx = document.getElementById('price-size-scatter')?.getContext('2d');
@@ -294,9 +295,14 @@ function updateChart(data) {
                     y: { title: { display: true, text: 'قیمت (تومان)' } }
                 },
                 plugins: {
-                    legend: { display: true },
-                },
-                font: { family: 'Vazirmatn' }
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.raw.model} - ${toPersianDigits(context.raw.y)} تومان`;
+                            }
+                        }
+                    }
+                }
             }
         });
     }
@@ -308,7 +314,6 @@ fetch('daily_prices.json')
     .then(loadData)
     .catch(e => console.error("خطا در لود JSON:", e));
 
-// لود از localStorage (جایگزین فایل اصلی)
 const savedData = localStorage.getItem('daily_prices_data');
 if (savedData) {
     const parsedData = JSON.parse(savedData);
