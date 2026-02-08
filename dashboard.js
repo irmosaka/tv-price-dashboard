@@ -5,8 +5,7 @@ let sortDir = 'asc';
 
 function toPersianDigits(num) {
     if (num === '—' || num === null || num === undefined) return '—';
-    const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
-    return num.toString().replace(/[0-9]/g, w => persianDigits[+w]);
+    return num.toLocaleString('fa-IR');   // کاما هر ۳ رقم + اعداد فارسی
 }
 
 function extractSizeAndBrand(title) {
@@ -64,6 +63,9 @@ function loadData(raw) {
         };
     }).filter(d => d.price_num > 0);
 
+    // آپلود جدید → جایگزین دائمی در localStorage
+    localStorage.setItem('daily_prices_data', JSON.stringify(currentData));
+
     updateUI();
 }
 
@@ -77,7 +79,7 @@ function updateStats(data) {
 }
 
 function updateUI() {
-    const data = currentData;
+    let data = currentData;
     updateStats(data);
     document.getElementById('last-update').textContent = `آخرین بروزرسانی: ${new Date().toLocaleString('fa-IR')}`;
 
@@ -232,31 +234,6 @@ function updateChart(data) {
         });
     }
 
-    const sizes = [...new Set(data.map(item => item.size))].sort((a,b)=>+a-+b);
-    const sizeAvg = sizes.map(s => {
-        const items = data.filter(item => item.size === s);
-        return items.length ? Math.round(items.reduce((sum,i)=>sum+i.price_num,0)/items.length) : 0;
-    });
-
-    const lineCtx = document.getElementById('trend-line-chart')?.getContext('2d');
-    if (lineCtx) {
-        if (window.lineChart) window.lineChart.destroy();
-        window.lineChart = new Chart(lineCtx, {
-            type: 'line',
-            data: {
-                labels: sizes,
-                datasets: [{
-                    label: 'میانگین قیمت بر اساس سایز',
-                    data: sizeAvg,
-                    borderColor: 'rgb(75,192,192)',
-                    tension: 0.1,
-                    fill: false
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
-        });
-    }
-
     const scatterData = data.map(item => ({
         x: +item.size.replace('نامشخص', '0'),
         y: item.price_num
@@ -293,7 +270,6 @@ function openModal(chartId) {
     const canvas = document.getElementById('modal-canvas');
     const ctx = canvas.getContext('2d');
 
-    // تنظیم اندازه canvas برای فول اسکرین واقعی
     const pixelRatio = window.devicePixelRatio || 1;
     canvas.width = window.innerWidth * 0.95 * pixelRatio;
     canvas.height = window.innerHeight * 0.85 * pixelRatio;
@@ -302,7 +278,6 @@ function openModal(chartId) {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // destroy چارت قبلی
     if (window.modalChart) {
         window.modalChart.destroy();
         window.modalChart = null;
@@ -363,29 +338,6 @@ function openModal(chartId) {
         });
     }
 
-    if (chartId === 'trend-line-chart') {
-        const sizes = [...new Set(filteredData.map(item => item.size))].sort((a,b)=>+a-+b);
-        const sizeAvg = sizes.map(s => {
-            const items = filteredData.filter(item => item.size === s);
-            return items.length ? Math.round(items.reduce((sum,i)=>sum+i.price_num,0)/items.length) : 0;
-        });
-
-        chartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: sizes,
-                datasets: [{
-                    label: 'میانگین قیمت بر اساس سایز',
-                    data: sizeAvg,
-                    borderColor: 'rgb(75,192,192)',
-                    tension: 0.1,
-                    fill: false
-                }]
-            },
-            options: { responsive: false, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
-        });
-    }
-
     if (chartId === 'price-size-scatter') {
         const scatterData = filteredData.map(item => ({
             x: +item.size.replace('نامشخص', '0'),
@@ -433,7 +385,7 @@ function closeModal() {
     setTimeout(() => {
         modal.style.display = 'none';
         modal.style.opacity = '0';
-        // دوباره رندر جدول و چارت‌ها برای فعال شدن سورت
+        // دوباره فعال کردن سورت جدول
         renderTable(currentData);
         updateChart(currentData);
     }, 450);
@@ -445,7 +397,14 @@ fetch('daily_prices.json')
     .then(loadData)
     .catch(e => console.error("خطا در لود JSON:", e));
 
-// ایونت کلیک روی کارت‌ها
+// لود از localStorage (جایگزین فایل اصلی)
+const savedData = localStorage.getItem('daily_prices_data');
+if (savedData) {
+    const parsedData = JSON.parse(savedData);
+    currentData = parsedData;
+    updateUI();
+}
+
 document.querySelectorAll('.chart-card').forEach(card => {
     card.addEventListener('click', () => {
         const chartId = card.getAttribute('data-chart-id');
@@ -484,7 +443,7 @@ document.getElementById('file-input')?.addEventListener('change', e => {
             try {
                 const json = JSON.parse(ev.target.result);
                 loadData(json);
-                alert('فایل JSON جدید لود شد و جایگزین شد!');
+                alert('فایل JSON جدید لود و جایگزین شد!');
             } catch (err) {
                 alert('فایل JSON نامعتبر است');
             }
