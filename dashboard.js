@@ -15,7 +15,6 @@ function extractSizeAndBrand(title) {
     let brand = 'نامشخص';
     let tech = 'LED';
 
-    // regex فوق‌العاده قوی برای تشخیص تکنولوژی
     const lowerTitle = title.toLowerCase().replace(/\s+/g, ' ');
     if (lowerTitle.includes('qled') || lowerTitle.includes('کیو ال ای دی') || lowerTitle.includes('کیوال ای دی') || 
         lowerTitle.includes('کیوالایدی') || lowerTitle.includes('کیو-ال-ای-دی') || lowerTitle.includes('q led')) {
@@ -27,7 +26,6 @@ function extractSizeAndBrand(title) {
         tech = 'LED';
     }
 
-    // استخراج برند (همان قبلی + لاگ برای دیباگ)
     const afterLed = title.split(/ال\s*ای\s*دی/i)[1];
     if (afterLed) {
         let cleaned = afterLed
@@ -106,7 +104,6 @@ function updateUI() {
     const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'نامشخص'))].sort();
     document.getElementById('brand-filter').innerHTML = '<option value="">همه برندها</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
 
-    // تکنولوژی‌ها + همیشه QLED اضافه بشه
     let techs = [...new Set(data.map(d => d.tech))].sort();
     if (!techs.includes('QLED')) techs.push('QLED');
     document.getElementById('tech-filter').innerHTML = '<option value="">همه تکنولوژی‌ها</option>' + techs.map(t => `<option value="${t}">${t}</option>`).join('');
@@ -178,8 +175,10 @@ function sortTable(col) {
         sortDir = 'asc';
     }
 
-    let sorted = [...currentData];
-    sorted.sort((a, b) => {
+    // سورت روی داده فیلترشده فعلی
+    let filtered = getFilteredData();
+
+    filtered.sort((a, b) => {
         let va = a[col], vb = b[col];
         if (col.includes('price_num')) {
             va = va || 0;
@@ -192,8 +191,8 @@ function sortTable(col) {
         }
     });
 
-    renderTable(sorted);
-    updateChart(sorted);
+    renderTable(filtered);
+    updateChart(filtered);
 }
 
 function applyFilters() {
@@ -207,7 +206,6 @@ function applyFilters() {
 function updateChart(data) {
     if (data.length === 0) {
         console.log('داده برای نمودارها وجود ندارد');
-        // می‌تونی اینجا پیام خالی بودن رو نشون بدی اگر خواستی
         return;
     }
 
