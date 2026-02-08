@@ -1,5 +1,8 @@
-let currentData = [];
+let currentData = { digikala: [], torob: [] };
+let currentTab = 'digikala';
 let displayedRows = 20;
+let currentPage = 1;
+let rowsPerPage = 20;
 let sortCol = null;
 let sortDir = 'asc';
 
@@ -57,8 +60,8 @@ function extractSizeAndBrand(title) {
     return { size, brand: brand || 'نامشخص', tech };
 }
 
-function loadData(raw) {
-    currentData = raw.map(item => {
+function loadData(raw, source = 'digikala') {
+    currentData[source] = raw.map(item => {
         const title = item['ellipsis-2'] || 'نامشخص';
         const { size, brand, tech } = extractSizeAndBrand(title);
         let p = (item['flex'] || '0').toString().replace(/[^0-9۰-۹]/g, '');
@@ -80,7 +83,7 @@ function loadData(raw) {
         };
     }).filter(d => d.price_num > 0 && d.brand !== 'ایلیا');
 
-    localStorage.setItem('daily_prices_data', JSON.stringify(currentData));
+    localStorage.setItem(`daily_prices_${source}`, JSON.stringify(currentData[source]));
     updateUI();
 }
 
@@ -94,7 +97,9 @@ function updateStats(data) {
 }
 
 function updateUI() {
-    let data = currentData;
+    const data = currentData[currentTab];
+    if (!data || data.length === 0) return;
+    
     updateStats(data);
     document.getElementById('last-update').textContent = `آخرین بروزرسانی: ${new Date().toLocaleString('fa-IR')}`;
 
@@ -114,11 +119,13 @@ function updateUI() {
     updateChart(data);
 }
 
-function renderTable(data, limit = displayedRows) {
+function renderTable(data, page = currentPage) {
     const tbody = document.querySelector('#product-table tbody');
     const footer = document.getElementById('table-footer');
     
-    const visibleData = data.slice(0, limit);
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const visibleData = data.slice(start, end);
     tbody.innerHTML = visibleData.map(item => `
         <tr>
             <td>${item.name}</td>
@@ -132,18 +139,34 @@ function renderTable(data, limit = displayedRows) {
         </tr>
     `).join('');
 
-    if (data.length > limit) {
-        footer.style.display = 'table-row-group';
+    // Pagination
+    const totalPages = Math.ceil(data.length / rowsPerPage);
+    const pagination = document.getElementById('pagination');
+    pagination.innerHTML = '';
+    if (totalPages > 1) {
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.textContent = i;
+            btn.className = i === page ? 'active' : '';
+            btn.onclick = () => changePage(i);
+            pagination.appendChild(btn);
+        }
     } else {
         footer.style.display = 'none';
     }
+}
+
+function changePage(page) {
+    currentPage = page;
+    const filteredData = getFilteredData();
+    renderTable(filteredData, page);
 }
 
 function loadMoreRows() {
     if (document.getElementById('load-more').disabled) return;
     displayedRows += 20;
     const filteredData = getFilteredData();
-    renderTable(filteredData, displayedRows);
+    renderTable(filteredData);
     
     if (filteredData.length <= displayedRows) {
         document.getElementById('load-more').textContent = 'همه داده‌ها لود شد';
@@ -152,7 +175,7 @@ function loadMoreRows() {
 }
 
 function getFilteredData() {
-    let filtered = currentData;
+    let filtered = currentData[currentTab];
     const minPrice = parseInt(document.getElementById('price-filter').value) || 0;
     filtered = filtered.filter(item => item.price_num >= minPrice);
     const selectedSize = document.getElementById('size-filter').value;
@@ -175,7 +198,6 @@ function sortTable(col) {
         sortDir = 'asc';
     }
 
-    // سورت روی داده فیلترشده فعلی
     let filtered = getFilteredData();
 
     filtered.sort((a, b) => {
@@ -196,7 +218,7 @@ function sortTable(col) {
 }
 
 function applyFilters() {
-    displayedRows = 20;
+    currentPage = 1;
     const filteredData = getFilteredData();
     updateStats(filteredData);
     renderTable(filteredData);
@@ -319,19 +341,18 @@ function updateChart(data) {
     }
 }
 
-// ایونت‌ها
-fetch('daily_prices.json')
-    .then(r => r.json())
-    .then(loadData)
-    .catch(e => console.error("خطا در لود JSON:", e));
+// ایونت تب‌ها
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelector('.tab.active').classList.remove('active');
+        tab.classList.add('active');
+        currentTab = tab.dataset.tab;
+        currentPage = 1;
+        updateUI();
+    });
+});
 
-const savedData = localStorage.getItem('daily_prices_data');
-if (savedData) {
-    const parsedData = JSON.parse(savedData);
-    currentData = parsedData;
-    updateUI();
-}
-
+// ایونت‌های دیگر (همان قبلی)
 document.querySelectorAll('th[data-col]').forEach(th => {
     th.addEventListener('click', () => sortTable(th.dataset.col));
 });
@@ -347,9 +368,9 @@ document.getElementById('clear-filters')?.addEventListener('click', () => {
     document.getElementById('brand-filter').value = '';
     document.getElementById('tech-filter').value = '';
     document.getElementById('filter-value').textContent = '۰ تومان';
-    updateStats(currentData);
-    renderTable(currentData);
-    updateChart(currentData);
+    updateStats(currentData[currentTab]);
+    renderTable(currentData[currentTab]);
+    updateChart(currentData[currentTab]);
 });
 
 document.getElementById('upload-btn')?.addEventListener('click', () => {
@@ -363,8 +384,9 @@ document.getElementById('file-input')?.addEventListener('change', e => {
         reader.onload = ev => {
             try {
                 const json = JSON.parse(ev.target.result);
-                loadData(json);
-                alert('فایل JSON جدید لود و جایگزین شد!');
+                const source = prompt('منبع داده (digikala یا torob):') || 'digikala';
+                loadData(json, source);
+                alert(`داده‌های ${source} لود شد!`);
             } catch (err) {
                 alert('فایل JSON نامعتبر است');
             }
@@ -373,11 +395,9 @@ document.getElementById('file-input')?.addEventListener('change', e => {
     }
 });
 
-document.getElementById('load-more')?.addEventListener('click', loadMoreRows);
-
 function downloadExcel() {
-    const ws = XLSX.utils.json_to_sheet(currentData);
+    const ws = XLSX.utils.json_to_sheet(currentData[currentTab]);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "تلویزیون‌ها");
-    XLSX.writeFile(wb, "tv_prices.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, currentTab);
+    XLSX.writeFile(wb, `${currentTab}_prices.xlsx`);
 }
