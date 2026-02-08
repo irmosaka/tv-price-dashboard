@@ -15,15 +15,19 @@ function extractSizeAndBrand(title) {
     let brand = 'نامشخص';
     let tech = 'LED';
 
-    // regex بسیار قوی برای تکنولوژی
-    if (title.match(/ال\s*ای\s*دی|الایدی|ال-ای-دی|ال ای دی|led/i)) {
-        tech = 'LED';
-    } else if (title.match(/کیو\s*ال\s*ای\s*دی|کیوالایدی|qled|کیو ال ای دی|کیو-ال-ای-دی|کیوال ای دی/i)) {
+    // regex فوق‌العاده قوی برای تشخیص تکنولوژی
+    const lowerTitle = title.toLowerCase().replace(/\s+/g, ' ');
+    if (lowerTitle.includes('qled') || lowerTitle.includes('کیو ال ای دی') || lowerTitle.includes('کیوال ای دی') || 
+        lowerTitle.includes('کیوالایدی') || lowerTitle.includes('کیو-ال-ای-دی') || lowerTitle.includes('q led')) {
         tech = 'QLED';
-    } else if (title.match(/اولد|oled|اول-ای-دی/i)) {
+    } else if (lowerTitle.includes('oled') || lowerTitle.includes('اولد') || lowerTitle.includes('اول-ای-دی')) {
         tech = 'OLED';
+    } else if (lowerTitle.includes('ال ای دی') || lowerTitle.includes('الایدی') || lowerTitle.includes('ال-ای-دی') || 
+               lowerTitle.includes('led') || lowerTitle.includes('ال ای دی')) {
+        tech = 'LED';
     }
 
+    // استخراج برند (همان قبلی + لاگ برای دیباگ)
     const afterLed = title.split(/ال\s*ای\s*دی/i)[1];
     if (afterLed) {
         let cleaned = afterLed
@@ -102,7 +106,7 @@ function updateUI() {
     const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'نامشخص'))].sort();
     document.getElementById('brand-filter').innerHTML = '<option value="">همه برندها</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
 
-    // تکنولوژی‌ها + اضافه کردن دستی QLED
+    // تکنولوژی‌ها + همیشه QLED اضافه بشه
     let techs = [...new Set(data.map(d => d.tech))].sort();
     if (!techs.includes('QLED')) techs.push('QLED');
     document.getElementById('tech-filter').innerHTML = '<option value="">همه تکنولوژی‌ها</option>' + techs.map(t => `<option value="${t}">${t}</option>`).join('');
@@ -159,7 +163,10 @@ function getFilteredData() {
     const selectedBrand = document.getElementById('brand-filter').value;
     if (selectedBrand) filtered = filtered.filter(item => item.brand === selectedBrand);
     const selectedTech = document.getElementById('tech-filter').value;
-    if (selectedTech) filtered = filtered.filter(item => item.tech === selectedTech);
+    if (selectedTech) {
+        filtered = filtered.filter(item => item.tech === selectedTech);
+        console.log(`فیلتر تکنولوژی: ${selectedTech} → ${filtered.length} رکورد`);
+    }
     return filtered;
 }
 
@@ -198,6 +205,12 @@ function applyFilters() {
 }
 
 function updateChart(data) {
+    if (data.length === 0) {
+        console.log('داده برای نمودارها وجود ندارد');
+        // می‌تونی اینجا پیام خالی بودن رو نشون بدی اگر خواستی
+        return;
+    }
+
     const brandAvg = {};
     data.forEach(item => {
         if (item.brand !== 'نامشخص') {
