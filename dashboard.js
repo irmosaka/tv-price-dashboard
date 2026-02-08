@@ -5,7 +5,7 @@ let sortDir = 'asc';
 
 function toPersianDigits(num) {
     if (num === '—' || num === null || num === undefined) return '—';
-    return num.toLocaleString('fa-IR');   // کاما هر ۳ رقم + اعداد فارسی
+    return num.toLocaleString('fa-IR');  // کاما هر ۳ رقم + اعداد فارسی
 }
 
 function extractSizeAndBrand(title) {
@@ -13,6 +13,9 @@ function extractSizeAndBrand(title) {
     const size = sizeMatch ? sizeMatch[1] : 'نامشخص';
 
     let brand = 'نامشخص';
+    const techMatch = title.match(/ال\s*ای\s*دی|کیو\s*ال\s*ای\s*دی|اولد/i);
+    const tech = techMatch ? techMatch[0].replace(/\s*/g, '').toLowerCase() : 'ال ای دی';
+
     const afterLed = title.split(/ال\s*ای\s*دی/i)[1];
     if (afterLed) {
         let cleaned = afterLed
@@ -38,18 +41,24 @@ function extractSizeAndBrand(title) {
         }
     }
     brand = brand.replace(/هوشمند|ال\s*ای\s*دی/gi, '').replace(/\s+/g, ' ').trim();
-    return { size, brand: brand || 'نامشخص' };
+    
+    // فیکس پاناسونیک
+    if (brand.includes('پاناسونیک')) {
+        brand = 'پاناسونیک';
+    }
+
+    return { size, brand: brand || 'نامشخص', tech };
 }
 
 function loadData(raw) {
     currentData = raw.map(item => {
         const title = item['ellipsis-2'] || 'نامشخص';
-        const { size, brand } = extractSizeAndBrand(title);
+        const { size, brand, tech } = extractSizeAndBrand(title);
         let p = (item['flex'] || '0').toString().replace(/[^0-9۰-۹]/g, '');
         p = p.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
         let o = (item['text-neutral-300'] || p).toString().replace(/[^0-9۰-۹]/g, '');
         o = o.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
-        return {
+        const newItem = {
             name: title,
             brand,
             link: item['block href'] || '#',
@@ -59,11 +68,13 @@ function loadData(raw) {
             price_num: parseInt(p) || 0,
             original_price_num: parseInt(o) || 0,
             sellers: /موجود|باقی مانده/i.test(item['text-caption'] || '') ? 1 : 0,
-            size
+            size,
+            tech
         };
-    }).filter(d => d.price_num > 0);
+        return newItem;
+    }).filter(d => d.price_num > 0 && d.brand !== 'ایلیا');  // حذف ایلیا
 
-    // ذخیره در localStorage برای جایگزینی دائمی
+    // ذخیره در localStorage برای جایگزین دائمی
     localStorage.setItem('daily_prices_data', JSON.stringify(currentData));
 
     updateUI();
@@ -88,6 +99,9 @@ function updateUI() {
 
     const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'نامشخص'))].sort();
     document.getElementById('brand-filter').innerHTML = '<option value="">همه برندها</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
+
+    const techs = [...new Set(data.map(d => d.tech))].sort();
+    document.getElementById('tech-filter').innerHTML = '<option value="">همه تکنولوژی‌ها</option>' + techs.map(t => `<option value="${t}">${t}</option>`).join('');
 
     // سورت پیش‌فرض: قیمت فروش از کم به زیاد
     data.sort((a, b) => a.price_num - b.price_num);
@@ -140,6 +154,8 @@ function getFilteredData() {
     if (selectedSize) filtered = filtered.filter(item => item.size === selectedSize);
     const selectedBrand = document.getElementById('brand-filter').value;
     if (selectedBrand) filtered = filtered.filter(item => item.brand === selectedBrand);
+    const selectedTech = document.getElementById('tech-filter').value;
+    if (selectedTech) filtered = filtered.filter(item => item.tech === selectedTech);
     return filtered;
 }
 
@@ -230,7 +246,11 @@ function updateChart(data) {
                     backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }  // حذف legend (پای چارت)
+            }
         });
     }
 
@@ -264,16 +284,13 @@ function updateChart(data) {
     }
 }
 
-// حذف کامل modal و کلیک بزرگنمایی
-// دیگر نیازی به openModal و closeModal نیست
-
 // ایونت‌ها
 fetch('daily_prices.json')
     .then(r => r.json())
     .then(loadData)
     .catch(e => console.error("خطا در لود JSON:", e));
 
-// لود از localStorage (اگر آپلود جدید شده باشد)
+// لود از localStorage (جایگزین فایل اصلی)
 const savedData = localStorage.getItem('daily_prices_data');
 if (savedData) {
     const parsedData = JSON.parse(savedData);
@@ -285,7 +302,7 @@ document.querySelectorAll('th[data-col]').forEach(th => {
     th.addEventListener('click', () => sortTable(th.dataset.col));
 });
 
-['price-filter','size-filter','brand-filter'].forEach(id => {
+['price-filter','size-filter','brand-filter','tech-filter'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', applyFilters);
     document.getElementById(id)?.addEventListener('change', applyFilters);
 });
@@ -294,6 +311,7 @@ document.getElementById('clear-filters')?.addEventListener('click', () => {
     document.getElementById('price-filter').value = 0;
     document.getElementById('size-filter').value = '';
     document.getElementById('brand-filter').value = '';
+    document.getElementById('tech-filter').value = '';
     document.getElementById('filter-value').textContent = '۰ تومان';
     updateStats(currentData);
     renderTable(currentData);
