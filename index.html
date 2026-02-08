@@ -150,7 +150,7 @@
 
         #charts-section {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 1fr 1fr;
             grid-template-rows: auto auto;
             gap: 1.5rem;
             margin-top: 2rem;
@@ -158,10 +158,7 @@
 
         .chart-card.full-width {
             grid-column: 1 / 3;
-        }
-
-        .chart-card.tall {
-            grid-row: 1 / 3;
+            grid-row: auto;
         }
 
         .chart-card {
@@ -169,8 +166,7 @@
             border-radius: 16px;
             padding: 1.5rem;
             box-shadow: var(--shadow);
-            /* کلیک بزرگنمایی حذف شد → cursor: default */
-            cursor: default;
+            cursor: default; /* کلیک حذف شد */
         }
 
         .chart-card h3 { text-align: center; margin-bottom: 1rem; color: var(--primary); font-weight: 600; }
@@ -193,7 +189,7 @@
                 grid-template-columns: 1fr;
                 grid-template-rows: auto;
             }
-            .chart-card.full-width, .chart-card.tall {
+            .chart-card.full-width {
                 grid-column: 1;
                 grid-row: auto;
             }
@@ -228,6 +224,7 @@
             </label>
             <label><i class="fas fa-ruler"></i> سایز: <select id="size-filter"></select></label>
             <label><i class="fas fa-copyright"></i> برند: <select id="brand-filter"></select></label>
+            <label><i class="fas fa-microchip"></i> تکنولوژی: <select id="tech-filter"></select></label>
             <button id="clear-filters"><i class="fas fa-times"></i> حذف فیلترها</button>
         </div>
 
@@ -263,7 +260,7 @@
         </div>
 
         <div id="charts-section">
-            <!-- ستون اول و دوم: دو چارت زیر هم، عرض کامل -->
+            <!-- دو چارت زیر هم، عرض کامل -->
             <div class="chart-card full-width">
                 <h3><i class="fas fa-chart-bar"></i> قیمت میانگین بر اساس برند</h3>
                 <canvas id="brand-price-chart"></canvas>
@@ -273,15 +270,15 @@
                 <canvas id="price-size-scatter"></canvas>
             </div>
 
-            <!-- ستون سوم: توزیع برندها، ارتفاع دو ردیف -->
-            <div class="chart-card tall">
+            <!-- توزیع برندها، ارتفاع دو ردیف، فول عرض -->
+            <div class="chart-card full-width">
                 <h3><i class="fas fa-chart-pie"></i> توزیع برندها</h3>
                 <canvas id="brand-pie-chart" style="height: 560px !important;"></canvas>
             </div>
         </div>
 
         <footer>
-            ساخته شده با ❤️ توسط <strong>محمد صادق کاجی</strong> - زمستان ۱۴۰۴
+            ساخته شده با ❤️ توسط <strong>محمد صادقی کاجی</strong> - زمستان ۱۴۰۴
         </footer>
     </div>
 
