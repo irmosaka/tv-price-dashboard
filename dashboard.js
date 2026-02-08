@@ -3,7 +3,6 @@ let displayedRows = 20;
 let sortCol = null;
 let sortDir = 'asc';
 
-// تبدیل اعداد انگلیسی به فارسی + کاما هر ۳ رقم
 function toPersianDigits(num) {
     if (num === '—' || num === null || num === undefined) return '—';
     return num.toLocaleString('fa-IR');
@@ -16,12 +15,12 @@ function extractSizeAndBrand(title) {
     let brand = 'نامشخص';
     let tech = 'LED';
 
-    // تکنولوژی با regex قوی‌تر
-    if (title.match(/ال\s*ای\s*دی|الایدی/i)) {
+    // regex بسیار قوی برای تکنولوژی
+    if (title.match(/ال\s*ای\s*دی|الایدی|ال-ای-دی|ال ای دی|led/i)) {
         tech = 'LED';
-    } else if (title.match(/کیو\s*ال\s*ای\s*دی|کیوالایدی|qled|کیو ال ای دی/i)) {
+    } else if (title.match(/کیو\s*ال\s*ای\s*دی|کیوالایدی|qled|کیو ال ای دی|کیو-ال-ای-دی|کیوال ای دی/i)) {
         tech = 'QLED';
-    } else if (title.match(/اولد|oled/i)) {
+    } else if (title.match(/اولد|oled|اول-ای-دی/i)) {
         tech = 'OLED';
     }
 
@@ -50,8 +49,7 @@ function extractSizeAndBrand(title) {
         }
     }
     brand = brand.replace(/هوشمند|ال\s*ای\s*دی/gi, '').replace(/\s+/g, ' ').trim();
-
-    // فیکس پاناسونیک
+    
     if (brand.includes('پاناسونیک')) brand = 'پاناسونیک';
 
     return { size, brand: brand || 'نامشخص', tech };
@@ -104,10 +102,11 @@ function updateUI() {
     const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'نامشخص'))].sort();
     document.getElementById('brand-filter').innerHTML = '<option value="">همه برندها</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
 
-    const techs = [...new Set(data.map(d => d.tech))].sort();
+    // تکنولوژی‌ها + اضافه کردن دستی QLED
+    let techs = [...new Set(data.map(d => d.tech))].sort();
+    if (!techs.includes('QLED')) techs.push('QLED');
     document.getElementById('tech-filter').innerHTML = '<option value="">همه تکنولوژی‌ها</option>' + techs.map(t => `<option value="${t}">${t}</option>`).join('');
 
-    // سورت پیش‌فرض: قیمت فروش از کم به زیاد
     data.sort((a, b) => a.price_num - b.price_num);
 
     renderTable(data);
@@ -199,9 +198,6 @@ function applyFilters() {
 }
 
 function updateChart(data) {
-    console.log("به‌روزرسانی چارت‌ها با", data.length, "ردیف");
-
-    // Bar Chart
     const brandAvg = {};
     data.forEach(item => {
         if (item.brand !== 'نامشخص') {
@@ -244,7 +240,6 @@ function updateChart(data) {
         });
     }
 
-    // Pie Chart
     const brandCount = {};
     data.forEach(item => {
         if (item.brand !== 'نامشخص') brandCount[item.brand] = (brandCount[item.brand] || 0) + 1;
@@ -272,7 +267,6 @@ function updateChart(data) {
         });
     }
 
-    // Scatter Plot - برند به عنوان label نقطه
     const scatterData = data.map(item => ({
         x: +item.size.replace('نامشخص', '0'),
         y: item.price_num,
