@@ -195,12 +195,6 @@
             position: relative;
             overflow: hidden;
             box-shadow: 0 15px 50px rgba(0,0,0,0.4);
-            animation: modalFadeIn 0.4s ease;
-        }
-
-        @keyframes modalFadeIn {
-            from { transform: scale(0.92); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
         }
 
         #close-modal {
@@ -211,7 +205,6 @@
             cursor: pointer;
             color: var(--gray);
             z-index: 10000;
-            transition: color 0.2s;
         }
 
         #close-modal:hover { color: #ef4444; }
@@ -298,10 +291,6 @@
             <div class="chart-card" data-chart-id="brand-pie-chart">
                 <h3><i class="fas fa-chart-pie"></i> توزیع برندها</h3>
                 <canvas id="brand-pie-chart"></canvas>
-            </div>
-            <div class="chart-card" data-chart-id="trend-line-chart">
-                <h3><i class="fas fa-chart-line"></i> روند قیمت بر اساس سایز</h3>
-                <canvas id="trend-line-chart"></canvas>
             </div>
             <div class="chart-card" data-chart-id="price-size-scatter">
                 <h3><i class="fas fa-chart-scatter"></i> قیمت در مقابل سایز</h3>
