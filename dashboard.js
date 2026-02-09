@@ -1,4 +1,4 @@
-// dashboard.js - نسخه ضدگلوله (توابع قبل از event listenerها + ایمن‌سازی کامل)
+// dashboard.js - نسخه نهایی ضدگلوله (برند فقط از لیست مجاز + ترتیب درست توابع)
 
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
@@ -7,63 +7,46 @@ let rowsPerPage = 20;
 let sortCol = null;
 let sortDir = 'asc';
 
-// ────────────────────────────────────────────────────────
-// تمام توابع کمکی (قبل از هر event listener)
-// ────────────────────────────────────────────────────────
+// لیست برندهای مجاز (دقیقاً همان‌هایی که گفتی + سامسونگ اضافه شد)
+const TOROB_BRANDS = [
+  "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "تی سی ال",
+  "جی بی پی", "جی وی سی", "جی پلاس", "دوو", "سام", "سامسونگ",
+  "سونی", "لیماک جنرال اینترنشنال", "نکسار", "هایسنس", "ورلد استار", "پارس", "پاناسونیک"
+];
+
+// لیست برندها برای regex (حساسیت کمتر به فاصله و حروف)
+const BRAND_REGEX = new RegExp(
+  TOROB_BRANDS.map(b => b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'),
+  'i'
+);
 
 function toPersianDigits(num) {
   if (num === '—' || num === null || num === undefined) return '—';
   return num.toLocaleString('fa-IR');
 }
 
-function extractSizeAndBrand(title) {
+// استخراج برند فقط از لیست مجاز (ضدگلوله)
+function extractBrandFromTitle(title) {
+  if (!title || typeof title !== 'string' || !title.trim()) return 'نامشخص';
+
+  const match = title.match(BRAND_REGEX);
+  return match ? match[0] : 'نامشخص';
+}
+
+// استخراج سایز و تکنولوژی
+function extractSizeAndTech(title) {
   title = String(title ?? '').trim();
 
   const sizeMatch = title.match(/(\d{2,3})\s*(?:اینچ|اینج)/i);
   const size = sizeMatch ? sizeMatch[1] : 'نامشخص';
 
-  let brand = 'نامشخص';
   let tech = 'LED';
+  const lower = title.toLowerCase();
 
-  if (!title) return { size, brand, tech };
+  if (lower.includes('qled') || lower.includes('کیوالایدی') || lower.includes('q led')) tech = 'QLED';
+  else if (lower.includes('oled') || lower.includes('اولد')) tech = 'OLED';
 
-  const lower = title.toLowerCase().replace(/\s+/g, ' ');
-
-  if (lower.includes('qled') || lower.includes('کیوالایدی') || lower.includes('کیو ال ای دی') ||
-      lower.includes('کیو-ال-ای-دی') || lower.includes('q led')) {
-    tech = 'QLED';
-  } else if (lower.includes('oled') || lower.includes('اولد') || lower.includes('اول-ای-دی')) {
-    tech = 'OLED';
-  } else if (lower.includes('ال ای دی') || lower.includes('الایدی') || lower.includes('led')) {
-    tech = 'LED';
-  }
-
-  const afterLed = title.split(/ال\s*ای\s*دی/i)[1];
-  if (afterLed) {
-    let cleaned = afterLed
-      .replace(/^\s*هوشمند\s*/i, '')
-      .split(/\s*(مدل|سایز|اینچ|اینج|$)/i)[0]
-      .trim()
-      .replace(/\s+/g, ' ');
-    if (cleaned && cleaned.length > 1) brand = cleaned;
-  }
-  if (brand === 'نامشخص') {
-    const words = title.split(/\s+/);
-    for (let i = 0; i < words.length - 2; i++) {
-      if (/ال\s*ای\s*دی/i.test(words[i] + ' ' + words[i+1])) {
-        let nxt = words[i+2] || words[i+1];
-        if (nxt && !/هوشمند|مدل|سایز/i.test(nxt)) {
-          brand = nxt;
-          break;
-        }
-      }
-    }
-  }
-  brand = brand.replace(/هوشمند|ال\s*ای\s*دی/gi, '').replace(/\s+/g, ' ').trim();
-  
-  if (brand.includes('پاناسونیک')) brand = 'پاناسونیک';
-
-  return { size, brand: brand || 'نامشخص', tech };
+  return { size, tech };
 }
 
 function loadData(raw, source = 'digikala') {
@@ -74,8 +57,9 @@ function loadData(raw, source = 'digikala') {
       try {
         if (!item || typeof item !== 'object') return null;
 
-        const title = item['ProductCard_desktop_product-name__JwqeK'] ?? '';
-        const { size, brand, tech } = extractSizeAndBrand(title);
+        const title = String(item['ProductCard_desktop_product-name__JwqeK'] ?? '').trim();
+        const brand = extractBrandFromTitle(title);
+        const { size, tech } = extractSizeAndTech(title);
 
         let priceText = item['ProductCard_desktop_product-price-text__y20OV'] ?? '0';
         let price_num = parseInt(String(priceText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
@@ -108,7 +92,8 @@ function loadData(raw, source = 'digikala') {
   } else {
     processed = raw.map(item => {
       const title = item['ellipsis-2'] || 'نامشخص';
-      const { size, brand, tech } = extractSizeAndBrand(title);
+      const brand = extractBrandFromTitle(title);
+      const { size, tech } = extractSizeAndTech(title);
       let p = (item['flex'] || '0').toString().replace(/[^0-9۰-۹]/g, '');
       p = p.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
       let o = (item['text-neutral-300'] || p).toString().replace(/[^0-9۰-۹]/g, '');
@@ -157,8 +142,19 @@ function updateUI() {
   const sizes = [...new Set(data.map(d => d.size).filter(s => s !== 'نامشخص'))].sort((a,b)=>+a-+b);
   document.getElementById('size-filter').innerHTML = '<option value="">همه سایزها</option>' + sizes.map(s => `<option value="${s}">${s} اینچ</option>`).join('');
 
-  const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'نامشخص'))].sort();
-  document.getElementById('brand-filter').innerHTML = '<option value="">همه برندها</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
+  const brandSelect = document.getElementById('brand-filter');
+  brandSelect.innerHTML = '<option value="">همه برندها</option>';
+
+  if (currentTab === 'torob') {
+    TOROB_BRANDS.forEach(brand => {
+      brandSelect.innerHTML += `<option value="${brand}">${brand}</option>`;
+    });
+  } else {
+    const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'نامشخص'))].sort();
+    brands.forEach(b => {
+      brandSelect.innerHTML += `<option value="${b}">${b}</option>`;
+    });
+  }
 
   let techs = [...new Set(data.map(d => d.tech))].sort();
   if (!techs.includes('QLED')) techs.push('QLED');
@@ -384,8 +380,36 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('خطا در خواندن فایل: ' + err.message);
       }
     };
+
     reader.readAsText(file);
   });
 
+  // لود اولیه
+  fetch('daily_prices.json')
+    .then(r => r.json())
+    .then(data => loadData(data, 'digikala'))
+    .catch(() => {});
+
+  const savedDigikala = localStorage.getItem('daily_prices_digikala');
+  if (savedDigikala) currentData.digikala = JSON.parse(savedDigikala);
+
+  const savedTorob = localStorage.getItem('daily_prices_torob');
+  if (savedTorob) currentData.torob = JSON.parse(savedTorob);
+
   updateUI();
 });
+
+// تابع دانلود اکسل (اگر کتابخانه XLSX لود شده باشه)
+function downloadExcel() {
+  const data = currentData[currentTab] || [];
+  if (data.length === 0) return alert('هیچ داده‌ای برای دانلود وجود ندارد');
+
+  try {
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, currentTab);
+    XLSX.writeFile(wb, `${currentTab}_prices.xlsx`);
+  } catch (err) {
+    alert('خطا در دانلود اکسل. کتابخانه XLSX را چک کنید.');
+  }
+}
