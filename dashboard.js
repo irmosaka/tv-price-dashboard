@@ -1,3 +1,5 @@
+// dashboard.js - نسخه کامل و نهایی (رفع مشکلات undefined، ترتیب تعریف توابع، BOM و کاما اضافی)
+
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
 let currentPage = 1;
@@ -11,6 +13,7 @@ function toPersianDigits(num) {
 }
 
 function extractSizeAndBrand(title) {
+    // ایمنی کامل در برابر null/undefined
     title = String(title ?? '').trim();
 
     const sizeMatch = title.match(/(\d{2,3})\s*(?:اینچ|اینج)/i);
@@ -70,14 +73,23 @@ function loadData(raw, source = 'digikala') {
                 return null;
             }
 
+            // کلید رو با ?? ایمن می‌گیریم
             const title = item['ProductCard_desktop_product-name__JwqeK'] ?? 'نامشخص';
             const { size, brand, tech } = extractSizeAndBrand(title);
 
             let priceText = item['ProductCard_desktop_product-price-text__y20OV'] ?? '0';
-            let price_num = parseInt(priceText.replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
+            let price_num = parseInt(
+                String(priceText)
+                    .replace(/[^0-9۰-۹]/g, '')
+                    .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+            ) || 0;
 
             let sellersText = item['ProductCard_desktop_shops__mbtsF'] ?? '0';
-            let sellers = parseInt(sellersText.replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
+            let sellers = parseInt(
+                String(sellersText)
+                    .replace(/[^0-9۰-۹]/g, '')
+                    .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+            ) || 0;
 
             const link = item['ProductCards_cards__MYvdn href'] ?? '#';
 
@@ -96,6 +108,7 @@ function loadData(raw, source = 'digikala') {
             };
         }).filter(item => item !== null && item.price_num > 0 && item.brand !== 'ایلیا');
     } else {
+        // دیجی‌کالا
         processed = raw.map(item => {
             const title = item['ellipsis-2'] || 'نامشخص';
             const { size, brand, tech } = extractSizeAndBrand(title);
@@ -320,7 +333,7 @@ function updateChart(data) {
     }
 }
 
-// ایونت‌ها (همه داخل DOMContentLoaded)
+// تمام ایونت‌ها داخل DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
     // تب‌ها
     document.querySelectorAll('.tab').forEach(tab => {
@@ -333,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // سورت
+    // سورت جدول
     document.querySelectorAll('th[data-col]').forEach(th => {
         th.addEventListener('click', () => sortTable(th.dataset.col));
     });
@@ -344,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById(id)?.addEventListener('change', applyFilters);
     });
 
-    // پاک کردن فیلترها
+    // دکمه پاک کردن فیلترها
     document.getElementById('clear-filters')?.addEventListener('click', () => {
         document.getElementById('price-filter').value = 0;
         document.getElementById('size-filter').value = '';
@@ -356,11 +369,12 @@ document.addEventListener('DOMContentLoaded', () => {
         updateChart(currentData[currentTab] || []);
     });
 
-    // آپلود
+    // دکمه آپلود
     document.getElementById('upload-btn')?.addEventListener('click', () => {
         document.getElementById('file-input')?.click();
     });
 
+    // هندلر آپلود فایل
     document.getElementById('file-input')?.addEventListener('change', e => {
         const file = e.target.files[0];
         if (!file) return;
@@ -370,20 +384,33 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 let text = ev.target.result;
 
-                if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+                // حذف BOM اگر وجود داشت
+                if (text.charCodeAt(0) === 0xFEFF) {
+                    text = text.slice(1);
+                }
+
                 text = text.trim();
-                if (text.endsWith(',]')) text = text.slice(0, -2) + ']';
+
+                // رفع مشکل کاما اضافی رایج در انتهای آرایه
+                text = text.replace(/,\s*]$/, ']');
 
                 const json = JSON.parse(text);
 
                 const source = prompt('منبع داده (digikala یا torob):')?.trim().toLowerCase() || 'digikala';
                 loadData(json, source);
-                alert(`داده‌های ${source} لود شد (${json.length} محصول)`);
+                alert(`داده‌های ${source} با موفقیت لود شد (${json.length} محصول)`);
 
                 e.target.value = '';
             } catch (err) {
                 console.error('خطای JSON:', err);
-                alert(`فایل JSON نامعتبر است!\n\nجزئیات: ${err.message}\n\nفایل را با VS Code تمیز کنید.`);
+                alert(
+                    `فایل JSON نامعتبر است!\n\n` +
+                    `جزئیات: ${err.message}\n\n` +
+                    `راه‌حل‌های پیشنهادی:\n` +
+                    `1. فایل را با VS Code باز کنید → Ctrl+A → Cut → Paste → ذخیره کنید (BOM حذف می‌شود).\n` +
+                    `2. مطمئن شوید فایل با [ شروع و با ] تمام می‌شود و کاما اضافی در انتها ندارد.\n` +
+                    `3. اگر فایل بزرگ است، فقط ۱۰ آیتم اول را کپی کنید و در فایل جدید تست کنید.`
+                );
             }
         };
 
