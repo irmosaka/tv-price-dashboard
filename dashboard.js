@@ -1,4 +1,3 @@
-// dashboard.js - نسخه کامل و نهایی
 
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
@@ -12,7 +11,9 @@ function toPersianDigits(num) {
     return num.toLocaleString('fa-IR');
 }
 
-function extractSizeAndBrand(title) {
+function extractSizeAndBrand(title = '') {
+    title = title || '';  // جلوگیری از undefined
+
     const sizeMatch = title.match(/(\d{2,3})\s*(?:اینچ|اینج)/i);
     const size = sizeMatch ? sizeMatch[1] : 'نامشخص';
 
@@ -62,7 +63,12 @@ function loadData(raw, source = 'digikala') {
     let processed = [];
 
     if (source === 'torob') {
-        processed = raw.map(item => {
+        processed = raw.map((item, index) => {
+            if (!item || typeof item !== 'object') {
+                console.warn(`آیتم نامعتبر در ترب - ایندکس: ${index}`);
+                return null;
+            }
+
             const title = item['ProductCard_desktop_product-name__JwqeK'] || 'نامشخص';
             const { size, brand, tech } = extractSizeAndBrand(title);
 
@@ -87,7 +93,7 @@ function loadData(raw, source = 'digikala') {
                 size,
                 tech
             };
-        }).filter(d => d.price_num > 0 && d.brand !== 'ایلیا');
+        }).filter(item => item !== null && item.price_num > 0 && item.brand !== 'ایلیا');
     } else {
         processed = raw.map(item => {
             const title = item['ellipsis-2'] || 'نامشخص';
@@ -172,7 +178,6 @@ function renderTable(data, page = currentPage) {
         </tr>
     `).join('');
 
-    // Pagination
     const totalPages = Math.ceil(data.length / rowsPerPage);
     const pagination = document.getElementById('pagination');
     pagination.innerHTML = '';
@@ -258,29 +263,8 @@ function updateChart(data) {
         if (window.brandChart) window.brandChart.destroy();
         window.brandChart = new Chart(brandCtx, {
             type: 'bar',
-            data: {
-                labels,
-                datasets: [{
-                    label: 'میانگین قیمت (تومان)',
-                    data: avgPrices,
-                    backgroundColor: 'rgba(75,192,192,0.6)',
-                    borderColor: 'rgba(75,192,192,1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true },
-                    x: { ticks: { font: { family: 'Vazirmatn' } } },
-                    y: { ticks: { font: { family: 'Vazirmatn' } } }
-                },
-                plugins: {
-                    legend: { labels: { font: { family: 'Vazirmatn' } } },
-                    tooltip: { titleFont: { family: 'Vazirmatn' }, bodyFont: { family: 'Vazirmatn' } }
-                }
-            }
+            data: { labels, datasets: [{ label: 'میانگین قیمت (تومان)', data: avgPrices, backgroundColor: 'rgba(75,192,192,0.6)', borderColor: 'rgba(75,192,192,1)', borderWidth: 1 }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
         });
     }
 
@@ -295,19 +279,9 @@ function updateChart(data) {
             type: 'pie',
             data: {
                 labels: Object.keys(brandCount),
-                datasets: [{
-                    data: Object.values(brandCount),
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
-                }]
+                datasets: [{ data: Object.values(brandCount), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'] }]
             },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                plugins: { 
-                    legend: { display: false },
-                    tooltip: { titleFont: { family: 'Vazirmatn' }, bodyFont: { family: 'Vazirmatn' } }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
     }
 
@@ -322,14 +296,7 @@ function updateChart(data) {
         if (window.scatterChart) window.scatterChart.destroy();
         window.scatterChart = new Chart(scatterCtx, {
             type: 'scatter',
-            data: {
-                datasets: [{
-                    label: 'قیمت بر حسب سایز',
-                    data: scatterData,
-                    backgroundColor: 'rgba(54,162,235,0.6)',
-                    pointRadius: 5
-                }]
-            },
+            data: { datasets: [{ label: 'قیمت بر حسب سایز', data: scatterData, backgroundColor: 'rgba(54,162,235,0.6)', pointRadius: 5 }] },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -400,18 +367,15 @@ document.getElementById('file-input')?.addEventListener('change', e => {
         try {
             let text = ev.target.result;
 
-            // حذف BOM (خیلی مهم برای فایل‌های ترب)
+            // حذف BOM اگر وجود داشت
             if (text.charCodeAt(0) === 0xFEFF) {
                 text = text.slice(1);
             }
 
-            // حذف فضاهای اضافی و خطوط خالی
             text = text.trim();
 
-            // رفع مشکل کاما اضافی رایج در انتهای آرایه
-            if (text.endsWith(',]')) {
-                text = text.slice(0, -2) + ']';
-            }
+            // رفع کاما اضافی رایج در انتهای آرایه
+            text = text.replace(/,\s*]$/, ']');
 
             const json = JSON.parse(text);
 
@@ -419,20 +383,19 @@ document.getElementById('file-input')?.addEventListener('change', e => {
             loadData(json, source);
             alert(`داده‌های ${source} با موفقیت لود شد (${json.length} محصول)`);
 
-            // ریست input برای آپلود بعدی
             e.target.value = '';
         } catch (err) {
-            console.error('خطای JSON:', err, '\nمتن اولیه فایل:', ev.target.result.substring(0, 300));
+            console.error('خطای JSON:', err);
             alert(
                 `فایل JSON نامعتبر است!\n\n` +
                 `جزئیات: ${err.message}\n\n` +
-                `پیشنهاد: فایل را با VS Code باز کنید → همه را انتخاب کنید → Cut کنید → دوباره Paste کنید → ذخیره کنید.\n` +
-                `یا فقط چند آیتم اول را کپی کنید و در فایل جدید تست کنید.`
+                `پیشنهادات:\n` +
+                `1. فایل را با VS Code باز کنید → Ctrl+A → Cut → Paste → ذخیره کنید.\n` +
+                `2. مطمئن شوید فایل با [ شروع و با ] تمام می‌شود و کاما اضافی در انتها ندارد.\n` +
+                `3. اگر فایل بزرگ است، فقط ۱۰ آیتم اول را کپی کنید و در فایل جدید تست کنید.`
             );
         }
     };
-
-    reader.onerror = () => alert('خطا در خواندن فایل. لطفاً دوباره امتحان کنید.');
 
     reader.readAsText(file);
 });
@@ -446,7 +409,7 @@ function downloadExcel() {
     XLSX.writeFile(wb, `${currentTab}_prices.xlsx`);
 }
 
-// لود اولیه از فایل‌های محلی (اگر وجود داشته باشند)
+// لود اولیه
 fetch('daily_prices.json')
     .then(r => r.json())
     .then(data => loadData(data, 'digikala'))
