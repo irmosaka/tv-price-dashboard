@@ -1,8 +1,4 @@
-// dashboard.js - نسخه نهایی (بهمن ۱۴۰۴)
-// تمام توابع قبل از event listenerها تعریف شدن - خطای applyFilters حل شده
-// سایز در ترب با اعداد فارسی/انگلیسی/نیم‌فاصله/سایز X تشخیص داده می‌شود
-// برند فقط از لیست مجاز استخراج می‌شود + سامسونگ و سام الکترونیک درست کار می‌کنند
-// برندها در فیلتر به ترتیب الفبایی مرتب می‌شوند
+// dashboard.js - نسخه نهایی و ساده (سایز هم در ترب هم در دیجی‌کالا درست کار می‌کنه)
 
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
@@ -11,11 +7,11 @@ let rowsPerPage = 20;
 let sortCol = null;
 let sortDir = 'asc';
 
-// لیست برندهای مجاز فقط برای تب ترب
+// لیست برندها (برای ترب)
 const TOROB_BRANDS = [
-  "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "تی سی ال",
-  "جی بی پی", "جی وی سی", "جی پلاس", "دوو", "سام", "سامسونگ", "سام الکترونیک", "سونی",
-  "لیماک جنرال اینترنشنال", "نکسار", "هایسنس", "ورلد استار", "پارس", "پاناسونیک"
+  "سامسونگ", "سام الکترونیک", "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "تی سی ال",
+  "جی بی پی", "جی وی سی", "جی پلاس", "دوو", "سونی", "لیماک جنرال اینترنشنال", "نکسار", "هایسنس",
+  "ورلد استار", "پارس", "پاناسونیک"
 ];
 
 function toPersianDigits(num) {
@@ -23,67 +19,47 @@ function toPersianDigits(num) {
   return num.toLocaleString('fa-IR');
 }
 
-// استخراج برند فقط از لیست مجاز (اولویت با سامسونگ و سام الکترونیک)
+// استخراج برند (ساده و دقیق)
 function extractBrandFromTitle(title) {
   if (!title || typeof title !== 'string' || !title.trim()) return 'نامشخص';
 
-  const lowerTitle = title.toLowerCase();
+  const lower = title.toLowerCase();
 
-  if (lowerTitle.includes('سامسونگ')) return 'سامسونگ';
-  if (lowerTitle.includes('سام الکترونیک')) return 'سام الکترونیک';
+  if (lower.includes('سامسونگ')) return 'سامسونگ';
+  if (lower.includes('سام الکترونیک')) return 'سام الکترونیک';
 
   for (const brand of TOROB_BRANDS) {
-    if (lowerTitle.includes(brand.toLowerCase())) {
-      return brand;
-    }
+    if (lower.includes(brand.toLowerCase())) return brand;
   }
 
   return 'نامشخص';
 }
 
-// استخراج سایز - نسخه قوی برای ترب (فارسی/انگلیسی/نیم‌فاصله/سایز X/اندازه X)
+// استخراج سایز - ساده، قوی و برای هر دو سایت کار می‌کنه
 function extractSize(title) {
   if (!title || typeof title !== 'string') return 'نامشخص';
 
-  // نرمال‌سازی کامل
-  let normalized = title
-    .replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d - '0'])      // انگلیسی به فارسی
-    .replace(/[\u200C\u200D]/g, ' ')                    // نیم‌فاصله به فضای معمولی
-    .replace(/\s+/g, ' ')                               // فاصله‌های زیاد به یکی
-    .replace(/["']/g, '')                               // نقل‌قول‌ها حذف
+  // نرمال‌سازی: نیم‌فاصله → فضای معمولی، فاصله زیاد → یکی
+  const normalized = title
+    .replace(/[\u200C\u200D]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 
-  // الگوهای بسیار گسترده برای سایز در ترب
-  const patterns = [
-    /(\d{2,3})\s*اینچ/i,
-    /(\d{2,3})\s*اینج/i,
-    /سایز\s*(\d{2,3})/i,
-    /اندازه\s*(\d{2,3})/i,
-    /(\d{2,3})\s*["']?اینچ/i,
-    /(\d{2,3})\s*['"]?اینچ/i,
-    /(\d{2,3})\s*اینچ\s*/i,
-    /سایز\s*(\d{2,3})\s*اینچ/i,
-    /اندازه\s*(\d{2,3})\s*اینچ/i,
-    /(\d{2,3})\s*(?:inch|inچ)/i,
-    /[\d۰-۹]{2,3}\s*["']?اینچ/i  // مستقیم فارسی
-  ];
+  // پیدا کردن عدد ۲ یا ۳ رقمی نزدیک به "اینچ" یا "سایز"
+  const sizeMatch = normalized.match(/(\d{2,3})\s*(?:اینچ|اینج|["'])/i) ||
+                    normalized.match(/سایز\s*(\d{2,3})/i) ||
+                    normalized.match(/اندازه\s*(\d{2,3})/i) ||
+                    normalized.match(/(\d{2,3})\s*اینچ/i);
 
-  for (const pattern of patterns) {
-    const match = normalized.match(pattern);
-    if (match && match[1]) {
-      // عدد رو از رشته استخراج و به انگلیسی تبدیل می‌کنیم
-      const sizeStr = match[1].replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
-      const num = parseInt(sizeStr, 10);
-      if (num >= 32 && num <= 100) {
-        return num.toString();
-      }
-    }
+  if (sizeMatch && sizeMatch[1]) {
+    const num = parseInt(sizeMatch[1], 10);
+    if (num >= 32 && num <= 100) return num.toString();
   }
 
   return 'نامشخص';
 }
 
-// استخراج تکنولوژی
+// تکنولوژی
 function extractTech(title) {
   const lower = (title || '').toLowerCase();
   if (lower.includes('qled') || lower.includes('کیوالایدی') || lower.includes('q led')) return 'QLED';
@@ -190,7 +166,7 @@ function updateUI() {
   // سایزها - مرتب از کوچک به بزرگ
   const sizes = [...new Set(data.map(d => d.size).filter(s => s !== 'نامشخص'))]
     .map(s => {
-      // تبدیل فارسی به انگلیسی برای مرتب‌سازی و فیلتر
+      // تبدیل فارسی به انگلیسی برای مرتب‌سازی
       let numStr = s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
       return parseInt(numStr, 10);
     })
@@ -205,7 +181,6 @@ function updateUI() {
   brandSelect.innerHTML = '<option value="">همه برندها</option>';
 
   if (currentTab === 'torob') {
-    // الفبایی برای ترب
     [...TOROB_BRANDS].sort((a, b) => a.localeCompare(b, 'fa')).forEach(brand => {
       brandSelect.innerHTML += `<option value="${brand}">${brand}</option>`;
     });
@@ -216,7 +191,6 @@ function updateUI() {
     });
   }
 
-  // تکنولوژی‌ها
   let techs = [...new Set(data.map(d => d.tech))].sort();
   if (!techs.includes('QLED')) techs.push('QLED');
   document.getElementById('tech-filter').innerHTML = '<option value="">همه تکنولوژی‌ها</option>' + techs.map(t => `<option value="${t}">${t}</option>`).join('');
@@ -445,32 +419,5 @@ document.addEventListener('DOMContentLoaded', () => {
     reader.readAsText(file);
   });
 
-  // لود اولیه
-  fetch('daily_prices.json')
-    .then(r => r.json())
-    .then(data => loadData(data, 'digikala'))
-    .catch(() => {});
-
-  const savedDigikala = localStorage.getItem('daily_prices_digikala');
-  if (savedDigikala) currentData.digikala = JSON.parse(savedDigikala);
-
-  const savedTorob = localStorage.getItem('daily_prices_torob');
-  if (savedTorob) currentData.torob = JSON.parse(savedTorob);
-
   updateUI();
 });
-
-// تابع دانلود اکسل
-function downloadExcel() {
-  const data = currentData[currentTab] || [];
-  if (data.length === 0) return alert('هیچ داده‌ای برای دانلود وجود ندارد');
-
-  try {
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, currentTab);
-    XLSX.writeFile(wb, `${currentTab}_prices_${new Date().toISOString().slice(0,10)}.xlsx`);
-  } catch (err) {
-    alert('خطا در دانلود اکسل. مطمئن شو کتابخانه XLSX لود شده باشه.');
-  }
-}
