@@ -1,4 +1,4 @@
-// dashboard.js - نسخه نهایی، کامل و ضدگلوله (بهمن ۱۴۰۴)
+// dashboard.js - نسخه نهایی (سایز قوی‌تر + برند الفبایی + رفع تمام مشکلات قبلی)
 
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
@@ -9,16 +9,10 @@ let sortDir = 'asc';
 
 // لیست برندهای مجاز (دقیقاً همون‌هایی که گفتی + سامسونگ و سام الکترونیک)
 const TOROB_BRANDS = [
-  "سامسونگ", "سام الکترونیک", "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "تی سی ال",
-  "جی بی پی", "جی وی سی", "جی پلاس", "دوو", "سونی", "لیماک جنرال اینترنشنال", "نکسار", "هایسنس",
-  "ورلد استار", "پارس", "پاناسونیک"
+  "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "تی سی ال",
+  "جی بی پی", "جی وی سی", "جی پلاس", "دوو", "سام", "سامسونگ", "سونی",
+  "لیماک جنرال اینترنشنال", "نکسار", "هایسنس", "ورلد استار", "پارس", "پاناسونیک"
 ];
-
-// regex برای جستجوی سریع برندها
-const BRAND_REGEX = new RegExp(
-  TOROB_BRANDS.map(b => b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'),
-  'i'
-);
 
 function toPersianDigits(num) {
   if (num === '—' || num === null || num === undefined) return '—';
@@ -35,11 +29,17 @@ function extractBrandFromTitle(title) {
   if (lowerTitle.includes('سامسونگ')) return 'سامسونگ';
   if (lowerTitle.includes('سام الکترونیک')) return 'سام الکترونیک';
 
-  const match = lowerTitle.match(BRAND_REGEX);
-  return match ? match[0] : 'نامشخص';
+  // بقیه برندها
+  for (const brand of TOROB_BRANDS) {
+    if (lowerTitle.includes(brand.toLowerCase())) {
+      return brand;
+    }
+  }
+
+  return 'نامشخص';
 }
 
-// استخراج سایز - فوق‌العاده قوی برای ترب
+// استخراج سایز - نسخه فوق‌العاده قوی برای ترب
 function extractSize(title) {
   if (!title || typeof title !== 'string') return 'نامشخص';
 
@@ -48,9 +48,10 @@ function extractSize(title) {
     .replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d - '0'])      // انگلیسی → فارسی
     .replace(/[\u200C\u200D]/g, ' ')                    // نیم‌فاصله → فضای معمولی
     .replace(/\s+/g, ' ')                               // فاصله‌های زیاد → یکی
+    .replace(/["']/g, '')                               // نقل‌قول‌ها رو حذف کن
     .trim();
 
-  // الگوهای مختلف سایز در ترب
+  // الگوهای بسیار گسترده
   const patterns = [
     /(\d{2,3})\s*اینچ/i,
     /(\d{2,3})\s*اینج/i,
@@ -59,7 +60,9 @@ function extractSize(title) {
     /(\d{2,3})\s*["']?اینچ/i,
     /(\d{2,3})\s*['"]?اینچ/i,
     /(\d{2,3})\s*اینچ\s*/i,
-    /سایز\s*(\d{2,3})\s*اینچ/i
+    /سایز\s*(\d{2,3})\s*اینچ/i,
+    /اندازه\s*(\d{2,3})\s*اینچ/i,
+    /(\d{2,3})\s*(?:inch|inچ)/i
   ];
 
   for (const pattern of patterns) {
@@ -179,25 +182,26 @@ function updateUI() {
   updateStats(data);
   document.getElementById('last-update').textContent = `آخرین بروزرسانی: ${new Date().toLocaleString('fa-IR')}`;
 
-  // سایزها - حالا باید درست پر بشه
+  // سایزها - مرتب از کوچک به بزرگ
   const sizes = [...new Set(data.map(d => d.size).filter(s => s !== 'نامشخص'))]
     .map(s => parseInt(s, 10))
     .filter(n => !isNaN(n) && n >= 32 && n <= 100)
-    .sort((a,b) => a - b);
+    .sort((a, b) => a - b);
 
   document.getElementById('size-filter').innerHTML = '<option value="">همه سایزها</option>' + 
     sizes.map(s => `<option value="${s}">${s} اینچ</option>`).join('');
 
-  // برندها
+  // برندها - مرتب الفبایی (از الف تا ی)
   const brandSelect = document.getElementById('brand-filter');
   brandSelect.innerHTML = '<option value="">همه برندها</option>';
 
   if (currentTab === 'torob') {
-    TOROB_BRANDS.forEach(brand => {
+    // الفبایی برای ترب
+    [...TOROB_BRANDS].sort((a, b) => a.localeCompare(b, 'fa')).forEach(brand => {
       brandSelect.innerHTML += `<option value="${brand}">${brand}</option>`;
     });
   } else {
-    const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'نامشخص'))].sort();
+    const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'نامشخص'))].sort((a, b) => a.localeCompare(b, 'fa'));
     brands.forEach(b => {
       brandSelect.innerHTML += `<option value="${b}">${b}</option>`;
     });
