@@ -1,4 +1,8 @@
-// dashboard.js - نسخه نهایی (سایز قوی‌تر + برند الفبایی + رفع تمام مشکلات قبلی)
+// dashboard.js - نسخه نهایی (بهمن ۱۴۰۴)
+// تمام توابع قبل از event listenerها تعریف شدن - خطای applyFilters حل شده
+// سایز در ترب با اعداد فارسی/انگلیسی/نیم‌فاصله/سایز X تشخیص داده می‌شود
+// برند فقط از لیست مجاز استخراج می‌شود + سامسونگ و سام الکترونیک درست کار می‌کنند
+// برندها در فیلتر به ترتیب الفبایی مرتب می‌شوند
 
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
@@ -7,10 +11,10 @@ let rowsPerPage = 20;
 let sortCol = null;
 let sortDir = 'asc';
 
-// لیست برندهای مجاز (دقیقاً همون‌هایی که گفتی + سامسونگ و سام الکترونیک)
+// لیست برندهای مجاز فقط برای تب ترب
 const TOROB_BRANDS = [
   "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "تی سی ال",
-  "جی بی پی", "جی وی سی", "جی پلاس", "دوو", "سام", "سامسونگ", "سونی",
+  "جی بی پی", "جی وی سی", "جی پلاس", "دوو", "سام", "سامسونگ", "سام الکترونیک", "سونی",
   "لیماک جنرال اینترنشنال", "نکسار", "هایسنس", "ورلد استار", "پارس", "پاناسونیک"
 ];
 
@@ -19,17 +23,15 @@ function toPersianDigits(num) {
   return num.toLocaleString('fa-IR');
 }
 
-// استخراج برند فقط از لیست مجاز (ضدگلوله)
+// استخراج برند فقط از لیست مجاز (اولویت با سامسونگ و سام الکترونیک)
 function extractBrandFromTitle(title) {
   if (!title || typeof title !== 'string' || !title.trim()) return 'نامشخص';
 
   const lowerTitle = title.toLowerCase();
 
-  // اولویت اول: سامسونگ و سام الکترونیک
   if (lowerTitle.includes('سامسونگ')) return 'سامسونگ';
   if (lowerTitle.includes('سام الکترونیک')) return 'سام الکترونیک';
 
-  // بقیه برندها
   for (const brand of TOROB_BRANDS) {
     if (lowerTitle.includes(brand.toLowerCase())) {
       return brand;
@@ -39,19 +41,19 @@ function extractBrandFromTitle(title) {
   return 'نامشخص';
 }
 
-// استخراج سایز - نسخه فوق‌العاده قوی برای ترب
+// استخراج سایز - نسخه قوی برای ترب (فارسی/انگلیسی/نیم‌فاصله/سایز X/اندازه X)
 function extractSize(title) {
   if (!title || typeof title !== 'string') return 'نامشخص';
 
   // نرمال‌سازی کامل
   let normalized = title
-    .replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d - '0'])      // انگلیسی → فارسی
-    .replace(/[\u200C\u200D]/g, ' ')                    // نیم‌فاصله → فضای معمولی
-    .replace(/\s+/g, ' ')                               // فاصله‌های زیاد → یکی
-    .replace(/["']/g, '')                               // نقل‌قول‌ها رو حذف کن
+    .replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d - '0'])      // انگلیسی به فارسی
+    .replace(/[\u200C\u200D]/g, ' ')                    // نیم‌فاصله به فضای معمولی
+    .replace(/\s+/g, ' ')                               // فاصله‌های زیاد به یکی
+    .replace(/["']/g, '')                               // نقل‌قول‌ها حذف
     .trim();
 
-  // الگوهای بسیار گسترده
+  // الگوهای بسیار گسترده برای سایز در ترب
   const patterns = [
     /(\d{2,3})\s*اینچ/i,
     /(\d{2,3})\s*اینج/i,
@@ -62,13 +64,16 @@ function extractSize(title) {
     /(\d{2,3})\s*اینچ\s*/i,
     /سایز\s*(\d{2,3})\s*اینچ/i,
     /اندازه\s*(\d{2,3})\s*اینچ/i,
-    /(\d{2,3})\s*(?:inch|inچ)/i
+    /(\d{2,3})\s*(?:inch|inچ)/i,
+    /[\d۰-۹]{2,3}\s*["']?اینچ/i  // مستقیم فارسی
   ];
 
   for (const pattern of patterns) {
     const match = normalized.match(pattern);
     if (match && match[1]) {
-      const num = parseInt(match[1], 10);
+      // عدد رو از رشته استخراج و به انگلیسی تبدیل می‌کنیم
+      const sizeStr = match[1].replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+      const num = parseInt(sizeStr, 10);
       if (num >= 32 && num <= 100) {
         return num.toString();
       }
@@ -184,14 +189,18 @@ function updateUI() {
 
   // سایزها - مرتب از کوچک به بزرگ
   const sizes = [...new Set(data.map(d => d.size).filter(s => s !== 'نامشخص'))]
-    .map(s => parseInt(s, 10))
+    .map(s => {
+      // تبدیل فارسی به انگلیسی برای مرتب‌سازی و فیلتر
+      let numStr = s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+      return parseInt(numStr, 10);
+    })
     .filter(n => !isNaN(n) && n >= 32 && n <= 100)
     .sort((a, b) => a - b);
 
   document.getElementById('size-filter').innerHTML = '<option value="">همه سایزها</option>' + 
     sizes.map(s => `<option value="${s}">${s} اینچ</option>`).join('');
 
-  // برندها - مرتب الفبایی (از الف تا ی)
+  // برندها - مرتب الفبایی
   const brandSelect = document.getElementById('brand-filter');
   brandSelect.innerHTML = '<option value="">همه برندها</option>';
 
