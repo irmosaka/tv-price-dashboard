@@ -1,3 +1,4 @@
+
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
 let currentPage = 1;
@@ -5,16 +6,14 @@ let rowsPerPage = 20;
 let sortCol = null;
 let sortDir = 'asc';
 
-// ────────────────────────────────────────────────────────
-// توابع کمکی (قبل از هر چیزی تعریف شدن)
-// ────────────────────────────────────────────────────────
 function toPersianDigits(num) {
     if (num === '—' || num === null || num === undefined) return '—';
     return num.toLocaleString('fa-IR');
 }
 
 function extractSizeAndBrand(title) {
-    title = String(title ?? '').trim(); // ایمنی در برابر undefined/null
+    // ایمنی حداکثری: title همیشه string خالی می‌شه
+    title = String(title || '').trim();
 
     const sizeMatch = title.match(/(\d{2,3})\s*(?:اینچ|اینج)/i);
     const size = sizeMatch ? sizeMatch[1] : 'نامشخص';
@@ -68,35 +67,41 @@ function loadData(raw, source = 'digikala') {
 
     if (source === 'torob') {
         processed = raw.map((item, index) => {
-            if (!item || typeof item !== 'object') {
-                console.warn(`رکورد نامعتبر در ترب - ایندکس: ${index}`);
+            try {
+                if (!item || typeof item !== 'object') {
+                    console.warn(`رکورد نامعتبر در ترب - ایندکس: ${index}`);
+                    return null;
+                }
+
+                // کلید نام محصول رو ایمن می‌گیریم (اگر وجود نداشت → رشته خالی)
+                const title = item['ProductCard_desktop_product-name__JwqeK'] ?? '';
+                const { size, brand, tech } = extractSizeAndBrand(title);
+
+                let priceText = item['ProductCard_desktop_product-price-text__y20OV'] ?? '0';
+                let price_num = parseInt(String(priceText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
+
+                let sellersText = item['ProductCard_desktop_shops__mbtsF'] ?? '0';
+                let sellers = parseInt(String(sellersText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
+
+                const link = item['ProductCards_cards__MYvdn href'] ?? '#';
+
+                return {
+                    name: title || 'نامشخص',
+                    brand,
+                    link,
+                    stock: '—',
+                    rating: '—',
+                    discount: '—',
+                    price_num,
+                    original_price_num: 0,
+                    sellers,
+                    size,
+                    tech
+                };
+            } catch (err) {
+                console.error(`خطا در پردازش رکورد ترب شماره ${index}:`, err);
                 return null;
             }
-
-            const title = item['ProductCard_desktop_product-name__JwqeK'] ?? 'نامشخص';
-            const { size, brand, tech } = extractSizeAndBrand(title);
-
-            let priceText = item['ProductCard_desktop_product-price-text__y20OV'] ?? '0';
-            let price_num = parseInt(String(priceText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
-
-            let sellersText = item['ProductCard_desktop_shops__mbtsF'] ?? '0';
-            let sellers = parseInt(String(sellersText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
-
-            const link = item['ProductCards_cards__MYvdn href'] ?? '#';
-
-            return {
-                name: title,
-                brand,
-                link,
-                stock: '—',
-                rating: '—',
-                discount: '—',
-                price_num,
-                original_price_num: 0,
-                sellers,
-                size,
-                tech
-            };
         }).filter(item => item !== null && item.price_num > 0);
     } else {
         processed = raw.map(item => {
@@ -323,7 +328,7 @@ function updateChart(data) {
     }
 }
 
-// تمام ایونت‌ها و لود اولیه در انتها
+// تمام ایونت‌ها داخل DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
     // تب‌ها
     document.querySelectorAll('.tab').forEach(tab => {
@@ -375,6 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
                 text = text.trim();
+
                 if (text.endsWith(',]')) text = text.slice(0, -2) + ']';
 
                 const json = JSON.parse(text);
@@ -386,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.target.value = '';
             } catch (err) {
                 console.error('خطای JSON:', err);
-                alert(`فایل JSON نامعتبر است!\n\nجزئیات: ${err.message}\n\nفایل را با VS Code تمیز کنید.`);
+                alert(`فایل JSON نامعتبر است!\n\nجزئیات: ${err.message}\n\nفایل را با VS Code تمیز کنید (Ctrl+A → Cut → Paste → ذخیره).`);
             }
         };
 
