@@ -1,3 +1,4 @@
+// dashboard.js - نسخه کامل، مرتب‌شده، بدون مشکل scope (توابع قبل از event listenerها تعریف شدن)
 
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
@@ -6,13 +7,15 @@ let rowsPerPage = 20;
 let sortCol = null;
 let sortDir = 'asc';
 
+// ────────────────────────────────────────────────────────
+// توابع کمکی
+// ────────────────────────────────────────────────────────
 function toPersianDigits(num) {
     if (num === '—' || num === null || num === undefined) return '—';
     return num.toLocaleString('fa-IR');
 }
 
 function extractSizeAndBrand(title) {
-    // ایمنی حداکثری: title همیشه string می‌شه
     title = String(title ?? '').trim();
 
     const sizeMatch = title.match(/(\d{2,3})\s*(?:اینچ|اینج)/i);
@@ -67,41 +70,32 @@ function loadData(raw, source = 'digikala') {
 
     if (source === 'torob') {
         processed = raw.map((item, index) => {
-            try {
-                if (!item || typeof item !== 'object') {
-                    console.warn(`رکورد نامعتبر در ترب - ایندکس: ${index}`);
-                    return null;
-                }
+            if (!item || typeof item !== 'object') return null;
 
-                // کلید نام محصول رو با ?? ایمن می‌گیریم
-                const title = item['ProductCard_desktop_product-name__JwqeK'] ?? 'نامشخص';
-                const { size, brand, tech } = extractSizeAndBrand(title);
+            const title = item['ProductCard_desktop_product-name__JwqeK'] ?? 'نامشخص';
+            const { size, brand, tech } = extractSizeAndBrand(title);
 
-                let priceText = item['ProductCard_desktop_product-price-text__y20OV'] ?? '0';
-                let price_num = parseInt(String(priceText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
+            let priceText = item['ProductCard_desktop_product-price-text__y20OV'] ?? '0';
+            let price_num = parseInt(String(priceText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
 
-                let sellersText = item['ProductCard_desktop_shops__mbtsF'] ?? '0';
-                let sellers = parseInt(String(sellersText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
+            let sellersText = item['ProductCard_desktop_shops__mbtsF'] ?? '0';
+            let sellers = parseInt(String(sellersText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
 
-                const link = item['ProductCards_cards__MYvdn href'] ?? '#';
+            const link = item['ProductCards_cards__MYvdn href'] ?? '#';
 
-                return {
-                    name: title,
-                    brand,
-                    link,
-                    stock: '—',
-                    rating: '—',
-                    discount: '—',
-                    price_num,
-                    original_price_num: 0,
-                    sellers,
-                    size,
-                    tech
-                };
-            } catch (err) {
-                console.error(`خطا در پردازش رکورد ترب شماره ${index}:`, err);
-                return null;
-            }
+            return {
+                name: title,
+                brand,
+                link,
+                stock: '—',
+                rating: '—',
+                discount: '—',
+                price_num,
+                original_price_num: 0,
+                sellers,
+                size,
+                tech
+            };
         }).filter(item => item !== null && item.price_num > 0);
     } else {
         processed = raw.map(item => {
@@ -132,8 +126,9 @@ function loadData(raw, source = 'digikala') {
     updateUI();
 }
 
-// بقیه توابع (updateStats, updateUI, renderTable, changePage, getFilteredData, sortTable, applyFilters, updateChart) بدون تغییر هستند. برای کوتاه شدن، آنها را اینجا تکرار نمی‌کنم.
+// بقیه توابع (updateStats, updateUI, renderTable, changePage, getFilteredData, sortTable, applyFilters, updateChart) بدون تغییر
 
+// تمام ایونت‌ها و لود اولیه در انتها قرار گرفتن
 document.addEventListener('DOMContentLoaded', () => {
     // تب‌ها
     document.querySelectorAll('.tab').forEach(tab => {
@@ -146,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // سورت
+    // سورت جدول
     document.querySelectorAll('th[data-col]').forEach(th => {
         th.addEventListener('click', () => sortTable(th.dataset.col));
     });
@@ -203,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsText(file);
     });
 
-    // لود اولیه
+    // لود اولیه داده‌ها از localStorage و فایل
     fetch('daily_prices.json')
         .then(r => r.json())
         .then(data => loadData(data, 'digikala'))
