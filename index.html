@@ -310,17 +310,17 @@
         <div class="table-wrapper">
             <table id="product-table">
                 <thead>
-                    <tr>
-                        <th data-col="name">نام محصول</th>
-                        <th data-col="brand">برند</th>
-                        <th data-col="price_num">قیمت فروش</th>
-                        <th data-col="original_price_num">قیمت اصلی</th>
-                        <th data-col="discount">تخفیف</th>
-                        <th data-col="rating">امتیاز</th>
-                        <th>موجودی</th>
-                        <th>لینک</th>
-                    </tr>
-                </thead>
+  <tr>
+    <th>نام محصول</th>
+    <th>برند</th>
+    <th>قیمت</th>
+    <th id="extra-col">${currentTab === 'torob' ? 'تعداد فروشنده' : 'قیمت اصلی'}</th>
+    <th id="discount-col" style="${currentTab === 'torob' ? 'display:none;' : ''}">تخفیف</th>
+    <th id="rating-col" style="${currentTab === 'torob' ? 'display:none;' : ''}">امتیاز</th>
+    <th id="stock-col" style="${currentTab === 'torob' ? 'display:none;' : ''}">موجودی</th>
+    <th>لینک</th>
+  </tr>
+</thead>
                 <tbody></tbody>
             </table>
             <div class="pagination" id="pagination"></div>
