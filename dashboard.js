@@ -1,4 +1,4 @@
-// dashboard.js - نسخه کامل و نهایی (رفع مشکلات undefined، ترتیب تعریف توابع، BOM و کاما اضافی)
+// dashboard.js - نسخه نهایی، مقاوم ۱۰۰٪ در برابر undefined/null (بهمن ۱۴۰۴)
 
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
@@ -13,7 +13,7 @@ function toPersianDigits(num) {
 }
 
 function extractSizeAndBrand(title) {
-    // ایمنی کامل در برابر null/undefined
+    // ایمن‌ترین شکل ممکن: هر چیزی که title باشد به رشته خالی تبدیل می‌شود
     title = String(title ?? '').trim();
 
     const sizeMatch = title.match(/(\d{2,3})\s*(?:اینچ|اینج)/i);
@@ -73,7 +73,7 @@ function loadData(raw, source = 'digikala') {
                 return null;
             }
 
-            // کلید رو با ?? ایمن می‌گیریم
+            // کلید نام محصول رو ایمن می‌گیریم
             const title = item['ProductCard_desktop_product-name__JwqeK'] ?? 'نامشخص';
             const { size, brand, tech } = extractSizeAndBrand(title);
 
@@ -108,7 +108,6 @@ function loadData(raw, source = 'digikala') {
             };
         }).filter(item => item !== null && item.price_num > 0 && item.brand !== 'ایلیا');
     } else {
-        // دیجی‌کالا
         processed = raw.map(item => {
             const title = item['ellipsis-2'] || 'نامشخص';
             const { size, brand, tech } = extractSizeAndBrand(title);
@@ -333,7 +332,7 @@ function updateChart(data) {
     }
 }
 
-// تمام ایونت‌ها داخل DOMContentLoaded
+// ایونت‌ها - همه داخل DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
     // تب‌ها
     document.querySelectorAll('.tab').forEach(tab => {
@@ -357,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById(id)?.addEventListener('change', applyFilters);
     });
 
-    // دکمه پاک کردن فیلترها
+    // پاک کردن فیلترها
     document.getElementById('clear-filters')?.addEventListener('click', () => {
         document.getElementById('price-filter').value = 0;
         document.getElementById('size-filter').value = '';
@@ -369,12 +368,11 @@ document.addEventListener('DOMContentLoaded', () => {
         updateChart(currentData[currentTab] || []);
     });
 
-    // دکمه آپلود
+    // آپلود فایل
     document.getElementById('upload-btn')?.addEventListener('click', () => {
         document.getElementById('file-input')?.click();
     });
 
-    // هندلر آپلود فایل
     document.getElementById('file-input')?.addEventListener('change', e => {
         const file = e.target.files[0];
         if (!file) return;
@@ -384,33 +382,21 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 let text = ev.target.result;
 
-                // حذف BOM اگر وجود داشت
-                if (text.charCodeAt(0) === 0xFEFF) {
-                    text = text.slice(1);
-                }
-
+                if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
                 text = text.trim();
 
-                // رفع مشکل کاما اضافی رایج در انتهای آرایه
-                text = text.replace(/,\s*]$/, ']');
+                if (text.endsWith(',]')) text = text.slice(0, -2) + ']';
 
                 const json = JSON.parse(text);
 
                 const source = prompt('منبع داده (digikala یا torob):')?.trim().toLowerCase() || 'digikala';
                 loadData(json, source);
-                alert(`داده‌های ${source} با موفقیت لود شد (${json.length} محصول)`);
+                alert(`داده‌های ${source} لود شد (${json.length} محصول)`);
 
                 e.target.value = '';
             } catch (err) {
                 console.error('خطای JSON:', err);
-                alert(
-                    `فایل JSON نامعتبر است!\n\n` +
-                    `جزئیات: ${err.message}\n\n` +
-                    `راه‌حل‌های پیشنهادی:\n` +
-                    `1. فایل را با VS Code باز کنید → Ctrl+A → Cut → Paste → ذخیره کنید (BOM حذف می‌شود).\n` +
-                    `2. مطمئن شوید فایل با [ شروع و با ] تمام می‌شود و کاما اضافی در انتها ندارد.\n` +
-                    `3. اگر فایل بزرگ است، فقط ۱۰ آیتم اول را کپی کنید و در فایل جدید تست کنید.`
-                );
+                alert(`فایل JSON نامعتبر است!\n\nجزئیات: ${err.message}\n\nفایل را با VS Code تمیز کنید (Ctrl+A → Cut → Paste → ذخیره).`);
             }
         };
 
