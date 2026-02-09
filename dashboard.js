@@ -21,7 +21,7 @@ function toPersianDigits(num) {
 
 // استخراج برند (ساده و دقیق)
 function extractBrandFromTitle(title) {
-  if (!title || typeof title !== 'string' || !title.trim()) return 'نامشخص';
+  if (!title || typeof title !== 'string' || !title.trim()) return 'متفرقه';
 
   const lower = title.toLowerCase();
 
@@ -32,7 +32,7 @@ function extractBrandFromTitle(title) {
     if (lower.includes(brand.toLowerCase())) return brand;
   }
 
-  return 'نامشخص';
+  return 'متفرقه';
 }
 
 // استخراج سایز - ساده، قوی و برای هر دو سایت کار می‌کنه
@@ -96,7 +96,7 @@ function loadData(raw, source = 'digikala') {
 
         return {
           name: title || 'نام محصول نامشخص',
-          brand,
+          brand: brand || 'متفرقه',
           link,
           stock: '—',
           rating: '—',
@@ -210,7 +210,7 @@ function renderTable(data, page = currentPage) {
   tbody.innerHTML = visibleData.map(item => `
     <tr>
       <td>${item.name}</td>
-      <td>${item.brand}</td>
+      <td>${item.brand || 'متفرقه'}</td>
       <td>${toPersianDigits(item.price_num)} تومان</td>
       <td>${isTorob ? toPersianDigits(item.sellers) + ' فروشنده' : toPersianDigits(item.original_price_num) + ' تومان'}</td>
       <td>${item.discount}</td>
