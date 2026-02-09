@@ -1,3 +1,5 @@
+// dashboard.js - نسخه کامل و نهایی (رفع تمام خطاها: undefined.trim در ترب، ترتیب توابع، BOM، کاما اضافی، رکوردهای ناقص)
+
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
 let currentPage = 1;
@@ -14,7 +16,7 @@ function toPersianDigits(num) {
 }
 
 function extractSizeAndBrand(title) {
-    // ایمنی ۱۰۰٪: title را همیشه به رشته خالی تبدیل می‌کنیم
+    // ایمنی کامل در برابر null/undefined/رشته خالی
     title = String(title ?? '').trim();
 
     const sizeMatch = title.match(/(\d{2,3})\s*(?:اینچ|اینج)/i);
@@ -80,16 +82,24 @@ function loadData(raw, source = 'digikala') {
                 const { size, brand, tech } = extractSizeAndBrand(title);
 
                 let priceText = item['ProductCard_desktop_product-price-text__y20OV'] ?? '0';
-                let price_num = parseInt(String(priceText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
+                let price_num = parseInt(
+                    String(priceText)
+                        .replace(/[^0-9۰-۹]/g, '')
+                        .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+                ) || 0;
 
                 let sellersText = item['ProductCard_desktop_shops__mbtsF'] ?? '0';
-                let sellers = parseInt(String(sellersText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
+                let sellers = parseInt(
+                    String(sellersText)
+                        .replace(/[^0-9۰-۹]/g, '')
+                        .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+                ) || 0;
 
                 const link = item['ProductCards_cards__MYvdn href'] ?? '#';
 
                 return {
-                    name: title || 'نامشخص',
-                    brand,
+                    name: title || 'نام محصول نامشخص',
+                    brand: brand || 'نامشخص',
                     link,
                     stock: '—',
                     rating: '—',
@@ -331,7 +341,7 @@ function updateChart(data) {
     }
 }
 
-// تمام ایونت‌ها و لود اولیه در انتها
+// تمام ایونت‌ها و لود اولیه
 document.addEventListener('DOMContentLoaded', () => {
     // تب‌ها
     document.querySelectorAll('.tab').forEach(tab => {
@@ -367,7 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateChart(currentData[currentTab] || []);
     });
 
-    // آپلود
+    // آپلود فایل
     document.getElementById('upload-btn')?.addEventListener('click', () => {
         document.getElementById('file-input')?.click();
     });
@@ -402,7 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsText(file);
     });
 
-    // لود اولیه
+    // لود اولیه از localStorage و فایل
     fetch('daily_prices.json')
         .then(r => r.json())
         .then(data => loadData(data, 'digikala'))
