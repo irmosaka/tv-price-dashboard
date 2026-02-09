@@ -1,3 +1,4 @@
+
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
 let currentPage = 1;
@@ -11,7 +12,8 @@ function toPersianDigits(num) {
 }
 
 function extractSizeAndBrand(title) {
-    title = String(title || '').trim();  // تبدیل به string و حذف فضاها
+    // کاملاً امن: title را همیشه به رشته خالی تبدیل می‌کنیم
+    title = String(title ?? '').trim();  // ?? یعنی null یا undefined → ''
 
     const sizeMatch = title.match(/(\d{2,3})\s*(?:اینچ|اینج)/i);
     const size = sizeMatch ? sizeMatch[1] : 'نامشخص';
@@ -65,17 +67,21 @@ function loadData(raw, source = 'digikala') {
 
     if (source === 'torob') {
         processed = raw.map((item, index) => {
+            // اگر آیتم وجود نداشت یا آبجکت نبود، رد کن
             if (!item || typeof item !== 'object') {
                 console.warn(`آیتم نامعتبر در ترب - ایندکس: ${index}`);
                 return null;
             }
 
+            // کلید رو با ?? امن می‌گیریم (null/undefined → 'نامشخص')
             const title = item['ProductCard_desktop_product-name__JwqeK'] ?? 'نامشخص';
             const { size, brand, tech } = extractSizeAndBrand(title);
 
+            // قیمت فروش
             let priceText = item['ProductCard_desktop_product-price-text__y20OV'] ?? '0';
             let price_num = parseInt(priceText.replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
 
+            // تعداد فروشنده
             let sellersText = item['ProductCard_desktop_shops__mbtsF'] ?? '0';
             let sellers = parseInt(sellersText.replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
 
@@ -96,6 +102,7 @@ function loadData(raw, source = 'digikala') {
             };
         }).filter(item => item !== null && item.price_num > 0 && item.brand !== 'ایلیا');
     } else {
+        // دیجی‌کالا (بدون تغییر)
         processed = raw.map(item => {
             const title = item['ellipsis-2'] || 'نامشخص';
             const { size, brand, tech } = extractSizeAndBrand(title);
@@ -333,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // سورت جدول
+    // سورت
     document.querySelectorAll('th[data-col]').forEach(th => {
         th.addEventListener('click', () => sortTable(th.dataset.col));
     });
@@ -344,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById(id)?.addEventListener('change', applyFilters);
     });
 
-    // دکمه پاک کردن فیلترها
+    // پاک کردن فیلترها
     document.getElementById('clear-filters')?.addEventListener('click', () => {
         document.getElementById('price-filter').value = 0;
         document.getElementById('size-filter').value = '';
@@ -356,12 +363,11 @@ document.addEventListener('DOMContentLoaded', () => {
         updateChart(currentData[currentTab] || []);
     });
 
-    // دکمه آپلود
+    // آپلود
     document.getElementById('upload-btn')?.addEventListener('click', () => {
         document.getElementById('file-input')?.click();
     });
 
-    // آپلود فایل
     document.getElementById('file-input')?.addEventListener('change', e => {
         const file = e.target.files[0];
         if (!file) return;
@@ -371,8 +377,11 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 let text = ev.target.result;
 
+                // حذف BOM
                 if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
                 text = text.trim();
+
+                // حذف کاما اضافی
                 if (text.endsWith(',]')) text = text.slice(0, -2) + ']';
 
                 const json = JSON.parse(text);
@@ -384,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.target.value = '';
             } catch (err) {
                 console.error('خطای JSON:', err);
-                alert(`فایل JSON نامعتبر است!\n\nجزئیات: ${err.message}\n\nفایل را با VS Code تمیز کنید (Cut و Paste کنید).`);
+                alert(`فایل JSON نامعتبر است!\n\nجزئیات: ${err.message}\n\nفایل را با VS Code تمیز کنید.`);
             }
         };
 
