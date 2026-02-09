@@ -1,5 +1,3 @@
-// dashboard.js - نسخه کامل با استخراج برند از تایتل + لیست ثابت برای ترب
-
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
 let currentPage = 1;
