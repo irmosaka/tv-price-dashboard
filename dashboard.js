@@ -1,5 +1,3 @@
-// dashboard.js - نسخه نهایی ضدگلوله (برند فقط از لیست مجاز + ترتیب درست توابع)
-
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
 let currentPage = 1;
@@ -7,14 +5,14 @@ let rowsPerPage = 20;
 let sortCol = null;
 let sortDir = 'asc';
 
-// لیست برندهای مجاز (دقیقاً همان‌هایی که گفتی + سامسونگ اضافه شد)
+// لیست برندهای مجاز فقط برای تب ترب (دقیقاً همان‌هایی که گفتی + سامسونگ و سام الکترونیک اضافه شد)
 const TOROB_BRANDS = [
-  "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "تی سی ال",
-  "جی بی پی", "جی وی سی", "جی پلاس", "دوو", "سام", "سامسونگ",
-  "سونی", "لیماک جنرال اینترنشنال", "نکسار", "هایسنس", "ورلد استار", "پارس", "پاناسونیک"
+  "سامسونگ", "سام الکترونیک", "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "تی سی ال",
+  "جی بی پی", "جی وی سی", "جی پلاس", "دوو", "سونی", "لیماک جنرال اینترنشنال", "نکسار", "هایسنس",
+  "ورلد استار", "پارس", "پاناسونیک"
 ];
 
-// لیست برندها برای regex (حساسیت کمتر به فاصله و حروف)
+// regex برای جستجوی سریع و دقیق برندها
 const BRAND_REGEX = new RegExp(
   TOROB_BRANDS.map(b => b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'),
   'i'
@@ -25,11 +23,18 @@ function toPersianDigits(num) {
   return num.toLocaleString('fa-IR');
 }
 
-// استخراج برند فقط از لیست مجاز (ضدگلوله)
+// استخراج برند فقط از لیست مجاز (اولویت با برندهای کامل)
 function extractBrandFromTitle(title) {
   if (!title || typeof title !== 'string' || !title.trim()) return 'نامشخص';
 
-  const match = title.match(BRAND_REGEX);
+  const lowerTitle = title.toLowerCase();
+
+  // اولویت اول: برندهای کامل و دقیق
+  if (lowerTitle.includes('سامسونگ')) return 'سامسونگ';
+  if (lowerTitle.includes('سام الکترونیک')) return 'سام الکترونیک';
+
+  // بقیه برندها
+  const match = lowerTitle.match(BRAND_REGEX);
   return match ? match[0] : 'نامشخص';
 }
 
@@ -62,10 +67,14 @@ function loadData(raw, source = 'digikala') {
         const { size, tech } = extractSizeAndTech(title);
 
         let priceText = item['ProductCard_desktop_product-price-text__y20OV'] ?? '0';
-        let price_num = parseInt(String(priceText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
+        let price_num = parseInt(
+          String(priceText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+        ) || 0;
 
         let sellersText = item['ProductCard_desktop_shops__mbtsF'] ?? '0';
-        let sellers = parseInt(String(sellersText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
+        let sellers = parseInt(
+          String(sellersText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+        ) || 0;
 
         const link = item['ProductCards_cards__MYvdn href'] ?? '#';
 
@@ -328,6 +337,7 @@ function updateChart(data) {
 
 // تمام ایونت‌ها در انتها (بعد از تعریف همه توابع)
 document.addEventListener('DOMContentLoaded', () => {
+  // تب‌ها
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -338,15 +348,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // سورت جدول
   document.querySelectorAll('th[data-col]').forEach(th => {
     th.addEventListener('click', () => sortTable(th.dataset.col));
   });
 
+  // فیلترها
   ['price-filter','size-filter','brand-filter','tech-filter'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', applyFilters);
     document.getElementById(id)?.addEventListener('change', applyFilters);
   });
 
+  // پاک کردن فیلترها
   document.getElementById('clear-filters')?.addEventListener('click', () => {
     document.getElementById('price-filter').value = 0;
     document.getElementById('size-filter').value = '';
@@ -356,6 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUI();
   });
 
+  // آپلود فایل
   document.getElementById('upload-btn')?.addEventListener('click', () => {
     document.getElementById('file-input')?.click();
   });
@@ -367,17 +381,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const reader = new FileReader();
     reader.onload = ev => {
       try {
-        let text = ev.target.result.trim();
+        let text = ev.target.result;
+
         if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+        text = text.trim();
+
         if (text.endsWith(',]')) text = text.slice(0, -2) + ']';
 
         const json = JSON.parse(text);
+
         const source = prompt('منبع داده (digikala یا torob):')?.trim().toLowerCase() || 'digikala';
         loadData(json, source);
         alert(`داده‌های ${source} لود شد (${json.length} محصول)`);
+
         e.target.value = '';
       } catch (err) {
-        alert('خطا در خواندن فایل: ' + err.message);
+        console.error('خطای JSON:', err);
+        alert(`فایل JSON نامعتبر است!\n\nجزئیات: ${err.message}\n\nفایل را با VS Code تمیز کنید.`);
       }
     };
 
@@ -399,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateUI();
 });
 
-// تابع دانلود اکسل (اگر کتابخانه XLSX لود شده باشه)
+// تابع دانلود اکسل
 function downloadExcel() {
   const data = currentData[currentTab] || [];
   if (data.length === 0) return alert('هیچ داده‌ای برای دانلود وجود ندارد');
