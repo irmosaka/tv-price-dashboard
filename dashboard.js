@@ -1,3 +1,4 @@
+// dashboard.js - نسخه نهایی، کاملاً ایمن در برابر رکوردهای ناقص ترب (بهمن ۱۴۰۴)
 
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
@@ -364,7 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateChart(currentData[currentTab] || []);
     });
 
-    // آپلود
+    // آپلود فایل
     document.getElementById('upload-btn')?.addEventListener('click', () => {
         document.getElementById('file-input')?.click();
     });
