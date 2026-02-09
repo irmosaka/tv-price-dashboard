@@ -50,7 +50,7 @@ function extractSizeAndBrand(title) {
         }
     }
     brand = brand.replace(/هوشمند|ال\s*ای\s*دی/gi, '').replace(/\s+/g, ' ').trim();
-
+    
     if (brand.includes('پاناسونیک')) brand = 'پاناسونیک';
 
     return { size, brand: brand || 'نامشخص', tech };
@@ -64,11 +64,9 @@ function loadData(raw, source = 'digikala') {
             const title = item['ProductCard_desktop_product-name__JwqeK'] || 'نامشخص';
             const { size, brand, tech } = extractSizeAndBrand(title);
 
-            // قیمت فروش
             let priceText = item['ProductCard_desktop_product-price-text__y20OV'] || '0';
             let price_num = parseInt(priceText.replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
 
-            // تعداد فروشنده
             let sellersText = item['ProductCard_desktop_shops__mbtsF'] || '0';
             let sellers = parseInt(sellersText.replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
 
@@ -130,8 +128,7 @@ function updateStats(data) {
 function updateUI() {
     const data = currentData[currentTab] || [];
     if (data.length === 0) {
-        document.querySelector('#product-table tbody').innerHTML = '<tr><td colspan="8" style="text-align:center;">هیچ داده‌ای موجود نیست</td></tr>';
-        document.getElementById('pagination').innerHTML = '';
+        document.querySelector('#product-table tbody').innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px;">هیچ داده‌ای موجود نیست</td></tr>';
         return;
     }
 
@@ -154,7 +151,6 @@ function updateUI() {
 
 function renderTable(data, page = currentPage) {
     const tbody = document.querySelector('#product-table tbody');
-    
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
     const visibleData = data.slice(start, end);
@@ -173,6 +169,7 @@ function renderTable(data, page = currentPage) {
         </tr>
     `).join('');
 
+    // Pagination
     const totalPages = Math.ceil(data.length / rowsPerPage);
     const pagination = document.getElementById('pagination');
     pagination.innerHTML = '';
@@ -242,7 +239,6 @@ function applyFilters() {
 function updateChart(data) {
     if (data.length === 0) return;
 
-    // Bar chart
     const brandAvg = {};
     data.forEach(item => {
         if (item.brand !== 'نامشخص') {
@@ -259,33 +255,11 @@ function updateChart(data) {
         if (window.brandChart) window.brandChart.destroy();
         window.brandChart = new Chart(brandCtx, {
             type: 'bar',
-            data: {
-                labels,
-                datasets: [{
-                    label: 'میانگین قیمت (تومان)',
-                    data: avgPrices,
-                    backgroundColor: 'rgba(75,192,192,0.6)',
-                    borderColor: 'rgba(75,192,192,1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true },
-                    x: { ticks: { font: { family: 'Vazirmatn' } } },
-                    y: { ticks: { font: { family: 'Vazirmatn' } } }
-                },
-                plugins: {
-                    legend: { labels: { font: { family: 'Vazirmatn' } } },
-                    tooltip: { titleFont: { family: 'Vazirmatn' }, bodyFont: { family: 'Vazirmatn' } }
-                }
-            }
+            data: { labels, datasets: [{ label: 'میانگین قیمت (تومان)', data: avgPrices, backgroundColor: 'rgba(75,192,192,0.6)', borderColor: 'rgba(75,192,192,1)', borderWidth: 1 }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
         });
     }
 
-    // Pie chart
     const brandCount = {};
     data.forEach(item => {
         if (item.brand !== 'نامشخص') brandCount[item.brand] = (brandCount[item.brand] || 0) + 1;
@@ -297,23 +271,12 @@ function updateChart(data) {
             type: 'pie',
             data: {
                 labels: Object.keys(brandCount),
-                datasets: [{
-                    data: Object.values(brandCount),
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
-                }]
+                datasets: [{ data: Object.values(brandCount), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'] }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { titleFont: { family: 'Vazirmatn' }, bodyFont: { family: 'Vazirmatn' } }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
     }
 
-    // Scatter chart
     const scatterData = data.map(item => ({
         x: +item.size.replace('نامشخص', '0'),
         y: item.price_num,
@@ -325,14 +288,7 @@ function updateChart(data) {
         if (window.scatterChart) window.scatterChart.destroy();
         window.scatterChart = new Chart(scatterCtx, {
             type: 'scatter',
-            data: {
-                datasets: [{
-                    label: 'قیمت بر حسب سایز',
-                    data: scatterData,
-                    backgroundColor: 'rgba(54,162,235,0.6)',
-                    pointRadius: 5
-                }]
-            },
+            data: { datasets: [{ label: 'قیمت بر حسب سایز', data: scatterData, backgroundColor: 'rgba(54,162,235,0.6)', pointRadius: 5 }] },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -347,8 +303,7 @@ function updateChart(data) {
                                 return `${context.raw.brand} - ${toPersianDigits(context.raw.y)} تومان`;
                             }
                         }
-                    },
-                    legend: { labels: { font: { family: 'Vazirmatn' } } }
+                    }
                 }
             }
         });
@@ -366,17 +321,13 @@ document.querySelectorAll('.tab').forEach(tab => {
     });
 });
 
-// ایونت‌های فیلتر و سورت
 document.querySelectorAll('th[data-col]').forEach(th => {
     th.addEventListener('click', () => sortTable(th.dataset.col));
 });
 
-['price-filter', 'size-filter', 'brand-filter', 'tech-filter'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-        el.addEventListener('input', applyFilters);
-        el.addEventListener('change', applyFilters);
-    }
+['price-filter','size-filter','brand-filter','tech-filter'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', applyFilters);
+    document.getElementById(id)?.addEventListener('change', applyFilters);
 });
 
 document.getElementById('clear-filters')?.addEventListener('click', () => {
@@ -400,13 +351,15 @@ document.getElementById('file-input')?.addEventListener('change', e => {
         const reader = new FileReader();
         reader.onload = ev => {
             try {
-                const json = JSON.parse(ev.target.result);
+                let text = ev.target.result.trim();
+                if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+                const json = JSON.parse(text);
                 const source = prompt('منبع داده (digikala یا torob):')?.trim().toLowerCase() || 'digikala';
                 loadData(json, source);
-                alert(`داده‌های ${source} لود شد!`);
+                alert(`داده‌های ${source} با موفقیت لود شد (${json.length} محصول)`);
             } catch (err) {
-                alert('فایل JSON نامعتبر است');
-                console.error(err);
+                console.error('خطای JSON:', err);
+                alert('فایل JSON نامعتبر است!\n\nلطفاً فایل را با VS Code یا Notepad++ باز کنید و بررسی کنید که:\n- با [ شروع شود\n- با ] تمام شود\n- کاما اضافی در انتها نداشته باشد');
             }
         };
         reader.readAsText(file);
@@ -415,10 +368,7 @@ document.getElementById('file-input')?.addEventListener('change', e => {
 
 function downloadExcel() {
     const data = currentData[currentTab] || [];
-    if (data.length === 0) {
-        alert('هیچ داده‌ای برای دانلود وجود ندارد');
-        return;
-    }
+    if (data.length === 0) return alert('هیچ داده‌ای برای دانلود وجود ندارد');
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, currentTab);
@@ -429,16 +379,12 @@ function downloadExcel() {
 fetch('daily_prices.json')
     .then(r => r.json())
     .then(data => loadData(data, 'digikala'))
-    .catch(e => console.error('خطا در لود دیجی‌کالا:', e));
+    .catch(() => {});
 
 const savedDigikala = localStorage.getItem('daily_prices_digikala');
-if (savedDigikala) {
-    currentData.digikala = JSON.parse(savedDigikala);
-}
+if (savedDigikala) currentData.digikala = JSON.parse(savedDigikala);
 
 const savedTorob = localStorage.getItem('daily_prices_torob');
-if (savedTorob) {
-    currentData.torob = JSON.parse(savedTorob);
-}
+if (savedTorob) currentData.torob = JSON.parse(savedTorob);
 
 updateUI();
