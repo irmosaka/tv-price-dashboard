@@ -1,5 +1,3 @@
-// dashboard.js - نسخه نهایی، کاملاً ایمن در برابر رکوردهای ناقص ترب (بهمن ۱۴۰۴)
-
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
 let currentPage = 1;
@@ -7,14 +5,17 @@ let rowsPerPage = 20;
 let sortCol = null;
 let sortDir = 'asc';
 
+// ────────────────────────────────────────────────────────
+// توابع کمکی (همه قبل از event listenerها تعریف شدن)
+// ────────────────────────────────────────────────────────
 function toPersianDigits(num) {
     if (num === '—' || num === null || num === undefined) return '—';
     return num.toLocaleString('fa-IR');
 }
 
 function extractSizeAndBrand(title) {
-    // ایمنی حداکثری: title همیشه string خالی می‌شه
-    title = String(title || '').trim();
+    // ایمنی ۱۰۰٪: title را همیشه به رشته خالی تبدیل می‌کنیم
+    title = String(title ?? '').trim();
 
     const sizeMatch = title.match(/(\d{2,3})\s*(?:اینچ|اینج)/i);
     const size = sizeMatch ? sizeMatch[1] : 'نامشخص';
@@ -105,6 +106,7 @@ function loadData(raw, source = 'digikala') {
             }
         }).filter(item => item !== null && item.price_num > 0);
     } else {
+        // دیجی‌کالا
         processed = raw.map(item => {
             const title = item['ellipsis-2'] || 'نامشخص';
             const { size, brand, tech } = extractSizeAndBrand(title);
@@ -329,7 +331,7 @@ function updateChart(data) {
     }
 }
 
-// تمام ایونت‌ها داخل DOMContentLoaded
+// تمام ایونت‌ها و لود اولیه در انتها
 document.addEventListener('DOMContentLoaded', () => {
     // تب‌ها
     document.querySelectorAll('.tab').forEach(tab => {
@@ -365,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateChart(currentData[currentTab] || []);
     });
 
-    // آپلود فایل
+    // آپلود
     document.getElementById('upload-btn')?.addEventListener('click', () => {
         document.getElementById('file-input')?.click();
     });
