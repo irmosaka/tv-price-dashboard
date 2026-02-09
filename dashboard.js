@@ -1,4 +1,3 @@
-
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
 let currentPage = 1;
@@ -12,7 +11,8 @@ function toPersianDigits(num) {
 }
 
 function extractSizeAndBrand(title = '') {
-    title = title || '';  // جلوگیری از undefined
+    // اگر title اصلاً وجود نداشت یا رشته نبود، خالی در نظر بگیر
+    title = (title || '').toString();
 
     const sizeMatch = title.match(/(\d{2,3})\s*(?:اینچ|اینج)/i);
     const size = sizeMatch ? sizeMatch[1] : 'نامشخص';
@@ -64,17 +64,21 @@ function loadData(raw, source = 'digikala') {
 
     if (source === 'torob') {
         processed = raw.map((item, index) => {
+            // ایمنی بالا: اگر آیتم وجود نداشت یا آبجکت نبود، رد کن
             if (!item || typeof item !== 'object') {
                 console.warn(`آیتم نامعتبر در ترب - ایندکس: ${index}`);
                 return null;
             }
 
+            // کلید نام محصول ممکن است وجود نداشته باشد
             const title = item['ProductCard_desktop_product-name__JwqeK'] || 'نامشخص';
             const { size, brand, tech } = extractSizeAndBrand(title);
 
+            // قیمت فروش
             let priceText = item['ProductCard_desktop_product-price-text__y20OV'] || '0';
             let price_num = parseInt(priceText.replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
 
+            // تعداد فروشنده
             let sellersText = item['ProductCard_desktop_shops__mbtsF'] || '0';
             let sellers = parseInt(sellersText.replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
 
@@ -311,8 +315,7 @@ function updateChart(data) {
                                 return `${context.raw.brand} - ${toPersianDigits(context.raw.y)} تومان`;
                             }
                         }
-                    },
-                    legend: { labels: { font: { family: 'Vazirmatn' } } }
+                    }
                 }
             }
         });
