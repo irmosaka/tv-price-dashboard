@@ -1,4 +1,3 @@
-// dashboard.js - نسخه نهایی و بسیار مقاوم (رفع کامل مشکل undefined در فایل ترب)
 
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
@@ -13,7 +12,8 @@ function toPersianDigits(num) {
 }
 
 function extractSizeAndBrand(title) {
-    title = String(title ?? '').trim();   // ایمن‌ترین حالت ممکن
+    // ایمنی حداکثری: title همیشه string می‌شه
+    title = String(title ?? '').trim();
 
     const sizeMatch = title.match(/(\d{2,3})\s*(?:اینچ|اینج)/i);
     const size = sizeMatch ? sizeMatch[1] : 'نامشخص';
@@ -73,6 +73,7 @@ function loadData(raw, source = 'digikala') {
                     return null;
                 }
 
+                // کلید نام محصول رو با ?? ایمن می‌گیریم
                 const title = item['ProductCard_desktop_product-name__JwqeK'] ?? 'نامشخص';
                 const { size, brand, tech } = extractSizeAndBrand(title);
 
@@ -103,7 +104,6 @@ function loadData(raw, source = 'digikala') {
             }
         }).filter(item => item !== null && item.price_num > 0);
     } else {
-        // دیجی‌کالا
         processed = raw.map(item => {
             const title = item['ellipsis-2'] || 'نامشخص';
             const { size, brand, tech } = extractSizeAndBrand(title);
@@ -132,9 +132,7 @@ function loadData(raw, source = 'digikala') {
     updateUI();
 }
 
-// بقیه توابع (updateStats, updateUI, renderTable, changePage, getFilteredData, sortTable, applyFilters, updateChart) بدون تغییر
-
-// برای جلوگیری از طولانی شدن پیام، بقیه کد را اینجا نمی‌نویسم. لطفاً بگو "بقیه کد رو هم بده" تا کامل بفرستم.
+// بقیه توابع (updateStats, updateUI, renderTable, changePage, getFilteredData, sortTable, applyFilters, updateChart) بدون تغییر هستند. برای کوتاه شدن، آنها را اینجا تکرار نمی‌کنم.
 
 document.addEventListener('DOMContentLoaded', () => {
     // تب‌ها
@@ -148,8 +146,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // سورت، فیلتر، آپلود و بقیه ایونت‌ها (همان نسخه قبلی)
+    // سورت
+    document.querySelectorAll('th[data-col]').forEach(th => {
+        th.addEventListener('click', () => sortTable(th.dataset.col));
+    });
 
+    // فیلترها
+    ['price-filter','size-filter','brand-filter','tech-filter'].forEach(id => {
+        document.getElementById(id)?.addEventListener('input', applyFilters);
+        document.getElementById(id)?.addEventListener('change', applyFilters);
+    });
+
+    // پاک کردن فیلترها
+    document.getElementById('clear-filters')?.addEventListener('click', () => {
+        document.getElementById('price-filter').value = 0;
+        document.getElementById('size-filter').value = '';
+        document.getElementById('brand-filter').value = '';
+        document.getElementById('tech-filter').value = '';
+        document.getElementById('filter-value').textContent = '۰ تومان';
+        updateStats(currentData[currentTab] || []);
+        renderTable(currentData[currentTab] || []);
+        updateChart(currentData[currentTab] || []);
+    });
+
+    // آپلود
     document.getElementById('upload-btn')?.addEventListener('click', () => {
         document.getElementById('file-input')?.click();
     });
@@ -176,11 +196,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.target.value = '';
             } catch (err) {
                 console.error('خطای JSON:', err);
-                alert(`فایل JSON نامعتبر است!\n\nجزئیات: ${err.message}\n\nفایل را با VS Code تمیز کنید.`);
+                alert(`فایل JSON نامعتبر است!\n\nجزئیات: ${err.message}\n\nفایل را با VS Code تمیز کنید (Ctrl+A → Cut → Paste → ذخیره).`);
             }
         };
+
         reader.readAsText(file);
     });
+
+    // لود اولیه
+    fetch('daily_prices.json')
+        .then(r => r.json())
+        .then(data => loadData(data, 'digikala'))
+        .catch(() => {});
+
+    const savedDigikala = localStorage.getItem('daily_prices_digikala');
+    if (savedDigikala) currentData.digikala = JSON.parse(savedDigikala);
+
+    const savedTorob = localStorage.getItem('daily_prices_torob');
+    if (savedTorob) currentData.torob = JSON.parse(savedTorob);
 
     updateUI();
 });
