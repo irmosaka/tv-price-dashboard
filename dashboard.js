@@ -1,3 +1,5 @@
+// dashboard.js - نسخه کامل و نهایی (به‌روزرسانی شده برای جلوگیری از خطای undefined)
+
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
 let currentPage = 1;
@@ -10,15 +12,17 @@ function toPersianDigits(num) {
     return num.toLocaleString('fa-IR');
 }
 
-function extractSizeAndBrand(title = '') {
-    // اگر title اصلاً وجود نداشت یا رشته نبود، خالی در نظر بگیر
-    title = (title || '').toString();
+function extractSizeAndBrand(title) {
+    // ایمنی کامل: اگر title وجود نداشت یا null/undefined بود، خالی در نظر بگیر
+    title = (title || '').trim();
 
     const sizeMatch = title.match(/(\d{2,3})\s*(?:اینچ|اینج)/i);
     const size = sizeMatch ? sizeMatch[1] : 'نامشخص';
 
     let brand = 'نامشخص';
     let tech = 'LED';
+
+    if (!title) return { size, brand, tech };
 
     const lower = title.toLowerCase().replace(/\s+/g, ' ');
 
@@ -64,21 +68,18 @@ function loadData(raw, source = 'digikala') {
 
     if (source === 'torob') {
         processed = raw.map((item, index) => {
-            // ایمنی بالا: اگر آیتم وجود نداشت یا آبجکت نبود، رد کن
             if (!item || typeof item !== 'object') {
                 console.warn(`آیتم نامعتبر در ترب - ایندکس: ${index}`);
                 return null;
             }
 
-            // کلید نام محصول ممکن است وجود نداشته باشد
+            // ایمنی: اگر کلید وجود نداشت، مقدار پیش‌فرض بگذار
             const title = item['ProductCard_desktop_product-name__JwqeK'] || 'نامشخص';
             const { size, brand, tech } = extractSizeAndBrand(title);
 
-            // قیمت فروش
             let priceText = item['ProductCard_desktop_product-price-text__y20OV'] || '0';
             let price_num = parseInt(priceText.replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
 
-            // تعداد فروشنده
             let sellersText = item['ProductCard_desktop_shops__mbtsF'] || '0';
             let sellers = parseInt(sellersText.replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
 
@@ -315,7 +316,8 @@ function updateChart(data) {
                                 return `${context.raw.brand} - ${toPersianDigits(context.raw.y)} تومان`;
                             }
                         }
-                    }
+                    },
+                    legend: { labels: { font: { family: 'Vazirmatn' } } }
                 }
             }
         });
@@ -356,7 +358,7 @@ document.getElementById('clear-filters')?.addEventListener('click', () => {
 document.getElementById('upload-btn')?.addEventListener('click', () => {
     const input = document.getElementById('file-input');
     if (input) {
-        input.value = ''; // ریست برای trigger دوباره
+        input.value = '';
         input.click();
     }
 });
@@ -377,8 +379,10 @@ document.getElementById('file-input')?.addEventListener('change', e => {
 
             text = text.trim();
 
-            // رفع کاما اضافی رایج در انتهای آرایه
-            text = text.replace(/,\s*]$/, ']');
+            // حذف کاما اضافی رایج در انتها
+            if (text.endsWith(',]')) {
+                text = text.slice(0, -2) + ']';
+            }
 
             const json = JSON.parse(text);
 
@@ -394,7 +398,7 @@ document.getElementById('file-input')?.addEventListener('change', e => {
                 `جزئیات: ${err.message}\n\n` +
                 `پیشنهادات:\n` +
                 `1. فایل را با VS Code باز کنید → Ctrl+A → Cut → Paste → ذخیره کنید.\n` +
-                `2. مطمئن شوید فایل با [ شروع و با ] تمام می‌شود و کاما اضافی در انتها ندارد.\n` +
+                `2. مطمئن شوید فایل با [ شروع و با ] تمام می‌شود.\n` +
                 `3. اگر فایل بزرگ است، فقط ۱۰ آیتم اول را کپی کنید و در فایل جدید تست کنید.`
             );
         }
