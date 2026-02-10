@@ -1,5 +1,3 @@
-// dashboard.js - نسخه نهایی و تمیز (بهمن ۱۴۰۴)
-
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
 let currentPage = 1;
@@ -22,7 +20,6 @@ function extractBrandFromTitle(title) {
   if (!title || typeof title !== 'string' || !title.trim()) return 'متفرقه';
 
   const lower = title.toLowerCase();
-
   if (lower.includes('سامسونگ')) return 'سامسونگ';
   if (lower.includes('سام الکترونیک')) return 'سام الکترونیک';
 
@@ -48,8 +45,7 @@ function extractSize(title) {
     /سایز\s*(\d{2,3})/i,
     /اندازه\s*(\d{2,3})/i,
     /(\d{2,3})\s*["']?اینچ/i,
-    /[\d۰-۹]{2,3}\s*اینچ/i,
-    /سایز\s*[\d۰-۹]{2,3}\s*اینچ/i
+    /[\d۰-۹]{2,3}\s*اینچ/i
   ];
 
   for (const pattern of patterns) {
@@ -74,42 +70,23 @@ function loadData(raw, source = 'digikala') {
   let processed = [];
 
   if (source === 'torob') {
-    processed = raw.map((item, index) => {
-      try {
-        if (!item || typeof item !== 'object') return null;
+    processed = raw.map((item) => {
+      const title = String(item['ProductCard_desktop_product-name__JwqeK'] ?? '').trim();
+      const brand = extractBrandFromTitle(title);
+      const size = extractSize(title);
+      const tech = extractTech(title);
 
-        const title = String(item['ProductCard_desktop_product-name__JwqeK'] ?? '').trim();
-        const brand = extractBrandFromTitle(title);
-        const size = extractSize(title);
-        const tech = extractTech(title);
+      let priceText = item['ProductCard_desktop_product-price-text__y20OV'] ?? '0';
+      let price_num = parseInt(String(priceText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
 
-        let priceText = item['ProductCard_desktop_product-price-text__y20OV'] ?? '0';
-        let price_num = parseInt(
-          String(priceText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
-        ) || 0;
+      let sellersText = item['ProductCard_desktop_shops__mbtsF'] ?? '0';
+      let sellers = parseInt(String(sellersText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
 
-        let sellersText = item['ProductCard_desktop_shops__mbtsF'] ?? '0';
-        let sellers = parseInt(
-          String(sellersText).replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
-        ) || 0;
+      const link = item['ProductCards_cards__MYvdn href'] ?? '#';
 
-        const link = item['ProductCards_cards__MYvdn href'] ?? '#';
+      if (price_num <= 0) return null;
 
-        if (price_num <= 0) return null;
-
-        return {
-          name: title || 'نام محصول نامشخص',
-          brand,
-          link,
-          price_num,
-          sellers,
-          size,
-          tech
-        };
-      } catch (err) {
-        console.error(`خطا در رکورد ترب ${index}:`, err);
-        return null;
-      }
+      return { name: title || 'نام محصول نامشخص', brand, link, price_num, sellers, size, tech };
     }).filter(item => item !== null);
   } else {
     processed = raw.map(item => {
@@ -142,65 +119,46 @@ function loadData(raw, source = 'digikala') {
   updateUI();
 }
 
-function updateStats(data) {
-  const prices = data.map(item => item.price_num).filter(p => p > 0);
-  const avgPrice = prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0;
-  document.getElementById('avg-price').textContent = toPersianDigits(avgPrice) + ' تومان';
-  document.getElementById('total-items').textContent = toPersianDigits(data.length);
-  document.getElementById('total-sellers').textContent = toPersianDigits(data.reduce((sum, item) => sum + item.sellers, 0));
-  document.getElementById('total-brands').textContent = toPersianDigits([...new Set(data.map(item => item.brand))].length);
-}
-
 function updateUI() {
   const data = currentData[currentTab] || [];
   if (data.length === 0) {
-    document.querySelector('#product-table tbody').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">هیچ داده‌ای موجود نیست</td></tr>';
-    document.getElementById('pagination').innerHTML = '';
+    document.querySelector('#product-table tbody').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px;">هیچ داده‌ای موجود نیست</td></tr>';
     return;
   }
 
   updateStats(data);
   document.getElementById('last-update').textContent = `آخرین بروزرسانی: ${new Date().toLocaleString('fa-IR')}`;
 
+  // سایزها
   const sizes = [...new Set(data.map(d => d.size).filter(s => s !== 'نامشخص'))]
-    .map(s => {
-      let numStr = s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
-      return parseInt(numStr, 10);
-    })
+    .map(s => parseInt(s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)), 10))
     .filter(n => !isNaN(n) && n >= 32 && n <= 100)
     .sort((a, b) => a - b);
 
   document.getElementById('size-filter').innerHTML = '<option value="">همه سایزها</option>' + 
     sizes.map(s => `<option value="${s}">${s} اینچ</option>`).join('');
 
+  // برندها
   const brandSelect = document.getElementById('brand-filter');
   brandSelect.innerHTML = '<option value="">همه برندها</option>';
 
   if (currentTab === 'torob') {
-    [...TOROB_BRANDS].sort((a, b) => a.localeCompare(b, 'fa')).forEach(brand => {
-      brandSelect.innerHTML += `<option value="${brand}">${brand}</option>`;
-    });
-  } else {
-    const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'متفرقه' && b !== 'نامشخص'))].sort((a, b) => a.localeCompare(b, 'fa'));
-    brands.forEach(b => {
+    [...TOROB_BRANDS].sort((a, b) => a.localeCompare(b, 'fa')).forEach(b => {
       brandSelect.innerHTML += `<option value="${b}">${b}</option>`;
     });
+  } else {
+    const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'متفرقه'))].sort((a, b) => a.localeCompare(b, 'fa'));
+    brands.forEach(b => brandSelect.innerHTML += `<option value="${b}">${b}</option>`);
   }
 
-  let techs = [...new Set(data.map(d => d.tech))].sort();
-  if (!techs.includes('QLED')) techs.push('QLED');
-  document.getElementById('tech-filter').innerHTML = '<option value="">همه تکنولوژی‌ها</option>' + techs.map(t => `<option value="${t}">${t}</option>`).join('');
-
   renderTable(data);
-  updateChart(data);
 }
 
 function renderTable(data, page = currentPage) {
   const tbody = document.querySelector('#product-table tbody');
-  
   const start = (page - 1) * rowsPerPage;
   const end = start + rowsPerPage;
-  const visibleData = data.slice(start, end);   // ← این خط خیلی مهمه!
+  const visibleData = data.slice(start, end);
 
   const isTorob = currentTab === 'torob';
 
@@ -231,6 +189,7 @@ function renderTable(data, page = currentPage) {
     }
   }).join('');
 
+  // صفحه‌بندی
   const totalPages = Math.ceil(data.length / rowsPerPage);
   const pagination = document.getElementById('pagination');
   pagination.innerHTML = '';
@@ -245,8 +204,7 @@ function renderTable(data, page = currentPage) {
 
 function changePage(page) {
   currentPage = page;
-  const filteredData = getFilteredData();
-  renderTable(filteredData, page);
+  renderTable(currentData[currentTab] || []);
 }
 
 function getFilteredData() {
@@ -262,6 +220,13 @@ function getFilteredData() {
   return filtered;
 }
 
+function applyFilters() {
+  currentPage = 1;
+  const filteredData = getFilteredData();
+  updateStats(filteredData);
+  renderTable(filteredData);
+}
+
 function sortTable(col) {
   if (sortCol === col) {
     sortDir = sortDir === 'asc' ? 'desc' : 'asc';
@@ -269,38 +234,10 @@ function sortTable(col) {
     sortCol = col;
     sortDir = 'asc';
   }
-
-  let filtered = getFilteredData();
-
-  filtered.sort((a, b) => {
-    let va = a[col], vb = b[col];
-    if (col === 'price_num' || col === 'sellers') {
-      va = va || 0;
-      vb = vb || 0;
-      return sortDir === 'asc' ? va - vb : vb - va;
-    } else {
-      va = (va || '').toString();
-      vb = (vb || '').toString();
-      return sortDir === 'asc' ? va.localeCompare(vb, 'fa') : vb.localeCompare(va, 'fa');
-    }
-  });
-
-  renderTable(filtered);
+  renderTable(getFilteredData());
 }
 
-function applyFilters() {
-  currentPage = 1;
-  const filteredData = getFilteredData();
-  updateStats(filteredData);
-  renderTable(filteredData);
-  updateChart(filteredData);
-}
-
-function updateChart(data) {
-  if (data.length === 0) return;
-  // چارت‌ها (بدون تغییر)
-}
-
+// ایونت‌ها
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -326,26 +263,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('size-filter').value = '';
     document.getElementById('brand-filter').value = '';
     document.getElementById('tech-filter').value = '';
-    document.getElementById('filter-value').textContent = '۰ تومان';
     updateUI();
   });
 
-  document.getElementById('upload-btn')?.addEventListener('click', () => {
-    document.getElementById('file-input')?.click();
-  });
+  document.getElementById('upload-btn')?.addEventListener('click', () => document.getElementById('file-input')?.click());
 
   document.getElementById('file-input')?.addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
 
     let source = 'digikala';
-    const fileNameLower = file.name.toLowerCase();
-
-    if (fileNameLower.startsWith('torob')) source = 'torob';
-    else if (fileNameLower.startsWith('digikala')) source = 'digikala';
-    else {
-      source = prompt('نام فایل شناخته نشد. منبع داده (digikala یا torob):')?.trim().toLowerCase() || 'digikala';
-    }
+    const name = file.name.toLowerCase();
+    if (name.startsWith('torob')) source = 'torob';
+    else if (name.startsWith('digikala')) source = 'digikala';
 
     const reader = new FileReader();
     reader.onload = ev => {
@@ -356,13 +286,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const json = JSON.parse(text);
         loadData(json, source);
-        alert(`داده‌های ${source} از فایل "${file.name}" لود شد (${json.length} محصول)`);
+        alert(`داده‌های ${source} لود شد (${json.length} محصول)`);
         e.target.value = '';
       } catch (err) {
         alert('خطا در خواندن فایل: ' + err.message);
       }
     };
-
     reader.readAsText(file);
   });
 
