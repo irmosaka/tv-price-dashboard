@@ -11,6 +11,8 @@ const TOROB_BRANDS = [
   "ورلد استار", "پارس", "پاناسونیک"
 ];
 
+let myChart = null; // برای ذخیره نمودار
+
 function toPersianDigits(num) {
   if (num === '—' || num === null || num === undefined) return '—';
   return num.toLocaleString('fa-IR');
@@ -18,14 +20,21 @@ function toPersianDigits(num) {
 
 function extractBrandFromTitle(title) {
   if (!title || typeof title !== 'string' || !title.trim()) return 'متفرقه';
-
+  
+  // اول برندهای خاص را چک می‌کنیم
   const lower = title.toLowerCase();
+  
+  // ابتدا سامسونگ را چک می‌کنیم (قبل از سام الکترونیک)
   if (lower.includes('سامسونگ')) return 'سامسونگ';
   if (lower.includes('سام الکترونیک')) return 'سام الکترونیک';
-
+  
+  // بقیه برندها
   for (const brand of TOROB_BRANDS) {
-    if (lower.includes(brand.toLowerCase())) return brand;
+    if (lower.includes(brand.toLowerCase())) {
+      return brand;
+    }
   }
+  
   return 'متفرقه';
 }
 
@@ -129,6 +138,115 @@ function updateStats(data) {
   document.getElementById('total-brands').textContent = toPersianDigits([...new Set(data.map(item => item.brand))].length);
 }
 
+function updateSortIcons() {
+  // حذف همه فلش‌های قبلی
+  document.querySelectorAll('th[data-col]').forEach(th => {
+    const existingIcon = th.querySelector('.sort-icon');
+    if (existingIcon) {
+      existingIcon.remove();
+    }
+  });
+
+  // اضافه کردن فلش جدید برای ستون مرتب‌شده
+  if (sortCol) {
+    const th = document.querySelector(`th[data-col="${sortCol}"]`);
+    if (th) {
+      const icon = document.createElement('span');
+      icon.className = 'sort-icon';
+      icon.textContent = sortDir === 'asc' ? ' ↑' : ' ↓';
+      icon.style.marginRight = '5px';
+      th.insertBefore(icon, th.firstChild);
+    }
+  }
+}
+
+function renderChart(data) {
+  const ctx = document.getElementById('price-chart');
+  if (!ctx) {
+    console.warn('عنصر canvas برای نمودار پیدا نشد');
+    return;
+  }
+
+  // اگر نمودار قبلی وجود دارد، آن را از بین ببریم
+  if (myChart) {
+    myChart.destroy();
+  }
+
+  // گروه‌بندی داده‌ها بر اساس برند و محاسبه میانگین قیمت
+  const brandGroups = {};
+  data.forEach(item => {
+    if (item.brand && item.price_num > 0) {
+      if (!brandGroups[item.brand]) {
+        brandGroups[item.brand] = {
+          total: 0,
+          count: 0
+        };
+      }
+      brandGroups[item.brand].total += item.price_num;
+      brandGroups[item.brand].count += 1;
+    }
+  });
+
+  // تبدیل به آرایه و مرتب‌سازی
+  const chartData = Object.entries(brandGroups)
+    .map(([brand, stats]) => ({
+      brand,
+      avgPrice: Math.round(stats.total / stats.count)
+    }))
+    .sort((a, b) => b.avgPrice - a.avgPrice)
+    .slice(0, 10); // فقط 10 برند برتر
+
+  const labels = chartData.map(item => item.brand);
+  const prices = chartData.map(item => item.avgPrice);
+
+  try {
+    myChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'میانگین قیمت (تومان)',
+          data: prices,
+          backgroundColor: 'rgba(54, 162, 235, 0.5)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return toPersianDigits(value) + ' تومان';
+              }
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `میانگین قیمت: ${toPersianDigits(context.raw)} تومان`;
+              }
+            }
+          },
+          legend: {
+            labels: {
+              font: {
+                family: 'Vazir, Tahoma, sans-serif'
+              }
+            }
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('خطا در رسم نمودار:', error);
+  }
+}
+
 function updateUI() {
   const data = currentData[currentTab] || [];
   if (data.length === 0) {
@@ -164,14 +282,44 @@ function updateUI() {
   }
 
   renderTable(data);
+  renderChart(data);
+}
+
+function sortData(data) {
+  if (!sortCol) return data;
+
+  return [...data].sort((a, b) => {
+    let aVal = a[sortCol];
+    let bVal = b[sortCol];
+
+    // برای مقادیر عددی
+    if (sortCol.includes('price') || sortCol.includes('sellers') || sortCol === 'size') {
+      aVal = typeof aVal === 'string' ? parseFloat(aVal) || 0 : aVal || 0;
+      bVal = typeof bVal === 'string' ? parseFloat(bVal) || 0 : bVal || 0;
+    }
+
+    // برای مقادیر متنی
+    if (typeof aVal === 'string' && typeof bVal === 'string') {
+      aVal = aVal.toLocaleLowerCase('fa');
+      bVal = bVal.toLocaleLowerCase('fa');
+    }
+
+    if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
 }
 
 function renderTable(data, page = currentPage) {
+  // مرتب‌سازی داده‌ها
+  const sortedData = sortData(data);
+  
   const tbody = document.querySelector('#product-table tbody');
   
+  // فقط داده‌های صفحه جاری را نشان بده
   const start = (page - 1) * rowsPerPage;
   const end = start + rowsPerPage;
-  const visibleData = data.slice(start, end);
+  const visibleData = sortedData.slice(start, end);
 
   const isTorob = currentTab === 'torob';
 
@@ -202,33 +350,92 @@ function renderTable(data, page = currentPage) {
     }
   }).join('');
 
-  const totalPages = Math.ceil(data.length / rowsPerPage);
+  // به‌روزرسانی صفحه‌بندی فقط بر اساس داده‌های فیلترشده
+  const totalPages = Math.ceil(sortedData.length / rowsPerPage);
   const pagination = document.getElementById('pagination');
   pagination.innerHTML = '';
-  for (let i = 1; i <= totalPages; i++) {
+  
+  // محدود کردن تعداد دکمه‌های صفحه
+  const maxVisiblePages = 5;
+  let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+  
+  if (endPage - startPage + 1 < maxVisiblePages) {
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+  }
+  
+  // دکمه صفحه اول
+  if (startPage > 1) {
+    const firstBtn = document.createElement('button');
+    firstBtn.textContent = '۱';
+    firstBtn.onclick = () => changePage(1);
+    pagination.appendChild(firstBtn);
+    
+    if (startPage > 2) {
+      const ellipsis = document.createElement('span');
+      ellipsis.textContent = '...';
+      ellipsis.className = 'pagination-ellipsis';
+      pagination.appendChild(ellipsis);
+    }
+  }
+  
+  // صفحات میانی
+  for (let i = startPage; i <= endPage; i++) {
     const btn = document.createElement('button');
-    btn.textContent = i;
+    btn.textContent = toPersianDigits(i);
     btn.className = i === page ? 'active' : '';
     btn.onclick = () => changePage(i);
     pagination.appendChild(btn);
   }
+  
+  // دکمه صفحه آخر
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      const ellipsis = document.createElement('span');
+      ellipsis.textContent = '...';
+      ellipsis.className = 'pagination-ellipsis';
+      pagination.appendChild(ellipsis);
+    }
+    
+    const lastBtn = document.createElement('button');
+    lastBtn.textContent = toPersianDigits(totalPages);
+    lastBtn.onclick = () => changePage(totalPages);
+    pagination.appendChild(lastBtn);
+  }
+
+  // به‌روزرسانی فلش‌های مرتب‌سازی
+  updateSortIcons();
 }
 
 function changePage(page) {
   currentPage = page;
-  renderTable(currentData[currentTab] || []);
+  const filteredData = getFilteredData();
+  renderTable(filteredData);
 }
 
 function getFilteredData() {
   let filtered = currentData[currentTab] || [];
+  
   const minPrice = parseInt(document.getElementById('price-filter').value) || 0;
-  filtered = filtered.filter(item => item.price_num >= minPrice);
+  if (minPrice > 0) {
+    filtered = filtered.filter(item => item.price_num >= minPrice);
+  }
+  
   const selectedSize = document.getElementById('size-filter').value;
-  if (selectedSize) filtered = filtered.filter(item => item.size === selectedSize);
+  if (selectedSize) {
+    filtered = filtered.filter(item => item.size === selectedSize);
+  }
+  
   const selectedBrand = document.getElementById('brand-filter').value;
-  if (selectedBrand) filtered = filtered.filter(item => item.brand === selectedBrand);
+  if (selectedBrand) {
+    filtered = filtered.filter(item => item.brand === selectedBrand);
+  }
+  
   const selectedTech = document.getElementById('tech-filter').value;
-  if (selectedTech) filtered = filtered.filter(item => item.tech === selectedTech);
+  if (selectedTech) {
+    filtered = filtered.filter(item => item.tech === selectedTech);
+  }
+  
   return filtered;
 }
 
@@ -237,6 +444,7 @@ function applyFilters() {
   const filteredData = getFilteredData();
   updateStats(filteredData);
   renderTable(filteredData);
+  renderChart(filteredData);
 }
 
 function sortTable(col) {
@@ -246,38 +454,73 @@ function sortTable(col) {
     sortCol = col;
     sortDir = 'asc';
   }
-  renderTable(getFilteredData());
+  applyFilters();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // بارگذاری Chart.js اگر وجود ندارد
+  if (typeof Chart === 'undefined') {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+    script.onload = () => {
+      console.log('Chart.js loaded successfully');
+      // اگر داده‌ای وجود دارد، نمودار را رسم کن
+      if (currentData[currentTab] && currentData[currentTab].length > 0) {
+        renderChart(currentData[currentTab]);
+      }
+    };
+    document.head.appendChild(script);
+  }
+
+  // مدیریت تب‌ها
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       currentTab = tab.dataset.tab;
       currentPage = 1;
+      sortCol = null;
+      sortDir = 'asc';
       updateUI();
     });
   });
 
+  // رویدادهای مرتب‌سازی برای هدر جدول
   document.querySelectorAll('th[data-col]').forEach(th => {
     th.addEventListener('click', () => sortTable(th.dataset.col));
   });
 
-  ['price-filter','size-filter','brand-filter','tech-filter'].forEach(id => {
+  // رویدادهای فیلترها
+  ['price-filter', 'size-filter', 'brand-filter', 'tech-filter'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', applyFilters);
     document.getElementById(id)?.addEventListener('change', applyFilters);
   });
 
+  // به‌روزرسانی مقدار فیلتر قیمت
+  const priceFilter = document.getElementById('price-filter');
+  const filterValue = document.getElementById('filter-value');
+  if (priceFilter && filterValue) {
+    priceFilter.addEventListener('input', function() {
+      filterValue.textContent = toPersianDigits(this.value) + ' تومان';
+    });
+  }
+
+  // پاک کردن فیلترها
   document.getElementById('clear-filters')?.addEventListener('click', () => {
     document.getElementById('price-filter').value = 0;
     document.getElementById('size-filter').value = '';
     document.getElementById('brand-filter').value = '';
     document.getElementById('tech-filter').value = '';
-    document.getElementById('filter-value').textContent = '۰ تومان';
+    if (filterValue) {
+      filterValue.textContent = '۰ تومان';
+    }
+    currentPage = 1;
+    sortCol = null;
+    sortDir = 'asc';
     updateUI();
   });
 
+  // آپلود فایل
   document.getElementById('upload-btn')?.addEventListener('click', () => {
     document.getElementById('file-input')?.click();
   });
@@ -292,7 +535,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (fileNameLower.startsWith('torob')) source = 'torob';
     else if (fileNameLower.startsWith('digikala')) source = 'digikala';
     else {
-      source = prompt('نام فایل شناخته نشد. منبع داده (digikala یا torob):')?.trim().toLowerCase() || 'digikala';
+      const userSource = prompt('نام فایل شناخته نشد. منبع داده (digikala یا torob):')?.trim().toLowerCase();
+      if (userSource === 'torob' || userSource === 'digikala') {
+        source = userSource;
+      } else {
+        alert('منبع داده نامعتبر است. از digikala استفاده می‌شود.');
+      }
     }
 
     const reader = new FileReader();
@@ -314,5 +562,6 @@ document.addEventListener('DOMContentLoaded', () => {
     reader.readAsText(file);
   });
 
+  // بارگذاری اولیه
   updateUI();
 });
