@@ -1,3 +1,5 @@
+// dashboard.js - نسخه نهایی با فیکس دکمه‌ها و حذف ستون‌های اضافی ترب
+
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
 let currentPage = 1;
@@ -5,6 +7,7 @@ let rowsPerPage = 20;
 let sortCol = null;
 let sortDir = 'asc';
 
+// لیست برندها
 const TOROB_BRANDS = [
   "سامسونگ", "سام الکترونیک", "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "تی سی ال",
   "جی بی پی", "جی وی سی", "جی پلاس", "دوو", "سونی", "لیماک جنرال اینترنشنال", "نکسار", "هایسنس",
@@ -205,7 +208,6 @@ function renderTable(data, page = currentPage) {
 
   tbody.innerHTML = visibleData.map(item => {
     if (isTorob) {
-      // فقط ۵ ستون در ترب
       return `
         <tr>
           <td>${item.name}</td>
@@ -216,7 +218,6 @@ function renderTable(data, page = currentPage) {
         </tr>
       `;
     } else {
-      // همه ستون‌ها در دیجی‌کالا
       return `
         <tr>
           <td>${item.name}</td>
@@ -390,18 +391,24 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   ['price-filter','size-filter','brand-filter','tech-filter'].forEach(id => {
-    document.getElementById(id)?.addEventListener('input', applyFilters);
-    document.getElementById(id)?.addEventListener('change', applyFilters);
+    const elem = document.getElementById(id);
+    if (elem) {
+      elem.addEventListener('input', applyFilters);
+      elem.addEventListener('change', applyFilters);
+    }
   });
 
-  document.getElementById('clear-filters')?.addEventListener('click', () => {
-    document.getElementById('price-filter').value = 0;
-    document.getElementById('size-filter').value = '';
-    document.getElementById('brand-filter').value = '';
-    document.getElementById('tech-filter').value = '';
-    document.getElementById('filter-value').textContent = '۰ تومان';
-    updateUI();
-  });
+  const clearBtn = document.getElementById('clear-filters');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      document.getElementById('price-filter').value = 0;
+      document.getElementById('size-filter').value = '';
+      document.getElementById('brand-filter').value = '';
+      document.getElementById('tech-filter').value = '';
+      document.getElementById('filter-value').textContent = '۰ تومان';
+      updateUI();
+    });
+  }
 
   document.getElementById('upload-btn')?.addEventListener('click', () => {
     document.getElementById('file-input')?.click();
@@ -417,4 +424,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (fileNameLower.startsWith('torob')) source = 'torob';
     else if (fileNameLower.startsWith('digikala')) source = 'digikala';
     else {
-      source = prompt('نام فایل شناخته نشد. منبع داده (
+      source = prompt('نام فایل شناخته نشد. منبع داده (digikala یا torob):')?.trim().toLowerCase() || 'digikala';
+    }
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        let text = ev.target.result.trim();
+        if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+        if (text.endsWith(',]')) text = text.slice(0, -2) + ']';
+
+        const json = JSON.parse(text);
+        loadData(json, source);
+        alert(`داده‌های ${source} از فایل "${file.name}" لود شد (${json.length} محصول)`);
+        e.target.value = '';
+      } catch (err) {
+        alert('خطا در خواندن فایل: ' + err.message);
+      }
+    };
+
+    reader.readAsText(file);
+  });
+
+  updateUI();
+});
