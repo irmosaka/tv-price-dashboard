@@ -31,7 +31,6 @@ function extractBrandFromTitle(title) {
   return 'متفرقه';
 }
 
-// استخراج سایز - بسیار قوی برای ترب
 function extractSize(title) {
   if (!title || typeof title !== 'string') return 'نامشخص';
 
@@ -49,7 +48,7 @@ function extractSize(title) {
     /اندازه\s*(\d{2,3})/i,
     /(\d{2,3})\s*["']?اینچ/i,
     /[\d۰-۹]{2,3}\s*اینچ/i,
-    /[\d۰-۹]{2,3}\s*اینج/i
+    /سایز\s*[\d۰-۹]{2,3}\s*اینچ/i
   ];
 
   for (const pattern of patterns) {
@@ -163,7 +162,6 @@ function updateUI() {
   updateStats(data);
   document.getElementById('last-update').textContent = `آخرین بروزرسانی: ${new Date().toLocaleString('fa-IR')}`;
 
-  // سایزها - مرتب از کوچک به بزرگ
   const sizes = [...new Set(data.map(d => d.size).filter(s => s !== 'نامشخص'))]
     .map(s => {
       let numStr = s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
@@ -175,7 +173,6 @@ function updateUI() {
   document.getElementById('size-filter').innerHTML = '<option value="">همه سایزها</option>' + 
     sizes.map(s => `<option value="${s}">${s} اینچ</option>`).join('');
 
-  // برندها - الفبایی
   const brandSelect = document.getElementById('brand-filter');
   brandSelect.innerHTML = '<option value="">همه برندها</option>';
 
@@ -200,12 +197,33 @@ function updateUI() {
 
 function renderTable(data, page = currentPage) {
   const tbody = document.querySelector('#product-table tbody');
-  
+  const thead = document.querySelector('#product-table thead tr');
+
   const start = (page - 1) * rowsPerPage;
   const end = start + rowsPerPage;
   const visibleData = data.slice(start, end);
 
   const isTorob = currentTab === 'torob';
+
+  // هدر جدول پویا
+  if (thead) {
+    thead.innerHTML = isTorob ? `
+      <th data-col="name">نام محصول</th>
+      <th data-col="brand">برند</th>
+      <th data-col="price_num">قیمت</th>
+      <th data-col="sellers">تعداد فروشنده</th>
+      <th>لینک</th>
+    ` : `
+      <th data-col="name">نام محصول</th>
+      <th data-col="brand">برند</th>
+      <th data-col="price_num">قیمت</th>
+      <th data-col="original_price_num">قیمت اصلی</th>
+      <th>تخفیف</th>
+      <th>امتیاز</th>
+      <th>موجودی</th>
+      <th>لینک</th>
+    `;
+  }
 
   tbody.innerHTML = visibleData.map(item => {
     if (isTorob) {
@@ -277,7 +295,7 @@ function sortTable(col) {
 
   filtered.sort((a, b) => {
     let va = a[col], vb = b[col];
-    if (col.includes('price_num')) {
+    if (col === 'price_num' || col === 'sellers') {
       va = va || 0;
       vb = vb || 0;
       return sortDir === 'asc' ? va - vb : vb - va;
@@ -289,7 +307,6 @@ function sortTable(col) {
   });
 
   renderTable(filtered);
-  updateChart(filtered);
 }
 
 function applyFilters() {
@@ -375,7 +392,6 @@ function updateChart(data) {
   }
 }
 
-// تمام ایونت‌ها در انتها
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -392,18 +408,24 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   ['price-filter','size-filter','brand-filter','tech-filter'].forEach(id => {
-    document.getElementById(id)?.addEventListener('input', applyFilters);
-    document.getElementById(id)?.addEventListener('change', applyFilters);
+    const elem = document.getElementById(id);
+    if (elem) {
+      elem.addEventListener('input', applyFilters);
+      elem.addEventListener('change', applyFilters);
+    }
   });
 
-  document.getElementById('clear-filters')?.addEventListener('click', () => {
-    document.getElementById('price-filter').value = 0;
-    document.getElementById('size-filter').value = '';
-    document.getElementById('brand-filter').value = '';
-    document.getElementById('tech-filter').value = '';
-    document.getElementById('filter-value').textContent = '۰ تومان';
-    updateUI();
-  });
+  const clearBtn = document.getElementById('clear-filters');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      document.getElementById('price-filter').value = 0;
+      document.getElementById('size-filter').value = '';
+      document.getElementById('brand-filter').value = '';
+      document.getElementById('tech-filter').value = '';
+      document.getElementById('filter-value').textContent = '۰ تومان';
+      updateUI();
+    });
+  }
 
   document.getElementById('upload-btn')?.addEventListener('click', () => {
     document.getElementById('file-input')?.click();
