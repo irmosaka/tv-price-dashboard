@@ -1,5 +1,3 @@
-// dashboard.js - نسخه نهایی و ساده (سایز هم در ترب هم در دیجی‌کالا درست کار می‌کنه)
-
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
 let currentPage = 1;
@@ -7,7 +5,7 @@ let rowsPerPage = 20;
 let sortCol = null;
 let sortDir = 'asc';
 
-// لیست برندها (برای ترب)
+// لیست برندهای مجاز برای ترب
 const TOROB_BRANDS = [
   "سامسونگ", "سام الکترونیک", "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "تی سی ال",
   "جی بی پی", "جی وی سی", "جی پلاس", "دوو", "سونی", "لیماک جنرال اینترنشنال", "نکسار", "هایسنس",
@@ -19,7 +17,7 @@ function toPersianDigits(num) {
   return num.toLocaleString('fa-IR');
 }
 
-// استخراج برند (ساده و دقیق)
+// استخراج برند (فقط از لیست مجاز)
 function extractBrandFromTitle(title) {
   if (!title || typeof title !== 'string' || !title.trim()) return 'متفرقه';
 
@@ -35,25 +33,33 @@ function extractBrandFromTitle(title) {
   return 'متفرقه';
 }
 
-// استخراج سایز - ساده، قوی و برای هر دو سایت کار می‌کنه
+// استخراج سایز - قوی برای هر دو سایت
 function extractSize(title) {
   if (!title || typeof title !== 'string') return 'نامشخص';
 
-  // نرمال‌سازی: نیم‌فاصله → فضای معمولی، فاصله زیاد → یکی
-  const normalized = title
+  let normalized = title
+    .replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d - '0'])
     .replace(/[\u200C\u200D]/g, ' ')
     .replace(/\s+/g, ' ')
+    .replace(/["']/g, '')
     .trim();
 
-  // پیدا کردن عدد ۲ یا ۳ رقمی نزدیک به "اینچ" یا "سایز"
-  const sizeMatch = normalized.match(/(\d{2,3})\s*(?:اینچ|اینج|["'])/i) ||
-                    normalized.match(/سایز\s*(\d{2,3})/i) ||
-                    normalized.match(/اندازه\s*(\d{2,3})/i) ||
-                    normalized.match(/(\d{2,3})\s*اینچ/i);
+  const patterns = [
+    /(\d{2,3})\s*اینچ/i,
+    /(\d{2,3})\s*اینج/i,
+    /سایز\s*(\d{2,3})/i,
+    /اندازه\s*(\d{2,3})/i,
+    /(\d{2,3})\s*["']?اینچ/i,
+    /[\d۰-۹]{2,3}\s*اینچ/i
+  ];
 
-  if (sizeMatch && sizeMatch[1]) {
-    const num = parseInt(sizeMatch[1], 10);
-    if (num >= 32 && num <= 100) return num.toString();
+  for (const pattern of patterns) {
+    const match = normalized.match(pattern);
+    if (match && match[1]) {
+      let sizeStr = match[1].replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+      const num = parseInt(sizeStr, 10);
+      if (num >= 32 && num <= 100) return num.toString();
+    }
   }
 
   return 'نامشخص';
@@ -96,7 +102,7 @@ function loadData(raw, source = 'digikala') {
 
         return {
           name: title || 'نام محصول نامشخص',
-          brand: brand || 'متفرقه',
+          brand,
           link,
           stock: '—',
           rating: '—',
@@ -166,7 +172,6 @@ function updateUI() {
   // سایزها - مرتب از کوچک به بزرگ
   const sizes = [...new Set(data.map(d => d.size).filter(s => s !== 'نامشخص'))]
     .map(s => {
-      // تبدیل فارسی به انگلیسی برای مرتب‌سازی
       let numStr = s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
       return parseInt(numStr, 10);
     })
@@ -185,7 +190,7 @@ function updateUI() {
       brandSelect.innerHTML += `<option value="${brand}">${brand}</option>`;
     });
   } else {
-    const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'نامشخص'))].sort((a, b) => a.localeCompare(b, 'fa'));
+    const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'متفرقه' && b !== 'نامشخص'))].sort((a, b) => a.localeCompare(b, 'fa'));
     brands.forEach(b => {
       brandSelect.innerHTML += `<option value="${b}">${b}</option>`;
     });
@@ -207,18 +212,35 @@ function renderTable(data, page = currentPage) {
   const visibleData = data.slice(start, end);
 
   const isTorob = currentTab === 'torob';
-  tbody.innerHTML = visibleData.map(item => `
-    <tr>
-      <td>${item.name}</td>
-      <td>${item.brand || 'متفرقه'}</td>
-      <td>${toPersianDigits(item.price_num)} تومان</td>
-      <td>${isTorob ? toPersianDigits(item.sellers) + ' فروشنده' : toPersianDigits(item.original_price_num) + ' تومان'}</td>
-      <td>${item.discount}</td>
-      <td>${item.rating}</td>
-      <td>${item.stock}</td>
-      <td><a href="${item.link}" target="_blank">مشاهده</a></td>
-    </tr>
-  `).join('');
+
+  tbody.innerHTML = visibleData.map(item => {
+    if (isTorob) {
+      // فقط ۵ ستون در ترب
+      return `
+        <tr>
+          <td>${item.name}</td>
+          <td>${item.brand}</td>
+          <td>${toPersianDigits(item.price_num)} تومان</td>
+          <td>${toPersianDigits(item.sellers)} فروشنده</td>
+          <td><a href="${item.link}" target="_blank">مشاهده</a></td>
+        </tr>
+      `;
+    } else {
+      // همه ستون‌ها در دیجی‌کالا
+      return `
+        <tr>
+          <td>${item.name}</td>
+          <td>${item.brand}</td>
+          <td>${toPersianDigits(item.price_num)} تومان</td>
+          <td>${toPersianDigits(item.original_price_num)} تومان</td>
+          <td>${item.discount}</td>
+          <td>${item.rating}</td>
+          <td>${item.stock}</td>
+          <td><a href="${item.link}" target="_blank">مشاهده</a></td>
+        </tr>
+      `;
+    }
+  }).join('');
 
   const totalPages = Math.ceil(data.length / rowsPerPage);
   const pagination = document.getElementById('pagination');
@@ -291,7 +313,7 @@ function updateChart(data) {
 
   const brandAvg = {};
   data.forEach(item => {
-    if (item.brand !== 'نامشخص') {
+    if (item.brand !== 'نامشخص' && item.brand !== 'متفرقه') {
       if (!brandAvg[item.brand]) brandAvg[item.brand] = { sum: 0, count: 0 };
       brandAvg[item.brand].sum += item.price_num;
       brandAvg[item.brand].count++;
@@ -312,7 +334,7 @@ function updateChart(data) {
 
   const brandCount = {};
   data.forEach(item => {
-    if (item.brand !== 'نامشخص') brandCount[item.brand] = (brandCount[item.brand] || 0) + 1;
+    if (item.brand !== 'نامشخص' && item.brand !== 'متفرقه') brandCount[item.brand] = (brandCount[item.brand] || 0) + 1;
   });
   const pieCtx = document.getElementById('brand-pie-chart')?.getContext('2d');
   if (pieCtx) {
@@ -399,6 +421,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const file = e.target.files[0];
     if (!file) return;
 
+    // تشخیص منبع از نام فایل
+    let source = 'digikala';
+    const fileNameLower = file.name.toLowerCase();
+
+    if (fileNameLower.startsWith('torob')) {
+      source = 'torob';
+    } else if (fileNameLower.startsWith('digikala')) {
+      source = 'digikala';
+    } else {
+      source = prompt('نام فایل شناخته نشد. منبع داده (digikala یا torob):')?.trim().toLowerCase() || 'digikala';
+    }
+
     const reader = new FileReader();
     reader.onload = ev => {
       try {
@@ -407,17 +441,31 @@ document.addEventListener('DOMContentLoaded', () => {
         if (text.endsWith(',]')) text = text.slice(0, -2) + ']';
 
         const json = JSON.parse(text);
-        const source = prompt('منبع داده (digikala یا torob):')?.trim().toLowerCase() || 'digikala';
+
         loadData(json, source);
-        alert(`داده‌های ${source} لود شد (${json.length} محصول)`);
+        alert(`داده‌های ${source} از فایل "${file.name}" لود شد (${json.length} محصول)`);
+
         e.target.value = '';
       } catch (err) {
-        alert('خطا در خواندن فایل: ' + err.message);
+        console.error('خطای JSON:', err);
+        alert(`فایل JSON نامعتبر است!\n\nجزئیات: ${err.message}`);
       }
     };
 
     reader.readAsText(file);
   });
+
+  // لود اولیه
+  fetch('daily_prices.json')
+    .then(r => r.json())
+    .then(data => loadData(data, 'digikala'))
+    .catch(() => {});
+
+  const savedDigikala = localStorage.getItem('daily_prices_digikala');
+  if (savedDigikala) currentData.digikala = JSON.parse(savedDigikala);
+
+  const savedTorob = localStorage.getItem('daily_prices_torob');
+  if (savedTorob) currentData.torob = JSON.parse(savedTorob);
 
   updateUI();
 });
