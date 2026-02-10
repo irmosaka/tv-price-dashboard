@@ -1,5 +1,3 @@
-// dashboard.js - نسخه نهایی با فیکس دکمه‌ها و حذف ستون‌های اضافی ترب
-
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
 let currentPage = 1;
@@ -7,7 +5,6 @@ let rowsPerPage = 20;
 let sortCol = null;
 let sortDir = 'asc';
 
-// لیست برندها
 const TOROB_BRANDS = [
   "سامسونگ", "سام الکترونیک", "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "تی سی ال",
   "جی بی پی", "جی وی سی", "جی پلاس", "دوو", "سونی", "لیماک جنرال اینترنشنال", "نکسار", "هایسنس",
@@ -197,6 +194,7 @@ function updateUI() {
   updateChart(data);
 }
 
+// تابع renderTable با حذف کامل ستون‌های اضافی در ترب + هدر پویا
 function renderTable(data, page = currentPage) {
   const tbody = document.querySelector('#product-table tbody');
   
@@ -205,6 +203,31 @@ function renderTable(data, page = currentPage) {
   const visibleData = data.slice(start, end);
 
   const isTorob = currentTab === 'torob';
+
+  // هدر جدول رو پویا تغییر می‌دهیم
+  const thead = document.querySelector('#product-table thead tr');
+  if (thead) {
+    if (isTorob) {
+      thead.innerHTML = `
+        <th>نام محصول</th>
+        <th>برند</th>
+        <th>قیمت</th>
+        <th>تعداد فروشنده</th>
+        <th>لینک</th>
+      `;
+    } else {
+      thead.innerHTML = `
+        <th>نام محصول</th>
+        <th>برند</th>
+        <th>قیمت</th>
+        <th>قیمت اصلی</th>
+        <th>تخفیف</th>
+        <th>امتیاز</th>
+        <th>موجودی</th>
+        <th>لینک</th>
+      `;
+    }
+  }
 
   tbody.innerHTML = visibleData.map(item => {
     if (isTorob) {
@@ -391,24 +414,18 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   ['price-filter','size-filter','brand-filter','tech-filter'].forEach(id => {
-    const elem = document.getElementById(id);
-    if (elem) {
-      elem.addEventListener('input', applyFilters);
-      elem.addEventListener('change', applyFilters);
-    }
+    document.getElementById(id)?.addEventListener('input', applyFilters);
+    document.getElementById(id)?.addEventListener('change', applyFilters);
   });
 
-  const clearBtn = document.getElementById('clear-filters');
-  if (clearBtn) {
-    clearBtn.addEventListener('click', () => {
-      document.getElementById('price-filter').value = 0;
-      document.getElementById('size-filter').value = '';
-      document.getElementById('brand-filter').value = '';
-      document.getElementById('tech-filter').value = '';
-      document.getElementById('filter-value').textContent = '۰ تومان';
-      updateUI();
-    });
-  }
+  document.getElementById('clear-filters')?.addEventListener('click', () => {
+    document.getElementById('price-filter').value = 0;
+    document.getElementById('size-filter').value = '';
+    document.getElementById('brand-filter').value = '';
+    document.getElementById('tech-filter').value = '';
+    document.getElementById('filter-value').textContent = '۰ تومان';
+    updateUI();
+  });
 
   document.getElementById('upload-btn')?.addEventListener('click', () => {
     document.getElementById('file-input')?.click();
