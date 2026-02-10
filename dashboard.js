@@ -5,7 +5,6 @@ let rowsPerPage = 20;
 let sortCol = null;
 let sortDir = 'asc';
 
-// لیست برندهای مجاز برای ترب
 const TOROB_BRANDS = [
   "سامسونگ", "سام الکترونیک", "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "تی سی ال",
   "جی بی پی", "جی وی سی", "جی پلاس", "دوو", "سونی", "لیماک جنرال اینترنشنال", "نکسار", "هایسنس",
@@ -17,7 +16,6 @@ function toPersianDigits(num) {
   return num.toLocaleString('fa-IR');
 }
 
-// استخراج برند (فقط از لیست مجاز)
 function extractBrandFromTitle(title) {
   if (!title || typeof title !== 'string' || !title.trim()) return 'متفرقه';
 
@@ -33,7 +31,6 @@ function extractBrandFromTitle(title) {
   return 'متفرقه';
 }
 
-// استخراج سایز - قوی برای هر دو سایت
 function extractSize(title) {
   if (!title || typeof title !== 'string') return 'نامشخص';
 
@@ -65,7 +62,6 @@ function extractSize(title) {
   return 'نامشخص';
 }
 
-// تکنولوژی
 function extractTech(title) {
   const lower = (title || '').toLowerCase();
   if (lower.includes('qled') || lower.includes('کیوالایدی') || lower.includes('q led')) return 'QLED';
@@ -104,11 +100,7 @@ function loadData(raw, source = 'digikala') {
           name: title || 'نام محصول نامشخص',
           brand,
           link,
-          stock: '—',
-          rating: '—',
-          discount: '—',
           price_num,
-          original_price_num: 0,
           sellers,
           size,
           tech
@@ -161,7 +153,7 @@ function updateStats(data) {
 function updateUI() {
   const data = currentData[currentTab] || [];
   if (data.length === 0) {
-    document.querySelector('#product-table tbody').innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px;">هیچ داده‌ای موجود نیست</td></tr>';
+    document.querySelector('#product-table tbody').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">هیچ داده‌ای موجود نیست</td></tr>';
     document.getElementById('pagination').innerHTML = '';
     return;
   }
@@ -169,7 +161,6 @@ function updateUI() {
   updateStats(data);
   document.getElementById('last-update').textContent = `آخرین بروزرسانی: ${new Date().toLocaleString('fa-IR')}`;
 
-  // سایزها - مرتب از کوچک به بزرگ
   const sizes = [...new Set(data.map(d => d.size).filter(s => s !== 'نامشخص'))]
     .map(s => {
       let numStr = s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
@@ -181,7 +172,6 @@ function updateUI() {
   document.getElementById('size-filter').innerHTML = '<option value="">همه سایزها</option>' + 
     sizes.map(s => `<option value="${s}">${s} اینچ</option>`).join('');
 
-  // برندها - مرتب الفبایی
   const brandSelect = document.getElementById('brand-filter');
   brandSelect.innerHTML = '<option value="">همه برندها</option>';
 
@@ -421,51 +411,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // تشخیص منبع از نام فایل
     let source = 'digikala';
     const fileNameLower = file.name.toLowerCase();
 
-    if (fileNameLower.startsWith('torob')) {
-      source = 'torob';
-    } else if (fileNameLower.startsWith('digikala')) {
-      source = 'digikala';
-    } else {
-      source = prompt('نام فایل شناخته نشد. منبع داده (digikala یا torob):')?.trim().toLowerCase() || 'digikala';
-    }
-
-    const reader = new FileReader();
-    reader.onload = ev => {
-      try {
-        let text = ev.target.result.trim();
-        if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-        if (text.endsWith(',]')) text = text.slice(0, -2) + ']';
-
-        const json = JSON.parse(text);
-
-        loadData(json, source);
-        alert(`داده‌های ${source} از فایل "${file.name}" لود شد (${json.length} محصول)`);
-
-        e.target.value = '';
-      } catch (err) {
-        console.error('خطای JSON:', err);
-        alert(`فایل JSON نامعتبر است!\n\nجزئیات: ${err.message}`);
-      }
-    };
-
-    reader.readAsText(file);
-  });
-
-  // لود اولیه
-  fetch('daily_prices.json')
-    .then(r => r.json())
-    .then(data => loadData(data, 'digikala'))
-    .catch(() => {});
-
-  const savedDigikala = localStorage.getItem('daily_prices_digikala');
-  if (savedDigikala) currentData.digikala = JSON.parse(savedDigikala);
-
-  const savedTorob = localStorage.getItem('daily_prices_torob');
-  if (savedTorob) currentData.torob = JSON.parse(savedTorob);
-
-  updateUI();
-});
+    if (fileNameLower.startsWith('torob')) source = 'torob';
+    else if (fileNameLower.startsWith('digikala')) source = 'digikala';
+    else {
+      source = prompt('نام فایل شناخته نشد. منبع داده (
