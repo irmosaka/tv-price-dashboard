@@ -31,6 +31,7 @@ function extractBrandFromTitle(title) {
   return 'متفرقه';
 }
 
+// استخراج سایز - بسیار قوی برای ترب
 function extractSize(title) {
   if (!title || typeof title !== 'string') return 'نامشخص';
 
@@ -47,7 +48,8 @@ function extractSize(title) {
     /سایز\s*(\d{2,3})/i,
     /اندازه\s*(\d{2,3})/i,
     /(\d{2,3})\s*["']?اینچ/i,
-    /[\d۰-۹]{2,3}\s*اینچ/i
+    /[\d۰-۹]{2,3}\s*اینچ/i,
+    /[\d۰-۹]{2,3}\s*اینج/i
   ];
 
   for (const pattern of patterns) {
@@ -161,6 +163,7 @@ function updateUI() {
   updateStats(data);
   document.getElementById('last-update').textContent = `آخرین بروزرسانی: ${new Date().toLocaleString('fa-IR')}`;
 
+  // سایزها - مرتب از کوچک به بزرگ
   const sizes = [...new Set(data.map(d => d.size).filter(s => s !== 'نامشخص'))]
     .map(s => {
       let numStr = s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
@@ -172,6 +175,7 @@ function updateUI() {
   document.getElementById('size-filter').innerHTML = '<option value="">همه سایزها</option>' + 
     sizes.map(s => `<option value="${s}">${s} اینچ</option>`).join('');
 
+  // برندها - الفبایی
   const brandSelect = document.getElementById('brand-filter');
   brandSelect.innerHTML = '<option value="">همه برندها</option>';
 
@@ -194,7 +198,6 @@ function updateUI() {
   updateChart(data);
 }
 
-// تابع renderTable با حذف کامل ستون‌های اضافی در ترب + هدر پویا
 function renderTable(data, page = currentPage) {
   const tbody = document.querySelector('#product-table tbody');
   
@@ -203,31 +206,6 @@ function renderTable(data, page = currentPage) {
   const visibleData = data.slice(start, end);
 
   const isTorob = currentTab === 'torob';
-
-  // هدر جدول رو پویا تغییر می‌دهیم
-  const thead = document.querySelector('#product-table thead tr');
-  if (thead) {
-    if (isTorob) {
-      thead.innerHTML = `
-        <th>نام محصول</th>
-        <th>برند</th>
-        <th>قیمت</th>
-        <th>تعداد فروشنده</th>
-        <th>لینک</th>
-      `;
-    } else {
-      thead.innerHTML = `
-        <th>نام محصول</th>
-        <th>برند</th>
-        <th>قیمت</th>
-        <th>قیمت اصلی</th>
-        <th>تخفیف</th>
-        <th>امتیاز</th>
-        <th>موجودی</th>
-        <th>لینک</th>
-      `;
-    }
-  }
 
   tbody.innerHTML = visibleData.map(item => {
     if (isTorob) {
