@@ -45,7 +45,8 @@ function extractSize(title) {
     /سایز\s*(\d{2,3})/i,
     /اندازه\s*(\d{2,3})/i,
     /(\d{2,3})\s*["']?اینچ/i,
-    /[\d۰-۹]{2,3}\s*اینچ/i
+    /[\d۰-۹]{2,3}\s*اینچ/i,
+    /سایز\s*[\d۰-۹]{2,3}\s*اینچ/i
   ];
 
   for (const pattern of patterns) {
@@ -119,35 +120,46 @@ function loadData(raw, source = 'digikala') {
   updateUI();
 }
 
+function updateStats(data) {
+  const prices = data.map(item => item.price_num).filter(p => p > 0);
+  const avgPrice = prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0;
+  document.getElementById('avg-price').textContent = toPersianDigits(avgPrice) + ' تومان';
+  document.getElementById('total-items').textContent = toPersianDigits(data.length);
+  document.getElementById('total-sellers').textContent = toPersianDigits(data.reduce((sum, item) => sum + item.sellers, 0));
+  document.getElementById('total-brands').textContent = toPersianDigits([...new Set(data.map(item => item.brand))].length);
+}
+
 function updateUI() {
   const data = currentData[currentTab] || [];
   if (data.length === 0) {
     document.querySelector('#product-table tbody').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px;">هیچ داده‌ای موجود نیست</td></tr>';
+    document.getElementById('pagination').innerHTML = '';
     return;
   }
 
   updateStats(data);
   document.getElementById('last-update').textContent = `آخرین بروزرسانی: ${new Date().toLocaleString('fa-IR')}`;
 
-  // سایزها
   const sizes = [...new Set(data.map(d => d.size).filter(s => s !== 'نامشخص'))]
-    .map(s => parseInt(s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)), 10))
+    .map(s => {
+      let numStr = s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+      return parseInt(numStr, 10);
+    })
     .filter(n => !isNaN(n) && n >= 32 && n <= 100)
     .sort((a, b) => a - b);
 
   document.getElementById('size-filter').innerHTML = '<option value="">همه سایزها</option>' + 
     sizes.map(s => `<option value="${s}">${s} اینچ</option>`).join('');
 
-  // برندها
   const brandSelect = document.getElementById('brand-filter');
   brandSelect.innerHTML = '<option value="">همه برندها</option>';
 
   if (currentTab === 'torob') {
-    [...TOROB_BRANDS].sort((a, b) => a.localeCompare(b, 'fa')).forEach(b => {
-      brandSelect.innerHTML += `<option value="${b}">${b}</option>`;
+    [...TOROB_BRANDS].sort((a, b) => a.localeCompare(b, 'fa')).forEach(brand => {
+      brandSelect.innerHTML += `<option value="${brand}">${brand}</option>`;
     });
   } else {
-    const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'متفرقه'))].sort((a, b) => a.localeCompare(b, 'fa'));
+    const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'متفرقه' && b !== 'نامشخص'))].sort((a, b) => a.localeCompare(b, 'fa'));
     brands.forEach(b => brandSelect.innerHTML += `<option value="${b}">${b}</option>`);
   }
 
@@ -156,6 +168,7 @@ function updateUI() {
 
 function renderTable(data, page = currentPage) {
   const tbody = document.querySelector('#product-table tbody');
+  
   const start = (page - 1) * rowsPerPage;
   const end = start + rowsPerPage;
   const visibleData = data.slice(start, end);
@@ -189,7 +202,6 @@ function renderTable(data, page = currentPage) {
     }
   }).join('');
 
-  // صفحه‌بندی
   const totalPages = Math.ceil(data.length / rowsPerPage);
   const pagination = document.getElementById('pagination');
   pagination.innerHTML = '';
@@ -237,7 +249,6 @@ function sortTable(col) {
   renderTable(getFilteredData());
 }
 
-// ایونت‌ها
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -263,19 +274,26 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('size-filter').value = '';
     document.getElementById('brand-filter').value = '';
     document.getElementById('tech-filter').value = '';
+    document.getElementById('filter-value').textContent = '۰ تومان';
     updateUI();
   });
 
-  document.getElementById('upload-btn')?.addEventListener('click', () => document.getElementById('file-input')?.click());
+  document.getElementById('upload-btn')?.addEventListener('click', () => {
+    document.getElementById('file-input')?.click();
+  });
 
   document.getElementById('file-input')?.addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
 
     let source = 'digikala';
-    const name = file.name.toLowerCase();
-    if (name.startsWith('torob')) source = 'torob';
-    else if (name.startsWith('digikala')) source = 'digikala';
+    const fileNameLower = file.name.toLowerCase();
+
+    if (fileNameLower.startsWith('torob')) source = 'torob';
+    else if (fileNameLower.startsWith('digikala')) source = 'digikala';
+    else {
+      source = prompt('نام فایل شناخته نشد. منبع داده (digikala یا torob):')?.trim().toLowerCase() || 'digikala';
+    }
 
     const reader = new FileReader();
     reader.onload = ev => {
@@ -286,12 +304,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const json = JSON.parse(text);
         loadData(json, source);
-        alert(`داده‌های ${source} لود شد (${json.length} محصول)`);
+        alert(`داده‌های ${source} از فایل "${file.name}" لود شد (${json.length} محصول)`);
         e.target.value = '';
       } catch (err) {
         alert('خطا در خواندن فایل: ' + err.message);
       }
     };
+
     reader.readAsText(file);
   });
 
