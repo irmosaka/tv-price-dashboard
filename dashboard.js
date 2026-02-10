@@ -1,4 +1,4 @@
-// dashboard.js - نسخه نهایی و تمیز (فیلتر سایز + سورت + حذف ستون‌های اضافی ترب)
+// dashboard.js - نسخه نهایی و تمیز (بهمن ۱۴۰۴)
 
 let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
@@ -162,7 +162,6 @@ function updateUI() {
   updateStats(data);
   document.getElementById('last-update').textContent = `آخرین بروزرسانی: ${new Date().toLocaleString('fa-IR')}`;
 
-  // سایزها
   const sizes = [...new Set(data.map(d => d.size).filter(s => s !== 'نامشخص'))]
     .map(s => {
       let numStr = s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
@@ -174,7 +173,6 @@ function updateUI() {
   document.getElementById('size-filter').innerHTML = '<option value="">همه سایزها</option>' + 
     sizes.map(s => `<option value="${s}">${s} اینچ</option>`).join('');
 
-  // برندها - الفبایی
   const brandSelect = document.getElementById('brand-filter');
   brandSelect.innerHTML = '<option value="">همه برندها</option>';
 
@@ -199,6 +197,11 @@ function updateUI() {
 
 function renderTable(data, page = currentPage) {
   const tbody = document.querySelector('#product-table tbody');
+  
+  const start = (page - 1) * rowsPerPage;
+  const end = start + rowsPerPage;
+  const visibleData = data.slice(start, end);   // ← این خط خیلی مهمه!
+
   const isTorob = currentTab === 'torob';
 
   tbody.innerHTML = visibleData.map(item => {
@@ -295,7 +298,7 @@ function applyFilters() {
 
 function updateChart(data) {
   if (data.length === 0) return;
-  // (کد چارت بدون تغییر)
+  // چارت‌ها (بدون تغییر)
 }
 
 document.addEventListener('DOMContentLoaded', () => {
