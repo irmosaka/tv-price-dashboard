@@ -8,12 +8,20 @@ let sortDir = 'asc';
 // لیست برندها به ترتیب حروف الفبا (مرتب شده با localeCompare)
 const TOROB_BRANDS = [
   "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "پارس", "پاناسونیک",
-  "تی سی ال", "جی بی پی", "جی پلاس", "جی وی سی", "دوو", "سام الکترونیک", "سامسونگ",
+  "تی سی ال", "توشیبا", "جی بی پی", "جی پلاس", "جی وی سی", "دوو", "سام الکترونیک", "سامسونگ",
   "سونی", "لیماک جنرال اینترنشنال", "نکسار", "هایسنس", "ورلد استار"
 ].sort((a, b) => a.localeCompare(b, 'fa'));
 
-// برندهایی که باید به عنوان متفرقه دسته‌بندی شوند
+// برندهایی که باید به عنوان متفرقه دسته‌بندی شوند (اما خود برند حذف نمی‌شود)
 const IGNORED_BRANDS = ["بویمن", "جی بی پی", "لیماک جنرال اینترنشنال", "ورلد استار"];
+
+// کلمات کلیدی برای حذف کامل محصول (این محصولات اصلاً نمایش داده نمی‌شوند)
+const EXCLUDE_KEYWORDS = [
+  "ویدئو وال", "LED Wall", "پاورولوژی", "powerology", 
+  "ال ای دی ۱۵.۶ اینچ", "15.6 اینچ", "مانیتور", "monitor",
+  "ITC", "گام پیکسل", "فضای داخلی", "ولگا", "volga",
+  "ضخیم", "نرمال", "۴۰ پین", "40 Pin"
+];
 
 // متغیرهای نمودارها
 let chartBrandAvg = null;
@@ -37,16 +45,18 @@ function extractBrandFromTitle(title) {
     }
   }
   
-  // برندهای ویژه با الگوهای دقیق (الویت با نام‌های طولانی‌تر)
+  // لیست الگوهای برند با اولویت نام‌های بلندتر
   const brandPatterns = [
+    // برندهای با نام بلند (برای جلوگیری از تشخیص نادرست)
     { pattern: 'لیماک جنرال اینترنشنال', name: 'لیماک جنرال اینترنشنال' },
     { pattern: 'limak general international', name: 'لیماک جنرال اینترنشنال' },
     { pattern: 'ورلد استار', name: 'ورلد استار' },
     { pattern: 'worldstar', name: 'ورلد استار' },
     { pattern: 'پاناسونیک', name: 'پاناسونیک' },
     { pattern: 'panasonic', name: 'پاناسونیک' },
-    { pattern: 'پارس', name: 'پارس' },
-    { pattern: 'pars', name: 'پارس' },
+    { pattern: 'توشیبا', name: 'توشیبا' },
+    { pattern: 'toshiba', name: 'توشیبا' },
+    { pattern: 'سام الکترونیک', name: 'سام الکترونیک' }, // اضافه شد
     { pattern: 'سامسونگ', name: 'سامسونگ' },
     { pattern: 'samsung', name: 'سامسونگ' },
     { pattern: 'سونی', name: 'سونی' },
@@ -71,14 +81,22 @@ function extractBrandFromTitle(title) {
     { pattern: 'jvc', name: 'جی وی سی' },
     { pattern: 'نکسار', name: 'نکسار' },
     { pattern: 'nexar', name: 'نکسار' },
+    { pattern: 'پارس', name: 'پارس' },
+    { pattern: 'pars', name: 'پارس' },
     { pattern: 'بویمن', name: 'بویمن' },
     { pattern: 'boyman', name: 'بویمن' },
     { pattern: 'جی بی پی', name: 'جی بی پی' },
     { pattern: 'gbp', name: 'جی بی پی' }
   ];
 
+  // مرتب‌سازی الگوها بر اساس طول (نزولی) برای اولویت با نام‌های بلندتر
+  brandPatterns.sort((a, b) => b.pattern.length - a.pattern.length);
+
   for (const { pattern, name } of brandPatterns) {
-    if (lower.includes(pattern)) {
+    // برای جلوگیری از تداخل "سونی" با "سونیا"، از کلمه کامل استفاده می‌کنیم
+    // در متن فارسی، کلمات با فاصله جدا می‌شوند. می‌توانیم بررسی کنیم که الگو به صورت کلمه مجزا باشد
+    const regex = new RegExp(`\\b${pattern}\\b`, 'i');
+    if (regex.test(lower)) {
       if (IGNORED_BRANDS.includes(name)) return 'متفرقه';
       return name;
     }
@@ -90,11 +108,20 @@ function extractBrandFromTitle(title) {
 function extractSize(title) {
   if (!title || typeof title !== 'string') return 'نامشخص';
 
+  // الگوهای اصلی (با ذکر "اینچ" یا "سایز")
   const patterns = [
-    /(\d{2,3})\s*اینچ/i, /(\d{2,3})\s*اینج/i, /سایز\s*(\d{2,3})/i,
-    /اندازه\s*(\d{2,3})/i, /(\d{2,3})\s*["']?اینچ/i, /[\d۰-۹]{2,3}\s*اینچ/i,
-    /سایز\s*[\d۰-۹]{2,3}\s*اینچ/i, /(\d{2,3})[\s_-]?اینچ/i, /(\d{2,3})"/i,
-    /(\d{2,3})''/i, /(\d{2,3})\s*inch/i, /(\d{2,3})[\s_-]?inch/i
+    /(\d{2,3})\s*اینچ/i,
+    /(\d{2,3})\s*اینج/i,
+    /سایز\s*(\d{2,3})/i,
+    /اندازه\s*(\d{2,3})/i,
+    /(\d{2,3})\s*["']?اینچ/i,
+    /[\d۰-۹]{2,3}\s*اینچ/i,
+    /سایز\s*[\d۰-۹]{2,3}\s*اینچ/i,
+    /(\d{2,3})[\s_-]?اینچ/i,
+    /(\d{2,3})"/i,
+    /(\d{2,3})''/i,
+    /(\d{2,3})\s*inch/i,
+    /(\d{2,3})[\s_-]?inch/i
   ];
 
   for (const pattern of patterns) {
@@ -106,11 +133,23 @@ function extractSize(title) {
     }
   }
 
+  // اگر الگوهای اصلی پیدا نشد، به دنبال اعداد تنها می‌گردیم
+  // اما فقط اعدادی که به صورت کلمه مستقل باشند (نه بخشی از مدل مثل S30)
+  const standaloneNumbers = title.match(/\b(\d{2,3})\b/g);
+  if (standaloneNumbers) {
+    for (let numStr of standaloneNumbers) {
+      const num = parseInt(numStr, 10);
+      if (num >= 24 && num <= 100) return num.toString();
+    }
+  }
+
+  // بررسی اعداد در عنوان برای مدل‌های تلویزیون (به عنوان آخرین راه، اما با دقت کمتر)
   const numbers = title.match(/\d{2,3}/g);
   if (numbers) {
     for (let num of numbers) {
       const n = parseInt(num, 10);
-      if (n >= 24 && n <= 100) return n.toString();
+      // فقط اگر عدد بین 40 و 100 باشد و در مجاورت حرف نباشد؟ اینجا سخت است، فعلاً همین.
+      if (n >= 40 && n <= 100) return n.toString();
     }
   }
   
@@ -128,6 +167,23 @@ function extractTech(title) {
       (lower.includes('o') && lower.includes('led'))) return 'OLED';
   
   return 'LED';
+}
+
+// تابع بررسی اعتبار محصول (آیا باید نمایش داده شود؟)
+function isValidProduct(item) {
+  const title = item.name || '';
+  // حذف محصولات با کلمات کلیدی ممنوع
+  for (const kw of EXCLUDE_KEYWORDS) {
+    if (title.includes(kw)) return false;
+  }
+  // حذف محصولات با سایز کمتر از 24 اینچ (به جز مواردی که سایز نامشخص است)
+  if (item.size !== 'نامشخص') {
+    const sizeNum = parseInt(item.size, 10);
+    if (!isNaN(sizeNum) && (sizeNum < 24 || sizeNum > 100)) return false;
+  }
+  // حذف برند پاورولوژی (اگر تشخیص داده شود)
+  if (title.toLowerCase().includes('powerology') || title.includes('پاورولوژی')) return false;
+  return true;
 }
 
 function loadData(raw, source = 'digikala') {
@@ -150,7 +206,15 @@ function loadData(raw, source = 'digikala') {
 
       if (price_num <= 0) return null;
 
-      return { name: title || 'نام محصول نامشخص', brand, link, price_num, sellers, size, tech };
+      return { 
+        name: title || 'نام محصول نامشخص', 
+        brand, 
+        link, 
+        price_num, 
+        sellers, 
+        size, 
+        tech 
+      };
     }).filter(item => item !== null);
   } else {
     processed = raw.map(item => {
@@ -180,6 +244,9 @@ function loadData(raw, source = 'digikala') {
       };
     }).filter(d => d.price_num > 0);
   }
+
+  // فیلتر نهایی: حذف محصولات نامعتبر
+  processed = processed.filter(isValidProduct);
 
   currentData[source] = processed;
   localStorage.setItem(`daily_prices_${source}`, JSON.stringify(processed));
@@ -239,8 +306,8 @@ function renderBrandAvgChart(data) {
   const values = chartData.map(d => d.value);
   const backgroundColors = chartData.map(d => {
     if (d.brand === 'اسنوا') return '#4CAF50';      // سبز
-    if (d.brand === 'دوو') return '#F44336';        // قرمز (به جای نارنجی)
-    return '#42A5F5';                                // آبی روشن
+    if (d.brand === 'دوو') return '#F44336';        // قرمز
+    return '#42A5F5';                                // آبی
   });
 
   chartBrandAvg = new Chart(ctx, {
@@ -258,6 +325,7 @@ function renderBrandAvgChart(data) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      font: { family: 'Vazir, Tahoma, sans-serif' },
       scales: { y: { beginAtZero: true, ticks: { callback: v => toPersianDigits(v) + ' تومان' } } },
       plugins: { tooltip: { callbacks: { label: ctx => `میانگین: ${toPersianDigits(ctx.raw)} تومان` } } }
     }
@@ -299,6 +367,7 @@ function renderSizeAvgChart(data) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      font: { family: 'Vazir, Tahoma, sans-serif' },
       scales: { y: { beginAtZero: true, ticks: { callback: v => toPersianDigits(v) + ' تومان' } } },
       plugins: { tooltip: { callbacks: { label: ctx => `میانگین: ${toPersianDigits(ctx.raw)} تومان` } } }
     }
@@ -337,6 +406,7 @@ function renderBrandCountChart(data) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      font: { family: 'Vazir, Tahoma, sans-serif' },
       scales: { y: { beginAtZero: true, ticks: { callback: v => toPersianDigits(v) } } },
       plugins: { tooltip: { callbacks: { label: ctx => `تعداد: ${toPersianDigits(ctx.raw)}` } } }
     }
@@ -398,7 +468,7 @@ function updateUI() {
   }
 
   renderTable(data);
-  renderAllCharts(data);  // رسم هر سه نمودار
+  renderAllCharts(data);
 }
 
 function sortData(data) {
