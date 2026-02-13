@@ -1,158 +1,19 @@
-* {
-  font-family: 'Vazirmatn', system-ui, sans-serif;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 body {
-  background: #f8f9fa;
-  color: #1f2937;
-  padding: 20px;
+  font-family: 'Vazirmatn', system-ui, sans-serif;
 }
 
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
+th[data-col] {
+  position: relative;
 }
 
-h1 {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #1e3a8a;
-}
-
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  margin-bottom: 30px;
-}
-
-.filter-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.filter-group label {
-  font-weight: 600;
-  min-width: 80px;
-}
-
-input, select, button {
-  padding: 10px 14px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 15px;
-}
-
-button {
-  background: #2563eb;
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-button:hover {
-  background: #1d4ed8;
-}
-
-#clear-filters {
-  background: #ef4444;
-}
-
-#clear-filters:hover {
-  background: #dc2626;
-}
-
-.tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 20px;
-}
-
-.tab {
-  padding: 12px 28px;
-  background: #e2e8f0;
-  border: none;
-  border-radius: 8px 8px 0 0;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.tab.active {
-  background: #2563eb;
-  color: white;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-}
-
-th, td {
-  padding: 14px 12px;
-  text-align: right;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-th {
-  background: #1e40af;
-  color: white;
-  cursor: pointer;
-}
-
-#pagination {
-  margin: 30px 0;
-  text-align: center;
-}
-
-#pagination button {
-  margin: 0 5px;
-  padding: 8px 14px;
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-#pagination button.active {
-  background: #2563eb;
-  color: white;
-  border-color: #2563eb;
-}
-
-.charts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 25px;
-  margin-top: 40px;
-}
-
-canvas {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-}
-
-#stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  margin-bottom: 30px;
+th[data-col]::after {
+  content: '↕';
+  position: absolute;
+  right: 12px;
+  opacity: 0.4;
+  font-size: 12px;
 }
