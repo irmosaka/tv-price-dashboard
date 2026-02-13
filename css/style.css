@@ -2,7 +2,7 @@
 @import url('https://cdn.jsdelivr.net/npm/vazirmatn@33.003/Vazirmatn-font-face.css');
 
 body {
-  font-family: 'Vazirmatn', system-ui, sans-serif;
+  body { font-family: 'Vazirmatn', sans-serif; }
   direction: rtl;
   background: #f8f9fa;
   margin: 0;
