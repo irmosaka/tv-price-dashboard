@@ -11,7 +11,7 @@ const TOROB_BRANDS = [
   "ورلد استار", "پارس", "پاناسونیک"
 ];
 
-let myChart = null; // برای ذخیره نمودار
+let myChart = null;
 
 function toPersianDigits(num) {
   if (num === '—' || num === null || num === undefined) return '—';
@@ -21,14 +21,11 @@ function toPersianDigits(num) {
 function extractBrandFromTitle(title) {
   if (!title || typeof title !== 'string' || !title.trim()) return 'متفرقه';
   
-  // اول برندهای خاص را چک می‌کنیم
   const lower = title.toLowerCase();
   
-  // ابتدا سامسونگ را چک می‌کنیم (قبل از سام الکترونیک)
   if (lower.includes('سامسونگ')) return 'سامسونگ';
   if (lower.includes('سام الکترونیک')) return 'سام الکترونیک';
   
-  // بقیه برندها
   for (const brand of TOROB_BRANDS) {
     if (lower.includes(brand.toLowerCase())) {
       return brand;
@@ -136,10 +133,10 @@ function updateStats(data) {
   document.getElementById('total-items').textContent = toPersianDigits(data.length);
   document.getElementById('total-sellers').textContent = toPersianDigits(data.reduce((sum, item) => sum + item.sellers, 0));
   document.getElementById('total-brands').textContent = toPersianDigits([...new Set(data.map(item => item.brand))].length);
+  document.getElementById('product-count').textContent = data.length;
 }
 
 function updateSortIcons() {
-  // حذف همه فلش‌های قبلی
   document.querySelectorAll('th[data-col]').forEach(th => {
     const existingIcon = th.querySelector('.sort-icon');
     if (existingIcon) {
@@ -147,15 +144,14 @@ function updateSortIcons() {
     }
   });
 
-  // اضافه کردن فلش جدید برای ستون مرتب‌شده
   if (sortCol) {
     const th = document.querySelector(`th[data-col="${sortCol}"]`);
     if (th) {
       const icon = document.createElement('span');
       icon.className = 'sort-icon';
       icon.textContent = sortDir === 'asc' ? ' ↑' : ' ↓';
-      icon.style.marginRight = '5px';
-      th.insertBefore(icon, th.firstChild);
+      icon.style.marginLeft = '5px';
+      th.appendChild(icon);
     }
   }
 }
@@ -167,12 +163,10 @@ function renderChart(data) {
     return;
   }
 
-  // اگر نمودار قبلی وجود دارد، آن را از بین ببریم
   if (myChart) {
     myChart.destroy();
   }
 
-  // گروه‌بندی داده‌ها بر اساس برند و محاسبه میانگین قیمت
   const brandGroups = {};
   data.forEach(item => {
     if (item.brand && item.price_num > 0) {
@@ -187,14 +181,13 @@ function renderChart(data) {
     }
   });
 
-  // تبدیل به آرایه و مرتب‌سازی
   const chartData = Object.entries(brandGroups)
     .map(([brand, stats]) => ({
       brand,
       avgPrice: Math.round(stats.total / stats.count)
     }))
     .sort((a, b) => b.avgPrice - a.avgPrice)
-    .slice(0, 10); // فقط 10 برند برتر
+    .slice(0, 10);
 
   const labels = chartData.map(item => item.brand);
   const prices = chartData.map(item => item.avgPrice);
@@ -207,13 +200,15 @@ function renderChart(data) {
         datasets: [{
           label: 'میانگین قیمت (تومان)',
           data: prices,
-          backgroundColor: 'rgba(54, 162, 235, 0.5)',
-          borderColor: 'rgba(54, 162, 235, 1)',
-          borderWidth: 1
+          backgroundColor: 'rgba(102, 126, 234, 0.7)',
+          borderColor: 'rgba(102, 126, 234, 1)',
+          borderWidth: 2,
+          borderRadius: 5
         }]
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         scales: {
           y: {
             beginAtZero: true,
@@ -249,14 +244,23 @@ function renderChart(data) {
 
 function updateUI() {
   const data = currentData[currentTab] || [];
+  
+  if (currentTab === 'torob') {
+    document.getElementById('table-header-digikala').style.display = 'none';
+    document.getElementById('table-header-torob').style.display = '';
+  } else {
+    document.getElementById('table-header-digikala').style.display = '';
+    document.getElementById('table-header-torob').style.display = 'none';
+  }
+  
   if (data.length === 0) {
-    document.querySelector('#product-table tbody').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px;">هیچ داده‌ای موجود نیست</td></tr>';
+    document.querySelector('#product-table tbody').innerHTML = '<tr><td colspan="8" style="text-align:center; padding:40px;">هیچ داده‌ای موجود نیست. لطفاً فایل JSON را بارگذاری کنید.</td></tr>';
     document.getElementById('pagination').innerHTML = '';
     return;
   }
 
   updateStats(data);
-  document.getElementById('last-update').textContent = `آخرین بروزرسانی: ${new Date().toLocaleString('fa-IR')}`;
+  document.getElementById('last-update').textContent = new Date().toLocaleString('fa-IR');
 
   const sizes = [...new Set(data.map(d => d.size).filter(s => s !== 'نامشخص'))]
     .map(s => {
@@ -292,13 +296,11 @@ function sortData(data) {
     let aVal = a[sortCol];
     let bVal = b[sortCol];
 
-    // برای مقادیر عددی
     if (sortCol.includes('price') || sortCol.includes('sellers') || sortCol === 'size') {
       aVal = typeof aVal === 'string' ? parseFloat(aVal) || 0 : aVal || 0;
       bVal = typeof bVal === 'string' ? parseFloat(bVal) || 0 : bVal || 0;
     }
 
-    // برای مقادیر متنی
     if (typeof aVal === 'string' && typeof bVal === 'string') {
       aVal = aVal.toLocaleLowerCase('fa');
       bVal = bVal.toLocaleLowerCase('fa');
@@ -311,12 +313,10 @@ function sortData(data) {
 }
 
 function renderTable(data, page = currentPage) {
-  // مرتب‌سازی داده‌ها
   const sortedData = sortData(data);
   
   const tbody = document.querySelector('#product-table tbody');
   
-  // فقط داده‌های صفحه جاری را نشان بده
   const start = (page - 1) * rowsPerPage;
   const end = start + rowsPerPage;
   const visibleData = sortedData.slice(start, end);
@@ -331,7 +331,7 @@ function renderTable(data, page = currentPage) {
           <td>${item.brand}</td>
           <td>${toPersianDigits(item.price_num)} تومان</td>
           <td>${toPersianDigits(item.sellers)} فروشنده</td>
-          <td><a href="${item.link}" target="_blank">مشاهده</a></td>
+          <td><a href="${item.link}" target="_blank" class="product-link">مشاهده</a></td>
         </tr>
       `;
     } else {
@@ -344,18 +344,16 @@ function renderTable(data, page = currentPage) {
           <td>${item.discount}</td>
           <td>${item.rating}</td>
           <td>${item.stock}</td>
-          <td><a href="${item.link}" target="_blank">مشاهده</a></td>
+          <td><a href="${item.link}" target="_blank" class="product-link">مشاهده</a></td>
         </tr>
       `;
     }
   }).join('');
 
-  // به‌روزرسانی صفحه‌بندی فقط بر اساس داده‌های فیلترشده
   const totalPages = Math.ceil(sortedData.length / rowsPerPage);
   const pagination = document.getElementById('pagination');
   pagination.innerHTML = '';
   
-  // محدود کردن تعداد دکمه‌های صفحه
   const maxVisiblePages = 5;
   let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
   let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
@@ -364,7 +362,6 @@ function renderTable(data, page = currentPage) {
     startPage = Math.max(1, endPage - maxVisiblePages + 1);
   }
   
-  // دکمه صفحه اول
   if (startPage > 1) {
     const firstBtn = document.createElement('button');
     firstBtn.textContent = '۱';
@@ -379,7 +376,6 @@ function renderTable(data, page = currentPage) {
     }
   }
   
-  // صفحات میانی
   for (let i = startPage; i <= endPage; i++) {
     const btn = document.createElement('button');
     btn.textContent = toPersianDigits(i);
@@ -388,7 +384,6 @@ function renderTable(data, page = currentPage) {
     pagination.appendChild(btn);
   }
   
-  // دکمه صفحه آخر
   if (endPage < totalPages) {
     if (endPage < totalPages - 1) {
       const ellipsis = document.createElement('span');
@@ -403,7 +398,6 @@ function renderTable(data, page = currentPage) {
     pagination.appendChild(lastBtn);
   }
 
-  // به‌روزرسانی فلش‌های مرتب‌سازی
   updateSortIcons();
 }
 
@@ -458,13 +452,11 @@ function sortTable(col) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // بارگذاری Chart.js اگر وجود ندارد
   if (typeof Chart === 'undefined') {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
     script.onload = () => {
       console.log('Chart.js loaded successfully');
-      // اگر داده‌ای وجود دارد، نمودار را رسم کن
       if (currentData[currentTab] && currentData[currentTab].length > 0) {
         renderChart(currentData[currentTab]);
       }
@@ -472,7 +464,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.head.appendChild(script);
   }
 
-  // مدیریت تب‌ها
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -485,18 +476,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // رویدادهای مرتب‌سازی برای هدر جدول
   document.querySelectorAll('th[data-col]').forEach(th => {
     th.addEventListener('click', () => sortTable(th.dataset.col));
   });
 
-  // رویدادهای فیلترها
   ['price-filter', 'size-filter', 'brand-filter', 'tech-filter'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', applyFilters);
     document.getElementById(id)?.addEventListener('change', applyFilters);
   });
 
-  // به‌روزرسانی مقدار فیلتر قیمت
   const priceFilter = document.getElementById('price-filter');
   const filterValue = document.getElementById('filter-value');
   if (priceFilter && filterValue) {
@@ -505,7 +493,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // پاک کردن فیلترها
   document.getElementById('clear-filters')?.addEventListener('click', () => {
     document.getElementById('price-filter').value = 0;
     document.getElementById('size-filter').value = '';
@@ -520,7 +507,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUI();
   });
 
-  // آپلود فایل
   document.getElementById('upload-btn')?.addEventListener('click', () => {
     document.getElementById('file-input')?.click();
   });
@@ -562,6 +548,5 @@ document.addEventListener('DOMContentLoaded', () => {
     reader.readAsText(file);
   });
 
-  // بارگذاری اولیه
   updateUI();
 });
