@@ -5,7 +5,7 @@ let rowsPerPage = 20;
 let sortCol = 'price_num';
 let sortDir = 'asc';
 
-// لیست برندها به ترتیب حروف الفبا (مرتب شده)
+// لیست برندها به ترتیب حروف الفبا (مرتب شده با localeCompare)
 const TOROB_BRANDS = [
   "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "پارس", "پاناسونیک",
   "تی سی ال", "جی بی پی", "جی پلاس", "جی وی سی", "دوو", "سام الکترونیک", "سامسونگ",
@@ -13,7 +13,7 @@ const TOROB_BRANDS = [
 ].sort((a, b) => a.localeCompare(b, 'fa'));
 
 // برندهایی که باید به عنوان متفرقه دسته‌بندی شوند
-const IGNORED_BRANDS = ["بویمن", "جی بی پی", "لیماک جنرال اینترنشنال"];
+const IGNORED_BRANDS = ["بویمن", "جی بی پی", "لیماک جنرال اینترنشنال", "ورلد استار"];
 
 let myChart = null;
 
@@ -29,14 +29,19 @@ function extractBrandFromTitle(title) {
   
   // تشخیص برند سام الکترونیک (با دقت بالا و جلوگیری از تداخل با برندهای دیگر)
   if (lower.includes('سام') && !lower.includes('سامسونگ') && (lower.includes('ua') || lower.includes('qa'))) {
-    // اطمینان از اینکه برند دیگری مانند ال‌جی نیست (ال‌جی نیز ممکن است UA داشته باشد)
+    // اطمینان از اینکه برند دیگری مانند ال‌جی نیست
     if (!lower.includes('lg') && !lower.includes('ال جی') && !lower.includes('ال‌جی')) {
       return 'سام الکترونیک';
     }
   }
   
-  // برندهای ویژه با الگوهای دقیق
+  // برندهای ویژه با الگوهای دقیق (الویت با نام‌های طولانی‌تر)
   const brandPatterns = [
+    // برندهای با نام بلند (برای جلوگیری از تشخیص نادرست)
+    { pattern: 'لیماک جنرال اینترنشنال', name: 'لیماک جنرال اینترنشنال' },
+    { pattern: 'limak general international', name: 'لیماک جنرال اینترنشنال' },
+    { pattern: 'ورلد استار', name: 'ورلد استار' },
+    { pattern: 'worldstar', name: 'ورلد استار' },
     { pattern: 'پاناسونیک', name: 'پاناسونیک' },
     { pattern: 'panasonic', name: 'پاناسونیک' },
     { pattern: 'پارس', name: 'پارس' },
@@ -65,8 +70,10 @@ function extractBrandFromTitle(title) {
     { pattern: 'jvc', name: 'جی وی سی' },
     { pattern: 'نکسار', name: 'نکسار' },
     { pattern: 'nexar', name: 'نکسار' },
-    { pattern: 'ورلد استار', name: 'ورلد استار' },
-    { pattern: 'worldstar', name: 'ورلد استار' }
+    { pattern: 'بویمن', name: 'بویمن' },
+    { pattern: 'boyman', name: 'بویمن' },
+    { pattern: 'جی بی پی', name: 'جی بی پی' },
+    { pattern: 'gbp', name: 'جی بی پی' }
   ];
 
   // بررسی الگوها
@@ -131,14 +138,14 @@ function extractTech(title) {
       lower.includes('q led') ||
       lower.includes('کیوال‌ایدی') ||
       lower.includes('کیوال‌ایدی') ||
-      lower.includes('q') && lower.includes('led')) {
+      (lower.includes('q') && lower.includes('led'))) {
     return 'QLED';
   }
   
   if (lower.includes('oled') || 
       lower.includes('اولد') ||
       lower.includes('او ال ای دی') ||
-      lower.includes('o') && lower.includes('led')) {
+      (lower.includes('o') && lower.includes('led'))) {
     return 'OLED';
   }
   
@@ -411,8 +418,10 @@ function sortData(data) {
     }
 
     if (typeof aVal === 'string' && typeof bVal === 'string') {
-      aVal = aVal.toLocaleLowerCase('fa');
-      bVal = bVal.toLocaleLowerCase('fa');
+      // مرتب‌سازی صحیح فارسی با localeCompare
+      return sortDir === 'asc' 
+        ? aVal.localeCompare(bVal, 'fa') 
+        : bVal.localeCompare(aVal, 'fa');
     }
 
     if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
