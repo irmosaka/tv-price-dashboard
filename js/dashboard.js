@@ -1,7 +1,9 @@
-// js/dashboard.js - نسخه نهایی با فیکس تب، فونت و رندر
+// js/dashboard.js - نسخه خفن نهایی
 
-let currentData = { digikala: [], torob: [] };
-let currentTab = 'torob'; // پیش‌فرض ترب
+let currentData = { torob: [], digikala: [] };
+let currentTab = 'torob';
+let currentPage = 1;
+const rowsPerPage = 20;
 
 const TOROB_BRANDS = [
   "سامسونگ", "سام الکترونیک", "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "تی سی ال",
@@ -9,19 +11,17 @@ const TOROB_BRANDS = [
   "ورلد استار", "پارس", "پاناسونیک"
 ];
 
-function toPersianDigits(num) {
-  if (num === '—' || num === null || num === undefined) return '—';
-  return num.toLocaleString('fa-IR');
+function toPersianDigits(n) {
+  if (n == null) return '—';
+  return n.toLocaleString('fa-IR');
 }
 
 function extractBrand(title) {
   if (!title) return 'متفرقه';
-  const lower = title.toLowerCase();
-  if (lower.includes('سامسونگ')) return 'سامسونگ';
-  if (lower.includes('سام الکترونیک') || lower.includes('سام')) return 'سام الکترونیک'; // ← فیکس سام
-  for (const b of TOROB_BRANDS) {
-    if (lower.includes(b.toLowerCase())) return b;
-  }
+  const l = title.toLowerCase();
+  if (l.includes('سامسونگ')) return 'سامسونگ';
+  if (l.includes('سام الکترونیک') || l.includes('سام')) return 'سام الکترونیک';
+  for (const b of TOROB_BRANDS) if (l.includes(b.toLowerCase())) return b;
   return 'متفرقه';
 }
 
@@ -32,90 +32,51 @@ function extractSize(title) {
                 .replace(/\s+/g, ' ')
                 .trim();
 
-  const m = n.match(/(\d{2,3})\s*(?:اینچ|اینج)|سایز\s*(\d{2,3})|اندازه\s*(\d{2,3})/i);
+  const m = n.match(/(\d{2,3})\s*اینچ|سایز\s*(\d{2,3})|اندازه\s*(\d{2,3})/i);
   if (m) {
-    const numStr = (m[1] || m[2] || m[3]).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
-    const num = parseInt(numStr, 10);
+    const num = parseInt((m[1] || m[2] || m[3]).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)), 10);
     if (num >= 32 && num <= 100) return num.toString();
   }
   return 'نامشخص';
 }
 
-function extractTech(title) {
-  const l = (title || '').toLowerCase();
-  if (l.includes('qled') || l.includes('کیوالایدی')) return 'QLED';
-  if (l.includes('oled') || l.includes('اولد')) return 'OLED';
-  return 'LED';
-}
-
 function loadData(raw, source) {
-  let processed = [];
-
-  if (source === 'torob') {
-    processed = raw.map(item => {
-      const title = String(item['ProductCard_desktop_product-name__JwqeK'] || '').trim();
-      const brand = extractBrand(title);
-      const size = extractSize(title);
-      const tech = extractTech(title);
-
-      let price_num = parseInt(String(item['ProductCard_desktop_product-price-text__y20OV'] || '0')
-        .replace(/[^0-9۰-۹]/g, '')
-        .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
-
-      let sellers = parseInt(String(item['ProductCard_desktop_shops__mbtsF'] || '0')
-        .replace(/[^0-9۰-۹]/g, '')
-        .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
-
-      const link = item['ProductCards_cards__MYvdn href'] || '#';
-
-      if (price_num <= 0) return null;
-
-      return { name: title, brand, link, price_num, sellers, size, tech };
-    }).filter(Boolean);
-  } else {
-    processed = raw.map(item => {
-      const title = item['ellipsis-2'] || 'نامشخص';
-      const brand = extractBrand(title);
-      const size = extractSize(title);
-      const tech = extractTech(title);
-      let price_num = parseInt(String(item['flex'] || '0').replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
-      let original_price_num = parseInt(String(item['text-neutral-300'] || '0').replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
-
-      return {
-        name: title,
-        brand,
-        link: item['block href'] || '#',
-        stock: item['text-caption'] || 'نامشخص',
-        rating: item['text-body2-strong'] || '—',
-        discount: item['text-body2-strong (2)'] || '—',
-        price_num,
-        original_price_num,
-        sellers: 1,
-        size,
-        tech
-      };
-    }).filter(d => d.price_num > 0);
-  }
+  const processed = source === 'torob' ? raw.map(item => {
+    const title = (item['ProductCard_desktop_product-name__JwqeK'] || '').trim();
+    return {
+      name: title || 'نامشخص',
+      brand: extractBrand(title),
+      price: parseInt((item['ProductCard_desktop_product-price-text__y20OV'] || '0').replace(/[^0-9]/g,'')) || 0,
+      sellers: parseInt((item['ProductCard_desktop_shops__mbtsF'] || '0').replace(/[^0-9]/g,'')) || 0,
+      link: item['ProductCards_cards__MYvdn href'] || '#',
+      size: extractSize(title)
+    };
+  }).filter(i => i.price > 0) : [];
 
   currentData[source] = processed;
-  currentTab = source; // ← تب رو به منبع فایل تغییر می‌ده
-  updateUI();
+  currentTab = source;
+  renderUI();
 }
 
-function updateUI() {
+function renderUI() {
   const data = currentData[currentTab] || [];
-  if (data.length === 0) {
-    document.querySelector('#product-table tbody').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:50px;">هیچ داده‌ای موجود نیست</td></tr>';
+  if (!data.length) {
+    document.querySelector('#product-table tbody').innerHTML = '<tr><td colspan="5" class="text-center py-20 text-slate-500 dark:text-slate-400">هیچ داده‌ای موجود نیست</td></tr>';
     document.getElementById('pagination').innerHTML = '';
     return;
   }
 
-  updateStats(data);
-  document.getElementById('last-update').textContent = `آخرین بروزرسانی: ${new Date().toLocaleString('fa-IR')}`;
+  // Stats
+  const prices = data.map(i => i.price).filter(p => p > 0);
+  document.getElementById('avg-price').textContent = toPersianDigits(prices.length ? Math.round(prices.reduce((a,b)=>a+b,0)/prices.length) : 0) + ' تومان';
+  document.getElementById('total-items').textContent = toPersianDigits(data.length);
+  document.getElementById('total-sellers').textContent = toPersianDigits(data.reduce((s,i)=>s+i.sellers,0));
+  document.getElementById('total-brands').textContent = toPersianDigits(new Set(data.map(i=>i.brand)).size);
 
+  // Filters
   const sizes = [...new Set(data.map(d => d.size).filter(Boolean))]
-    .map(s => parseInt(s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)), 10))
-    .filter(n => !isNaN(n) && n >= 32 && n <= 100)
+    .map(s => parseInt(s, 10))
+    .filter(n => !isNaN(n))
     .sort((a,b)=>a-b);
 
   document.getElementById('size-filter').innerHTML = '<option value="">همه سایزها</option>' + 
@@ -123,84 +84,41 @@ function updateUI() {
 
   const brandSelect = document.getElementById('brand-filter');
   brandSelect.innerHTML = '<option value="">همه برندها</option>';
-  const brands = currentTab === 'torob' ? TOROB_BRANDS : [...new Set(data.map(d => d.brand).filter(b => b !== 'متفرقه'))];
-  brands.sort((a,b)=>a.localeCompare(b,'fa')).forEach(b => {
+  (currentTab === 'torob' ? TOROB_BRANDS : [...new Set(data.map(d => d.brand))]).forEach(b => {
     brandSelect.innerHTML += `<option value="${b}">${b}</option>`;
   });
-
-  const techSelect = document.getElementById('tech-filter');
-  techSelect.innerHTML = '<option value="">همه تکنولوژی‌ها</option>';
-  const techs = [...new Set(data.map(d => d.tech))].sort();
-  techs.forEach(t => techSelect.innerHTML += `<option value="${t}">${t}</option>`);
 
   renderTable(data);
 }
 
 function renderTable(data) {
   const tbody = document.querySelector('#product-table tbody');
-  const isTorob = currentTab === 'torob';
-
-  tbody.innerHTML = data.map(item => isTorob ? `
-    <tr>
-      <td>${item.name}</td>
-      <td>${item.brand}</td>
-      <td>${toPersianDigits(item.price_num)} تومان</td>
-      <td>${toPersianDigits(item.sellers)} فروشنده</td>
-      <td><a href="${item.link}" target="_blank">مشاهده</a></td>
-    </tr>
-  ` : `
-    <tr>
-      <td>${item.name}</td>
-      <td>${item.brand}</td>
-      <td>${toPersianDigits(item.price_num)} تومان</td>
-      <td>${toPersianDigits(item.original_price_num)} تومان</td>
-      <td>${item.discount}</td>
-      <td>${item.rating}</td>
-      <td>${item.stock}</td>
-      <td><a href="${item.link}" target="_blank">مشاهده</a></td>
+  tbody.innerHTML = data.map(item => `
+    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
+      <td class="px-6 py-4 whitespace-nowrap">${item.name}</td>
+      <td class="px-6 py-4 whitespace-nowrap font-medium">${item.brand}</td>
+      <td class="px-6 py-4 whitespace-nowrap">${toPersianDigits(item.price)} تومان</td>
+      <td class="px-6 py-4 whitespace-nowrap">${toPersianDigits(item.sellers)} فروشنده</td>
+      <td class="px-6 py-4 whitespace-nowrap">
+        <a href="${item.link}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">مشاهده</a>
+      </td>
     </tr>
   `).join('');
-}
 
-function updateStats(data) {
-  const prices = data.map(i => i.price_num).filter(p => p > 0);
-  const avg = prices.length ? Math.round(prices.reduce((a,b)=>a+b,0)/prices.length) : 0;
-  document.getElementById('avg-price').textContent = toPersianDigits(avg) + ' تومان';
-  document.getElementById('total-items').textContent = toPersianDigits(data.length);
-  document.getElementById('total-sellers').textContent = toPersianDigits(data.reduce((s,i)=>s+(i.sellers||0),0));
-  document.getElementById('total-brands').textContent = toPersianDigits(new Set(data.map(i=>i.brand)).size);
-}
-
-function applyFilters() {
-  const data = currentData[currentTab] || [];
-  const filtered = getFilteredData(data);
-  updateStats(filtered);
-  renderTable(filtered);
-}
-
-function getFilteredData(data) {
-  let filtered = [...data];
-
-  const search = document.getElementById('search-input')?.value?.trim().toLowerCase();
-  if (search) {
-    filtered = filtered.filter(item => 
-      item.name.toLowerCase().includes(search) || item.brand.toLowerCase().includes(search)
-    );
+  // Pagination (ساده ولی خفن)
+  const totalPages = Math.ceil(data.length / rowsPerPage);
+  const pagination = document.getElementById('pagination');
+  pagination.innerHTML = '';
+  for (let i = 1; i <= totalPages; i++) {
+    const btn = document.createElement('button');
+    btn.className = `px-4 py-2 rounded-lg ${i === currentPage ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600'}`;
+    btn.textContent = i;
+    btn.onclick = () => {
+      currentPage = i;
+      renderTable(data);
+    };
+    pagination.appendChild(btn);
   }
-
-  const minPrice = parseInt(document.getElementById('price-filter')?.value) || 0;
-  if (minPrice > 0) filtered = filtered.filter(i => i.price_num >= minPrice);
-
-  const size = document.getElementById('size-filter')?.value;
-  if (size) filtered = filtered.filter(i => i.size === size);
-
-  const brand = document.getElementById('brand-filter')?.value;
-  if (brand) filtered = filtered.filter(i => i.brand === brand);
-
-  const tech = document.getElementById('tech-filter')?.value;
-  if (tech) filtered = filtered.filter(i => i.tech === tech);
-
-  return filtered;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -209,34 +127,25 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       currentTab = tab.dataset.tab;
-      updateUI();
+      renderUI();
     });
   });
 
-  document.getElementById('upload-btn').addEventListener('click', () => {
-    document.getElementById('file-input').click();
-  });
+  document.getElementById('upload-btn').addEventListener('click', () => document.getElementById('file-input').click());
 
   document.getElementById('file-input').addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
 
-    let source = 'digikala';
-    if (file.name.toLowerCase().startsWith('torob')) source = 'torob';
+    let source = file.name.toLowerCase().startsWith('torob') ? 'torob' : 'digikala';
 
     const reader = new FileReader();
     reader.onload = ev => {
       try {
-        let text = ev.target.result.trim();
-        if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-        if (text.endsWith(',]')) text = text.slice(0, -2) + ']';
-
-        const json = JSON.parse(text);
+        const json = JSON.parse(ev.target.result);
         loadData(json, source);
-        alert(`داده‌های ${source} لود شد (${json.length} محصول)`);
-        e.target.value = '';
       } catch (err) {
-        alert('خطا در فایل: ' + err.message);
+        alert('فایل مشکل دارد: ' + err.message);
       }
     };
     reader.readAsText(file);
@@ -248,22 +157,22 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('size-filter').value = '';
     document.getElementById('brand-filter').value = '';
     document.getElementById('tech-filter').value = '';
-    updateUI();
+    renderUI();
   });
 
   ['search-input','price-filter','size-filter','brand-filter','tech-filter'].forEach(id => {
-    document.getElementById(id)?.addEventListener('input', updateUI);
+    document.getElementById(id).addEventListener('input', renderUI);
   });
 
   document.getElementById('download-excel').addEventListener('click', () => {
     const data = currentData[currentTab] || [];
-    if (!data.length) return alert('هیچ داده‌ای وجود ندارد');
+    if (!data.length) return alert('داده‌ای وجود ندارد');
 
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, currentTab);
-    XLSX.writeFile(wb, `${currentTab}_prices.xlsx`);
+    XLSX.writeFile(wb, `${currentTab}_prices_${new Date().toISOString().slice(0,10)}.xlsx`);
   });
 
-  updateUI();
+  renderUI();
 });
