@@ -2,8 +2,8 @@ let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
 let currentPage = 1;
 let rowsPerPage = 20;
-let sortCol = null;
-let sortDir = 'asc';
+let sortCol = 'price_num';  // پیش‌فرض مرتب‌سازی بر اساس قیمت
+let sortDir = 'asc';        // صعودی
 
 const TOROB_BRANDS = [
   "سامسونگ", "سام الکترونیک", "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "تی سی ال",
@@ -23,8 +23,16 @@ function extractBrandFromTitle(title) {
   
   const lower = title.toLowerCase();
   
+  // برندهای خاص با اولویت بالاتر
+  if (lower.includes('سام الکترونیک') || (lower.includes('سام') && !lower.includes('سامسونگ') && lower.includes('ua'))) {
+    return 'سام الکترونیک';
+  }
+  
   if (lower.includes('سامسونگ')) return 'سامسونگ';
-  if (lower.includes('سام الکترونیک')) return 'سام الکترونیک';
+  
+  // برندهای ویژه برای تحلیل
+  if (lower.includes('اسنوا')) return 'اسنوا';
+  if (lower.includes('دوو')) return 'دوو';
   
   for (const brand of TOROB_BRANDS) {
     if (lower.includes(brand.toLowerCase())) {
@@ -38,13 +46,7 @@ function extractBrandFromTitle(title) {
 function extractSize(title) {
   if (!title || typeof title !== 'string') return 'نامشخص';
 
-  let normalized = title
-    .replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d - '0'])
-    .replace(/[\u200C\u200D]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .replace(/["']/g, '')
-    .trim();
-
+  // پشتیبانی از اعداد فارسی و انگلیسی
   const patterns = [
     /(\d{2,3})\s*اینچ/i,
     /(\d{2,3})\s*اینج/i,
@@ -52,24 +54,51 @@ function extractSize(title) {
     /اندازه\s*(\d{2,3})/i,
     /(\d{2,3})\s*["']?اینچ/i,
     /[\d۰-۹]{2,3}\s*اینچ/i,
-    /سایز\s*[\d۰-۹]{2,3}\s*اینچ/i
+    /سایز\s*[\d۰-۹]{2,3}\s*اینچ/i,
+    /(\d{2,3})[\s_-]?اینچ/i,
+    /(\d{2,3})"/i,
+    /(\d{2,3})''/i
   ];
 
   for (const pattern of patterns) {
-    const match = normalized.match(pattern);
+    const match = title.match(pattern);
     if (match && match[1]) {
       let sizeStr = match[1].replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
       const num = parseInt(sizeStr, 10);
-      if (num >= 32 && num <= 100) return num.toString();
+      if (num >= 24 && num <= 100) return num.toString();
     }
   }
+
+  // بررسی اعداد در عنوان برای مدل‌های تلویزیون
+  const numbers = title.match(/\d{2,3}/g);
+  if (numbers) {
+    for (let num of numbers) {
+      const n = parseInt(num, 10);
+      if (n >= 24 && n <= 100) return n.toString();
+    }
+  }
+  
   return 'نامشخص';
 }
 
 function extractTech(title) {
   const lower = (title || '').toLowerCase();
-  if (lower.includes('qled') || lower.includes('کیوالایدی') || lower.includes('q led')) return 'QLED';
-  if (lower.includes('oled') || lower.includes('اولد')) return 'OLED';
+  
+  if (lower.includes('qled') || 
+      lower.includes('کیو ال ای دی') || 
+      lower.includes('کیو‌ال‌ایدی') ||
+      lower.includes('q led') ||
+      lower.includes('کیوال‌ایدی') ||
+      lower.includes('کیوال‌ایدی')) {
+    return 'QLED';
+  }
+  
+  if (lower.includes('oled') || 
+      lower.includes('اولد') ||
+      lower.includes('او ال ای دی')) {
+    return 'OLED';
+  }
+  
   return 'LED';
 }
 
@@ -93,7 +122,15 @@ function loadData(raw, source = 'digikala') {
 
       if (price_num <= 0) return null;
 
-      return { name: title || 'نام محصول نامشخص', brand, link, price_num, sellers, size, tech };
+      return { 
+        name: title || 'نام محصول نامشخص', 
+        brand, 
+        link, 
+        price_num, 
+        sellers, 
+        size, 
+        tech 
+      };
     }).filter(item => item !== null);
   } else {
     processed = raw.map(item => {
@@ -101,10 +138,13 @@ function loadData(raw, source = 'digikala') {
       const brand = extractBrandFromTitle(title);
       const size = extractSize(title);
       const tech = extractTech(title);
+      
       let p = (item['flex'] || '0').toString().replace(/[^0-9۰-۹]/g, '');
       p = p.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+      
       let o = (item['text-neutral-300'] || p).toString().replace(/[^0-9۰-۹]/g, '');
       o = o.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+      
       return {
         name: title,
         brand,
@@ -129,6 +169,7 @@ function loadData(raw, source = 'digikala') {
 function updateStats(data) {
   const prices = data.map(item => item.price_num).filter(p => p > 0);
   const avgPrice = prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0;
+  
   document.getElementById('avg-price').textContent = toPersianDigits(avgPrice) + ' تومان';
   document.getElementById('total-items').textContent = toPersianDigits(data.length);
   document.getElementById('total-sellers').textContent = toPersianDigits(data.reduce((sum, item) => sum + item.sellers, 0));
@@ -167,9 +208,12 @@ function renderChart(data) {
     myChart.destroy();
   }
 
+  // برندهای ویژه برای هایلایت
+  const specialBrands = ['اسنوا', 'دوو'];
+  
   const brandGroups = {};
   data.forEach(item => {
-    if (item.brand && item.price_num > 0) {
+    if (item.brand && item.price_num > 0 && item.brand !== 'متفرقه' && item.brand !== 'نامشخص') {
       if (!brandGroups[item.brand]) {
         brandGroups[item.brand] = {
           total: 0,
@@ -191,6 +235,13 @@ function renderChart(data) {
 
   const labels = chartData.map(item => item.brand);
   const prices = chartData.map(item => item.avgPrice);
+  
+  // رنگ‌بندی ویژه برای برندهای خاص
+  const backgroundColors = chartData.map(item => {
+    if (item.brand === 'اسنوا') return 'rgba(76, 175, 80, 0.8)';  // سبز
+    if (item.brand === 'دوو') return 'rgba(255, 152, 0, 0.8)';   // نارنجی
+    return 'rgba(102, 126, 234, 0.7)';                           // آبی معمولی
+  });
 
   try {
     myChart = new Chart(ctx, {
@@ -200,8 +251,8 @@ function renderChart(data) {
         datasets: [{
           label: 'میانگین قیمت (تومان)',
           data: prices,
-          backgroundColor: 'rgba(102, 126, 234, 0.7)',
-          borderColor: 'rgba(102, 126, 234, 1)',
+          backgroundColor: backgroundColors,
+          borderColor: backgroundColors.map(c => c.replace('0.8', '1').replace('0.7', '1')),
           borderWidth: 2,
           borderRadius: 5
         }]
@@ -223,7 +274,13 @@ function renderChart(data) {
           tooltip: {
             callbacks: {
               label: function(context) {
-                return `میانگین قیمت: ${toPersianDigits(context.raw)} تومان`;
+                const brand = context.label;
+                const value = toPersianDigits(context.raw);
+                let label = `میانگین قیمت: ${value} تومان`;
+                if (brand === 'اسنوا' || brand === 'دوو') {
+                  label = `🔴 ${label} (برند ویژه)`;
+                }
+                return label;
               }
             }
           },
@@ -245,6 +302,7 @@ function renderChart(data) {
 function updateUI() {
   const data = currentData[currentTab] || [];
   
+  // نمایش هدر مناسب
   if (currentTab === 'torob') {
     document.getElementById('table-header-digikala').style.display = 'none';
     document.getElementById('table-header-torob').style.display = '';
@@ -262,17 +320,17 @@ function updateUI() {
   updateStats(data);
   document.getElementById('last-update').textContent = new Date().toLocaleString('fa-IR');
 
+  // به‌روزرسانی فیلتر سایز
+  const sizeFilter = document.getElementById('size-filter');
   const sizes = [...new Set(data.map(d => d.size).filter(s => s !== 'نامشخص'))]
-    .map(s => {
-      let numStr = s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
-      return parseInt(numStr, 10);
-    })
-    .filter(n => !isNaN(n) && n >= 32 && n <= 100)
+    .map(s => parseInt(s, 10))
+    .filter(n => !isNaN(n) && n >= 24 && n <= 100)
     .sort((a, b) => a - b);
 
-  document.getElementById('size-filter').innerHTML = '<option value="">همه سایزها</option>' + 
+  sizeFilter.innerHTML = '<option value="">همه سایزها</option>' + 
     sizes.map(s => `<option value="${s}">${s} اینچ</option>`).join('');
 
+  // به‌روزرسانی فیلتر برند
   const brandSelect = document.getElementById('brand-filter');
   brandSelect.innerHTML = '<option value="">همه برندها</option>';
 
@@ -281,7 +339,8 @@ function updateUI() {
       brandSelect.innerHTML += `<option value="${brand}">${brand}</option>`;
     });
   } else {
-    const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'متفرقه' && b !== 'نامشخص'))].sort((a, b) => a.localeCompare(b, 'fa'));
+    const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'متفرقه' && b !== 'نامشخص'))]
+      .sort((a, b) => a.localeCompare(b, 'fa'));
     brands.forEach(b => brandSelect.innerHTML += `<option value="${b}">${b}</option>`);
   }
 
@@ -324,11 +383,15 @@ function renderTable(data, page = currentPage) {
   const isTorob = currentTab === 'torob';
 
   tbody.innerHTML = visibleData.map(item => {
+    // هایلایت برندهای ویژه
+    const isSpecialBrand = item.brand === 'اسنوا' || item.brand === 'دوو';
+    const rowClass = isSpecialBrand ? 'style="background-color: #fff3e0;"' : '';
+    
     if (isTorob) {
       return `
-        <tr>
+        <tr ${rowClass}>
           <td>${item.name}</td>
-          <td>${item.brand}</td>
+          <td><strong>${item.brand}</strong></td>
           <td>${toPersianDigits(item.price_num)} تومان</td>
           <td>${toPersianDigits(item.sellers)} فروشنده</td>
           <td><a href="${item.link}" target="_blank" class="product-link">مشاهده</a></td>
@@ -336,9 +399,9 @@ function renderTable(data, page = currentPage) {
       `;
     } else {
       return `
-        <tr>
+        <tr ${rowClass}>
           <td>${item.name}</td>
-          <td>${item.brand}</td>
+          <td><strong>${item.brand}</strong></td>
           <td>${toPersianDigits(item.price_num)} تومان</td>
           <td>${toPersianDigits(item.original_price_num)} تومان</td>
           <td>${item.discount}</td>
@@ -452,6 +515,7 @@ function sortTable(col) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // بارگذاری Chart.js
   if (typeof Chart === 'undefined') {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
@@ -464,27 +528,34 @@ document.addEventListener('DOMContentLoaded', () => {
     document.head.appendChild(script);
   }
 
+  // مدیریت تب‌ها
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       currentTab = tab.dataset.tab;
       currentPage = 1;
-      sortCol = null;
+      sortCol = 'price_num';  // حفظ مرتب‌سازی پیش‌فرض
       sortDir = 'asc';
       updateUI();
     });
   });
 
+  // رویدادهای مرتب‌سازی
   document.querySelectorAll('th[data-col]').forEach(th => {
     th.addEventListener('click', () => sortTable(th.dataset.col));
   });
 
+  // رویدادهای فیلترها
   ['price-filter', 'size-filter', 'brand-filter', 'tech-filter'].forEach(id => {
-    document.getElementById(id)?.addEventListener('input', applyFilters);
-    document.getElementById(id)?.addEventListener('change', applyFilters);
+    const element = document.getElementById(id);
+    if (element) {
+      element.addEventListener('input', applyFilters);
+      element.addEventListener('change', applyFilters);
+    }
   });
 
+  // نمایش مقدار فیلتر قیمت
   const priceFilter = document.getElementById('price-filter');
   const filterValue = document.getElementById('filter-value');
   if (priceFilter && filterValue) {
@@ -493,6 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // پاک کردن فیلترها
   document.getElementById('clear-filters')?.addEventListener('click', () => {
     document.getElementById('price-filter').value = 0;
     document.getElementById('size-filter').value = '';
@@ -502,11 +574,12 @@ document.addEventListener('DOMContentLoaded', () => {
       filterValue.textContent = '۰ تومان';
     }
     currentPage = 1;
-    sortCol = null;
+    sortCol = 'price_num';
     sortDir = 'asc';
     updateUI();
   });
 
+  // آپلود فایل
   document.getElementById('upload-btn')?.addEventListener('click', () => {
     document.getElementById('file-input')?.click();
   });
@@ -548,5 +621,6 @@ document.addEventListener('DOMContentLoaded', () => {
     reader.readAsText(file);
   });
 
+  // بارگذاری اولیه
   updateUI();
 });
