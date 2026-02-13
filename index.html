@@ -3,86 +3,128 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>داشبورد قیمت تلویزیون</title>
+  <title>داشبورد هوشمند قیمت تلویزیون</title>
 
-  <!-- فونت وزیرمتن -->
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- فونت Vazirmatn -->
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- SheetJS برای اکسل -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-  <div class="container">
-    <h1>داشبورد مقایسه قیمت تلویزیون</h1>
+<body class="bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-gray-100 min-h-screen">
 
-    <div class="controls">
-      <button id="upload-btn">آپلود فایل JSON</button>
-      <input type="file" id="file-input" accept=".json" style="display:none"/>
-
-      <div class="filter-group">
-        <label>جستجو:</label>
-        <input type="text" id="search-input" placeholder="نام محصول یا برند..."/>
-      </div>
-
-      <div class="filter-group">
-        <label>حداقل قیمت:</label>
-        <input type="number" id="price-filter" min="0" value="0"/>
-      </div>
-
-      <div class="filter-group">
-        <label>سایز:</label>
-        <select id="size-filter">
-          <option value="">همه سایزها</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label>برند:</label>
-        <select id="brand-filter">
-          <option value="">همه برندها</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label>تکنولوژی:</label>
-        <select id="tech-filter">
-          <option value="">همه تکنولوژی‌ها</option>
-        </select>
-      </div>
-
-      <button id="clear-filters">پاک کردن فیلترها</button>
-      <button id="download-excel">دانلود اکسل</button>
+  <div class="max-w-7xl mx-auto px-6 py-8">
+    <div class="flex justify-between items-center mb-10">
+      <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">قیمت هوشمند تلویزیون</h1>
+      <button id="theme-toggle" class="p-3 rounded-2xl bg-white dark:bg-slate-800 shadow-lg hover:shadow-xl transition">🌙</button>
     </div>
 
-    <div id="stats">
-      <span>میانگین قیمت: <strong id="avg-price">—</strong></span>
-      <span>تعداد محصولات: <strong id="total-items">—</strong></span>
-      <span>تعداد فروشنده‌ها: <strong id="total-sellers">—</strong></span>
-      <span>تعداد برندها: <strong id="total-brands">—</strong></span>
-      <span id="last-update">آخرین بروزرسانی: —</span>
+    <!-- Controls -->
+    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl p-8 mb-10">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div>
+          <label class="block text-sm font-medium mb-2 text-gray-600 dark:text-gray-400">جستجو</label>
+          <input id="search-input" type="text" placeholder="نام محصول یا برند..." class="w-full px-5 py-3 bg-gray-100 dark:bg-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-2 text-gray-600 dark:text-gray-400">قیمت (تومان)</label>
+          <input id="price-filter" type="range" min="0" max="200000000" value="0" class="w-full accent-blue-600">
+          <div class="flex justify-between text-xs text-gray-500 mt-1">
+            <span>۰</span>
+            <span id="price-value">۰</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-2 text-gray-600 dark:text-gray-400">سایز</label>
+          <select id="size-filter" class="w-full px-5 py-3 bg-gray-100 dark:bg-slate-700 rounded-2xl focus:outline-none">
+            <option value="">همه سایزها</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-2 text-gray-600 dark:text-gray-400">برند</label>
+          <select id="brand-filter" class="w-full px-5 py-3 bg-gray-100 dark:bg-slate-700 rounded-2xl focus:outline-none">
+            <option value="">همه برندها</option>
+          </select>
+        </div>
+
+        <div class="flex items-end gap-3">
+          <button id="clear-filters" class="px-6 py-3 bg-gray-200 dark:bg-slate-700 rounded-2xl hover:bg-gray-300 transition">پاک کردن</button>
+          <button id="upload-btn" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl hover:from-blue-700 hover:to-purple-700 transition shadow-lg">آپلود JSON</button>
+          <input type="file" id="file-input" accept=".json" class="hidden"/>
+        </div>
+      </div>
     </div>
 
-    <div class="tabs">
-      <button class="tab active" data-tab="torob">ترب</button>
-      <button class="tab" data-tab="digikala">دیجی‌کالا</button>
+    <!-- Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-12">
+      <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-lg">
+        <p class="text-sm text-gray-500 dark:text-gray-400">میانگین قیمت</p>
+        <p id="avg-price" class="text-3xl font-bold text-blue-600 dark:text-blue-400">— تومان</p>
+      </div>
+      <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-lg">
+        <p class="text-sm text-gray-500 dark:text-gray-400">تعداد محصولات</p>
+        <p id="total-items" class="text-3xl font-bold">—</p>
+      </div>
+      <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-lg">
+        <p class="text-sm text-gray-500 dark:text-gray-400">فروشنده کل</p>
+        <p id="total-sellers" class="text-3xl font-bold">—</p>
+      </div>
+      <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-lg">
+        <p class="text-sm text-gray-500 dark:text-gray-400">تعداد برند</p>
+        <p id="total-brands" class="text-3xl font-bold">—</p>
+      </div>
     </div>
 
-    <table id="product-table">
-      <thead><tr></tr></thead>
-      <tbody></tbody>
-    </table>
+    <!-- Tabs -->
+    <div class="flex gap-2 mb-8 border-b border-gray-200 dark:border-slate-700">
+      <button class="tab active px-8 py-4 text-lg font-medium" data-tab="torob">ترب</button>
+      <button class="tab px-8 py-4 text-lg font-medium" data-tab="digikala">دیجی‌کالا</button>
+    </div>
 
-    <div id="pagination"></div>
+    <!-- Table -->
+    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl overflow-hidden">
+      <table id="product-table" class="w-full">
+        <thead class="bg-gray-100 dark:bg-slate-700">
+          <tr>
+            <th class="px-6 py-5 text-right">نام محصول</th>
+            <th class="px-6 py-5 text-right cursor-pointer" data-col="brand">برند</th>
+            <th class="px-6 py-5 text-right cursor-pointer" data-col="price_num">قیمت</th>
+            <th class="px-6 py-5 text-right cursor-pointer" data-col="sellers">تعداد فروشنده</th>
+            <th class="px-6 py-5 text-right">لینک</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
 
-    <div class="charts">
-      <canvas id="brand-price-chart"></canvas>
-      <canvas id="brand-pie-chart"></canvas>
-      <canvas id="price-size-scatter"></canvas>
+    <!-- Load More -->
+    <div class="flex justify-center mt-10">
+      <button id="load-more" class="px-10 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-medium text-lg hover:from-blue-700 hover:to-purple-700 transition shadow-xl">
+        بارگذاری بیشتر
+      </button>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-16">
+      <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl">
+        <h3 class="text-xl font-semibold mb-6">میانگین قیمت برندها</h3>
+        <canvas id="brand-price-chart" height="320"></canvas>
+      </div>
+      <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl">
+        <h3 class="text-xl font-semibold mb-6">توزیع برندها</h3>
+        <canvas id="brand-pie-chart" height="320"></canvas>
+      </div>
+      <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl">
+        <h3 class="text-xl font-semibold mb-6">قیمت بر حسب سایز</h3>
+        <canvas id="price-size-scatter" height="320"></canvas>
+      </div>
     </div>
   </div>
 
