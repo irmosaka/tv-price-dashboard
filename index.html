@@ -4,13 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>داشبورد قیمت تلویزیون</title>
-  
-  <!-- فونت فارسی -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vazirmatn@33.0.4/Vazirmatn-font-face.css">
-  
+
+  <!-- فونت Vazirmatn جدید و معتبر -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vazirmatn@33.003/Vazirmatn-font-face.css">
+
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
+
   <!-- SheetJS برای اکسل -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
@@ -23,14 +23,6 @@
     <div class="controls">
       <button id="upload-btn">آپلود JSON جدید</button>
       <input type="file" id="file-input" accept=".json" style="display:none"/>
-
-      <div class="filter-group">
-        <label>منبع:</label>
-        <select id="source-select">
-          <option value="torob">ترب</option>
-          <option value="digikala">دیجی‌کالا</option>
-        </select>
-      </div>
 
       <div class="filter-group">
         <label>جستجو:</label>
@@ -82,7 +74,7 @@
 
     <table id="product-table">
       <thead>
-        <tr></tr> <!-- هدر توسط JS پر می‌شود -->
+        <tr></tr>
       </thead>
       <tbody></tbody>
     </table>
@@ -96,6 +88,7 @@
     </div>
   </div>
 
-  <script type="module" src="js/main.js"></script>
+  <!-- اسکریپت بدون module (برای رفع مشکل scope) -->
+  <script src="js/dashboard.js"></script>
 </body>
 </html>
