@@ -5,13 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>داشبورد قیمت تلویزیون</title>
 
-  <!-- فونت Vazirmatn از گوگل (آفلاین نمی‌شه، ولی مطمئن) -->
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-  <!-- Chart.js محلی (CDN مطمئن) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- SheetJS برای اکسل -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <link rel="stylesheet" href="css/style.css">
@@ -31,8 +26,8 @@
 
       <div class="filter-group">
         <label>حداقل قیمت:</label>
-        <input type="range" id="price-filter" min="0" max="200000000" value="0"/>
-        <span id="price-value">۰ تومان</span>
+        <input type="range" id="price-filter" min="0" max="300000000" value="0"/>
+        <span id="price-value" class="price-value">۰ تومان</span>
       </div>
 
       <div class="filter-group">
@@ -49,7 +44,14 @@
         </select>
       </div>
 
-      <button id="clear-filters">پاک کردن فیلترها</button>
+      <div class="filter-group">
+        <label>تکنولوژی:</label>
+        <select id="tech-filter">
+          <option value="">همه تکنولوژی‌ها</option>
+        </select>
+      </div>
+
+      <button id="clear-filters">پاک کردن</button>
       <button id="download-excel">دانلود اکسل</button>
     </div>
 
@@ -67,15 +69,7 @@
     </div>
 
     <table id="product-table">
-      <thead>
-        <tr>
-          <th>نام محصول</th>
-          <th>برند</th>
-          <th>قیمت</th>
-          <th>تعداد فروشنده</th>
-          <th>لینک</th>
-        </tr>
-      </thead>
+      <thead><tr></tr></thead>
       <tbody></tbody>
     </table>
 
