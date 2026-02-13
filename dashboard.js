@@ -2,14 +2,18 @@ let currentData = { digikala: [], torob: [] };
 let currentTab = 'digikala';
 let currentPage = 1;
 let rowsPerPage = 20;
-let sortCol = 'price_num';  // پیش‌فرض مرتب‌سازی بر اساس قیمت
-let sortDir = 'asc';        // صعودی
+let sortCol = 'price_num';
+let sortDir = 'asc';
 
+// لیست برندها به ترتیب حروف الفبا
 const TOROB_BRANDS = [
-  "سامسونگ", "سام الکترونیک", "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "تی سی ال",
-  "جی بی پی", "جی وی سی", "جی پلاس", "دوو", "سونی", "لیماک جنرال اینترنشنال", "نکسار", "هایسنس",
-  "ورلد استار", "پارس", "پاناسونیک"
-];
+  "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "پارس", "پاناسونیک",
+  "تی سی ال", "جی بی پی", "جی پلاس", "جی وی سی", "دوو", "سام الکترونیک", "سامسونگ",
+  "سونی", "لیماک جنرال اینترنشنال", "نکسار", "هایسنس", "ورلد استار"
+].sort((a, b) => a.localeCompare(b, 'fa'));
+
+// برندهایی که باید به عنوان متفرقه دسته‌بندی شوند
+const IGNORED_BRANDS = ["بویمن", "جی بی پی", "لیماک جنرال اینترنشنال"];
 
 let myChart = null;
 
@@ -23,20 +27,55 @@ function extractBrandFromTitle(title) {
   
   const lower = title.toLowerCase();
   
-  // برندهای خاص با اولویت بالاتر
-  if (lower.includes('سام الکترونیک') || (lower.includes('سام') && !lower.includes('سامسونگ') && lower.includes('ua'))) {
+  // تشخیص برند سام الکترونیک (الویت بالا)
+  if ((lower.includes('سام') || lower.includes('samsung') === false) && 
+      (lower.includes('ua') || lower.includes('qa')) && 
+      !lower.includes('سامسونگ')) {
     return 'سام الکترونیک';
   }
   
-  if (lower.includes('سامسونگ')) return 'سامسونگ';
-  
-  // برندهای ویژه برای تحلیل
-  if (lower.includes('اسنوا')) return 'اسنوا';
-  if (lower.includes('دوو')) return 'دوو';
-  
-  for (const brand of TOROB_BRANDS) {
-    if (lower.includes(brand.toLowerCase())) {
-      return brand;
+  // برندهای ویژه
+  const brandPatterns = [
+    { pattern: 'پاناسونیک', name: 'پاناسونیک' },
+    { pattern: 'panasonic', name: 'پاناسونیک' },
+    { pattern: 'پارس', name: 'پارس' },
+    { pattern: 'pars', name: 'پارس' },
+    { pattern: 'سامسونگ', name: 'سامسونگ' },
+    { pattern: 'samsung', name: 'سامسونگ' },
+    { pattern: 'سونی', name: 'سونی' },
+    { pattern: 'sony', name: 'سونی' },
+    { pattern: 'ال جی', name: 'ال جی' },
+    { pattern: 'lg', name: 'ال جی' },
+    { pattern: 'اسنوا', name: 'اسنوا' },
+    { pattern: 'دوو', name: 'دوو' },
+    { pattern: 'هایسنس', name: 'هایسنس' },
+    { pattern: 'hisense', name: 'هایسنس' },
+    { pattern: 'تی سی ال', name: 'تی سی ال' },
+    { pattern: 'tcl', name: 'تی سی ال' },
+    { pattern: 'ایکس ویژن', name: 'ایکس ویژن' },
+    { pattern: 'xvision', name: 'ایکس ویژن' },
+    { pattern: 'آپلاس', name: 'آپلاس' },
+    { pattern: 'aplus', name: 'آپلاس' },
+    { pattern: 'آیوا', name: 'آیوا' },
+    { pattern: 'aiwa', name: 'آیوا' },
+    { pattern: 'جی پلاس', name: 'جی پلاس' },
+    { pattern: 'gplus', name: 'جی پلاس' },
+    { pattern: 'جی وی سی', name: 'جی وی سی' },
+    { pattern: 'jvc', name: 'جی وی سی' },
+    { pattern: 'نکسار', name: 'نکسار' },
+    { pattern: 'nexar', name: 'نکسار' },
+    { pattern: 'ورلد استار', name: 'ورلد استار' },
+    { pattern: 'worldstar', name: 'ورلد استار' }
+  ];
+
+  // بررسی الگوها
+  for (const { pattern, name } of brandPatterns) {
+    if (lower.includes(pattern)) {
+      // اگر برند در لیست ignored باشد، متفرقه برگردان
+      if (IGNORED_BRANDS.includes(name)) {
+        return 'متفرقه';
+      }
+      return name;
     }
   }
   
@@ -46,7 +85,6 @@ function extractBrandFromTitle(title) {
 function extractSize(title) {
   if (!title || typeof title !== 'string') return 'نامشخص';
 
-  // پشتیبانی از اعداد فارسی و انگلیسی
   const patterns = [
     /(\d{2,3})\s*اینچ/i,
     /(\d{2,3})\s*اینج/i,
@@ -57,7 +95,9 @@ function extractSize(title) {
     /سایز\s*[\d۰-۹]{2,3}\s*اینچ/i,
     /(\d{2,3})[\s_-]?اینچ/i,
     /(\d{2,3})"/i,
-    /(\d{2,3})''/i
+    /(\d{2,3})''/i,
+    /(\d{2,3})\s*inch/i,
+    /(\d{2,3})[\s_-]?inch/i
   ];
 
   for (const pattern of patterns) {
@@ -89,13 +129,15 @@ function extractTech(title) {
       lower.includes('کیو‌ال‌ایدی') ||
       lower.includes('q led') ||
       lower.includes('کیوال‌ایدی') ||
-      lower.includes('کیوال‌ایدی')) {
+      lower.includes('کیوال‌ایدی') ||
+      lower.includes('q') && lower.includes('led')) {
     return 'QLED';
   }
   
   if (lower.includes('oled') || 
       lower.includes('اولد') ||
-      lower.includes('او ال ای دی')) {
+      lower.includes('او ال ای دی') ||
+      lower.includes('o') && lower.includes('led')) {
     return 'OLED';
   }
   
@@ -173,7 +215,7 @@ function updateStats(data) {
   document.getElementById('avg-price').textContent = toPersianDigits(avgPrice) + ' تومان';
   document.getElementById('total-items').textContent = toPersianDigits(data.length);
   document.getElementById('total-sellers').textContent = toPersianDigits(data.reduce((sum, item) => sum + item.sellers, 0));
-  document.getElementById('total-brands').textContent = toPersianDigits([...new Set(data.map(item => item.brand))].length);
+  document.getElementById('total-brands').textContent = toPersianDigits([...new Set(data.map(item => item.brand).filter(b => b !== 'متفرقه'))].length);
   document.getElementById('product-count').textContent = data.length;
 }
 
@@ -208,7 +250,6 @@ function renderChart(data) {
     myChart.destroy();
   }
 
-  // برندهای ویژه برای هایلایت
   const specialBrands = ['اسنوا', 'دوو'];
   
   const brandGroups = {};
@@ -236,11 +277,10 @@ function renderChart(data) {
   const labels = chartData.map(item => item.brand);
   const prices = chartData.map(item => item.avgPrice);
   
-  // رنگ‌بندی ویژه برای برندهای خاص
   const backgroundColors = chartData.map(item => {
-    if (item.brand === 'اسنوا') return 'rgba(76, 175, 80, 0.8)';  // سبز
-    if (item.brand === 'دوو') return 'rgba(255, 152, 0, 0.8)';   // نارنجی
-    return 'rgba(102, 126, 234, 0.7)';                           // آبی معمولی
+    if (item.brand === 'اسنوا') return 'rgba(76, 175, 80, 0.8)';
+    if (item.brand === 'دوو') return 'rgba(255, 152, 0, 0.8)';
+    return 'rgba(102, 126, 234, 0.7)';
   });
 
   try {
@@ -302,7 +342,6 @@ function renderChart(data) {
 function updateUI() {
   const data = currentData[currentTab] || [];
   
-  // نمایش هدر مناسب
   if (currentTab === 'torob') {
     document.getElementById('table-header-digikala').style.display = 'none';
     document.getElementById('table-header-torob').style.display = '';
@@ -320,7 +359,6 @@ function updateUI() {
   updateStats(data);
   document.getElementById('last-update').textContent = new Date().toLocaleString('fa-IR');
 
-  // به‌روزرسانی فیلتر سایز
   const sizeFilter = document.getElementById('size-filter');
   const sizes = [...new Set(data.map(d => d.size).filter(s => s !== 'نامشخص'))]
     .map(s => parseInt(s, 10))
@@ -330,19 +368,15 @@ function updateUI() {
   sizeFilter.innerHTML = '<option value="">همه سایزها</option>' + 
     sizes.map(s => `<option value="${s}">${s} اینچ</option>`).join('');
 
-  // به‌روزرسانی فیلتر برند
   const brandSelect = document.getElementById('brand-filter');
   brandSelect.innerHTML = '<option value="">همه برندها</option>';
 
-  if (currentTab === 'torob') {
-    [...TOROB_BRANDS].sort((a, b) => a.localeCompare(b, 'fa')).forEach(brand => {
-      brandSelect.innerHTML += `<option value="${brand}">${brand}</option>`;
-    });
-  } else {
-    const brands = [...new Set(data.map(d => d.brand).filter(b => b !== 'متفرقه' && b !== 'نامشخص'))]
-      .sort((a, b) => a.localeCompare(b, 'fa'));
-    brands.forEach(b => brandSelect.innerHTML += `<option value="${b}">${b}</option>`);
-  }
+  // فیلتر کردن برندهای نادیده گرفته شده
+  const validBrands = TOROB_BRANDS.filter(brand => !IGNORED_BRANDS.includes(brand));
+  
+  validBrands.sort((a, b) => a.localeCompare(b, 'fa')).forEach(brand => {
+    brandSelect.innerHTML += `<option value="${brand}">${brand}</option>`;
+  });
 
   renderTable(data);
   renderChart(data);
@@ -383,7 +417,6 @@ function renderTable(data, page = currentPage) {
   const isTorob = currentTab === 'torob';
 
   tbody.innerHTML = visibleData.map(item => {
-    // هایلایت برندهای ویژه
     const isSpecialBrand = item.brand === 'اسنوا' || item.brand === 'دوو';
     const rowClass = isSpecialBrand ? 'style="background-color: #fff3e0;"' : '';
     
@@ -515,7 +548,6 @@ function sortTable(col) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // بارگذاری Chart.js
   if (typeof Chart === 'undefined') {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
@@ -528,25 +560,22 @@ document.addEventListener('DOMContentLoaded', () => {
     document.head.appendChild(script);
   }
 
-  // مدیریت تب‌ها
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       currentTab = tab.dataset.tab;
       currentPage = 1;
-      sortCol = 'price_num';  // حفظ مرتب‌سازی پیش‌فرض
+      sortCol = 'price_num';
       sortDir = 'asc';
       updateUI();
     });
   });
 
-  // رویدادهای مرتب‌سازی
   document.querySelectorAll('th[data-col]').forEach(th => {
     th.addEventListener('click', () => sortTable(th.dataset.col));
   });
 
-  // رویدادهای فیلترها
   ['price-filter', 'size-filter', 'brand-filter', 'tech-filter'].forEach(id => {
     const element = document.getElementById(id);
     if (element) {
@@ -555,7 +584,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // نمایش مقدار فیلتر قیمت
   const priceFilter = document.getElementById('price-filter');
   const filterValue = document.getElementById('filter-value');
   if (priceFilter && filterValue) {
@@ -564,7 +592,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // پاک کردن فیلترها
   document.getElementById('clear-filters')?.addEventListener('click', () => {
     document.getElementById('price-filter').value = 0;
     document.getElementById('size-filter').value = '';
@@ -579,7 +606,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUI();
   });
 
-  // آپلود فایل
   document.getElementById('upload-btn')?.addEventListener('click', () => {
     document.getElementById('file-input')?.click();
   });
@@ -621,6 +647,5 @@ document.addEventListener('DOMContentLoaded', () => {
     reader.readAsText(file);
   });
 
-  // بارگذاری اولیه
   updateUI();
 });
