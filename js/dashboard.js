@@ -1,7 +1,8 @@
-// js/dashboard.js - نسخه نهایی بدون خطا
+// js/dashboard.js - نسخه نهایی با فیکس تمام مشکلات
 
-let currentData = { torob: [], digikala: [] };
+let currentData = { digikala: [], torob: [] };
 let currentTab = 'torob';
+let displayedCount = 20;
 
 const TOROB_BRANDS = [
   "سامسونگ", "سام الکترونیک", "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "تی سی ال",
@@ -62,10 +63,12 @@ function loadData(raw, source) {
       return { name: title, brand, link, price_num, sellers, size };
     }).filter(Boolean);
   } else {
+    // دیجی‌کالا - دقیقاً بر اساس JSON که فرستادی
     processed = raw.map(item => {
       const title = item['ellipsis-2'] || 'نامشخص';
       const brand = extractBrand(title);
       const size = extractSize(title);
+
       let price_num = parseInt(String(item['flex'] || '0').replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
       let original_price_num = parseInt(String(item['text-neutral-300'] || '0').replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
 
@@ -86,10 +89,11 @@ function loadData(raw, source) {
 
   currentData[source] = processed;
   currentTab = source;
-  updateUI();
+  displayedCount = 20;
+  renderUI();
 }
 
-function updateUI() {
+function renderUI() {
   const data = currentData[currentTab] || [];
   if (!data.length) {
     document.querySelector('#product-table tbody').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:50px;">هیچ داده‌ای موجود نیست</td></tr>';
@@ -100,18 +104,20 @@ function updateUI() {
   updateStats(data);
   document.getElementById('last-update').textContent = `آخرین بروزرسانی: ${new Date().toLocaleString('fa-IR')}`;
 
+  // سایزها
   const sizes = [...new Set(data.map(d => d.size).filter(Boolean))]
     .map(s => parseInt(s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)), 10))
     .filter(n => !isNaN(n) && n >= 32 && n <= 100)
-    .sort((a,b)=>a-b);
+    .sort((a,b) => a-b);
 
   document.getElementById('size-filter').innerHTML = '<option value="">همه سایزها</option>' + 
     sizes.map(s => `<option value="${s}">${s} اینچ</option>`).join('');
 
+  // برندها
   const brandSelect = document.getElementById('brand-filter');
   brandSelect.innerHTML = '<option value="">همه برندها</option>';
   const brands = currentTab === 'torob' ? TOROB_BRANDS : [...new Set(data.map(d => d.brand))];
-  brands.sort((a,b)=>a.localeCompare(b,'fa')).forEach(b => {
+  brands.sort((a,b) => a.localeCompare(b,'fa')).forEach(b => {
     brandSelect.innerHTML += `<option value="${b}">${b}</option>`;
   });
 
@@ -135,7 +141,7 @@ function renderTable(data) {
     <tr>
       <td>${item.name}</td>
       <td>${item.brand}</td>
-      <td>${toPersianDigits(item.price_num || item.price)} تومان</td>
+      <td>${toPersianDigits(item.price_num)} تومان</td>
       <td>${toPersianDigits(item.sellers)} فروشنده</td>
       <td><a href="${item.link}" target="_blank">مشاهده</a></td>
     </tr>
@@ -159,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       currentTab = tab.dataset.tab;
-      updateUI();
+      renderUI();
     });
   });
 
@@ -193,11 +199,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('price-filter').value = 0;
     document.getElementById('size-filter').value = '';
     document.getElementById('brand-filter').value = '';
-    updateUI();
+    renderUI();
   });
 
   ['search-input','price-filter','size-filter','brand-filter'].forEach(id => {
-    document.getElementById(id)?.addEventListener('input', updateUI);
+    document.getElementById(id)?.addEventListener('input', renderUI);
   });
 
   document.getElementById('download-excel').addEventListener('click', () => {
@@ -210,5 +216,5 @@ document.addEventListener('DOMContentLoaded', () => {
     XLSX.writeFile(wb, `${currentTab}_prices.xlsx`);
   });
 
-  updateUI();
+  renderUI();
 });
