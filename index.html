@@ -1,126 +1,90 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl" class="dark">
+<html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>داشبورد هوشمند قیمت تلویزیون</title>
+  <title>داشبورد قیمت تلویزیون</title>
 
-  <!-- Tailwind + Vazirmatn -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- فونت وزیرمتن -->
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- SheetJS برای اکسل -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-  <style>
-    body { font-family: 'Vazirmatn', system-ui, sans-serif; }
-    .dark body { background: #0f172a; color: #e2e8f0; }
-  </style>
+  <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 transition-colors duration-300">
+<body>
+  <div class="container">
+    <h1>داشبورد مقایسه قیمت تلویزیون</h1>
 
-  <header class="border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-      <h1 class="text-2xl font-bold text-slate-800 dark:text-white">قیمت هوشمند تلویزیون</h1>
-      <div class="flex items-center gap-4">
-        <button id="theme-toggle" class="p-2 rounded-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition">
-          <span class="light-icon">☀️</span>
-          <span class="dark-icon hidden">🌙</span>
-        </button>
-        <button id="download-excel" class="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition shadow-lg">
-          دانلود اکسل
-        </button>
+    <div class="controls">
+      <button id="upload-btn">آپلود فایل JSON</button>
+      <input type="file" id="file-input" accept=".json" style="display:none"/>
+
+      <div class="filter-group">
+        <label>جستجو:</label>
+        <input type="text" id="search-input" placeholder="نام محصول یا برند..."/>
       </div>
-    </div>
-  </header>
 
-  <main class="max-w-7xl mx-auto px-6 py-10">
-    <!-- Controls -->
-    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 mb-10 border border-slate-200 dark:border-slate-700">
-      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-5 items-end">
-        <div>
-          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">جستجو</label>
-          <input id="search-input" type="text" placeholder="نام یا برند..." class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">حداقل قیمت</label>
-          <input id="price-filter" type="number" min="0" value="0" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg">
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">سایز</label>
-          <select id="size-filter" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-indigo-500">
-            <option value="">همه سایزها</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">برند</label>
-          <select id="brand-filter" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-indigo-500">
-            <option value="">همه برندها</option>
-          </select>
-        </div>
-
-        <div class="flex gap-3 mt-6 md:mt-0">
-          <button id="clear-filters" class="px-6 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-lg transition">
-            پاک کردن
-          </button>
-          <button id="upload-btn" class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition shadow-md">
-            آپلود JSON
-          </button>
-          <input type="file" id="file-input" accept=".json" class="hidden"/>
-        </div>
+      <div class="filter-group">
+        <label>حداقل قیمت:</label>
+        <input type="number" id="price-filter" min="0" value="0"/>
       </div>
+
+      <div class="filter-group">
+        <label>سایز:</label>
+        <select id="size-filter">
+          <option value="">همه سایزها</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>برند:</label>
+        <select id="brand-filter">
+          <option value="">همه برندها</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>تکنولوژی:</label>
+        <select id="tech-filter">
+          <option value="">همه تکنولوژی‌ها</option>
+        </select>
+      </div>
+
+      <button id="clear-filters">پاک کردن فیلترها</button>
+      <button id="download-excel">دانلود اکسل</button>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-      <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
-        <p class="text-sm text-slate-600 dark:text-slate-400">میانگین قیمت</p>
-        <p id="avg-price" class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">— تومان</p>
-      </div>
-      <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
-        <p class="text-sm text-slate-600 dark:text-slate-400">تعداد محصولات</p>
-        <p id="total-items" class="text-3xl font-bold text-purple-600 dark:text-purple-400">—</p>
-      </div>
-      <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
-        <p class="text-sm text-slate-600 dark:text-slate-400">تعداد فروشنده</p>
-        <p id="total-sellers" class="text-3xl font-bold text-green-600 dark:text-green-400">—</p>
-      </div>
-      <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
-        <p class="text-sm text-slate-600 dark:text-slate-400">تعداد برند</p>
-        <p id="total-brands" class="text-3xl font-bold text-orange-600 dark:text-orange-400">—</p>
-      </div>
+    <div id="stats">
+      <span>میانگین قیمت: <strong id="avg-price">—</strong></span>
+      <span>تعداد محصولات: <strong id="total-items">—</strong></span>
+      <span>تعداد فروشنده‌ها: <strong id="total-sellers">—</strong></span>
+      <span>تعداد برندها: <strong id="total-brands">—</strong></span>
+      <span id="last-update">آخرین بروزرسانی: —</span>
     </div>
 
-    <!-- Tabs -->
-    <div class="flex border-b border-slate-200 dark:border-slate-700 mb-8">
-      <button class="tab px-8 py-4 font-medium text-lg border-b-4 border-transparent hover:text-indigo-600 dark:hover:text-indigo-400 transition" data-tab="torob">ترب</button>
-      <button class="tab px-8 py-4 font-medium text-lg border-b-4 border-transparent hover:text-indigo-600 dark:hover:text-indigo-400 transition" data-tab="digikala">دیجی‌کالا</button>
+    <div class="tabs">
+      <button class="tab active" data-tab="torob">ترب</button>
+      <button class="tab" data-tab="digikala">دیجی‌کالا</button>
     </div>
 
-    <!-- Table -->
-    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
-      <div class="overflow-x-auto">
-        <table id="product-table" class="w-full min-w-max">
-          <thead class="bg-slate-100 dark:bg-slate-700">
-            <tr>
-              <th class="px-6 py-4 text-right font-semibold">نام محصول</th>
-              <th class="px-6 py-4 text-right font-semibold cursor-pointer" data-col="brand">برند</th>
-              <th class="px-6 py-4 text-right font-semibold cursor-pointer" data-col="price_num">قیمت</th>
-              <th class="px-6 py-4 text-right font-semibold cursor-pointer" data-col="sellers">تعداد فروشنده</th>
-              <th class="px-6 py-4 text-right font-semibold">لینک</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-200 dark:divide-slate-700"></tbody>
-        </table>
-      </div>
-    </div>
+    <table id="product-table">
+      <thead><tr></tr></thead>
+      <tbody></tbody>
+    </table>
 
-    <!-- Pagination -->
-    <div id="pagination" class="flex justify-center gap-3 mt-8 flex-wrap"></div>
-  </main>
+    <div id="pagination"></div>
+
+    <div class="charts">
+      <canvas id="brand-price-chart"></canvas>
+      <canvas id="brand-pie-chart"></canvas>
+      <canvas id="price-size-scatter"></canvas>
+    </div>
+  </div>
 
   <script src="js/dashboard.js"></script>
 </body>
