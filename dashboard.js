@@ -247,27 +247,13 @@ function updateSortIcons() {
   }
 }
 
-function renderChart(data) {
-  const ctx = document.getElementById('price-chart');
-  if (!ctx) {
-    console.warn('عنصر canvas برای نمودار پیدا نشد');
-    return;
-  }
-
-  if (myChart) {
-    myChart.destroy();
-  }
-
-  const specialBrands = ['اسنوا', 'دوو'];
-  
+// ==================== توابع رسم نمودارهای مختلف ====================
+function renderBrandAvgChart(data) {
   const brandGroups = {};
   data.forEach(item => {
     if (item.brand && item.price_num > 0 && item.brand !== 'متفرقه' && item.brand !== 'نامشخص') {
       if (!brandGroups[item.brand]) {
-        brandGroups[item.brand] = {
-          total: 0,
-          count: 0
-        };
+        brandGroups[item.brand] = { total: 0, count: 0 };
       }
       brandGroups[item.brand].total += item.price_num;
       brandGroups[item.brand].count += 1;
@@ -275,32 +261,101 @@ function renderChart(data) {
   });
 
   const chartData = Object.entries(brandGroups)
-    .map(([brand, stats]) => ({
-      brand,
-      avgPrice: Math.round(stats.total / stats.count)
-    }))
-    .sort((a, b) => b.avgPrice - a.avgPrice)
-    .slice(0, 10);
+    .map(([brand, stats]) => ({ brand, value: Math.round(stats.total / stats.count) }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 15); // 15 برند برتر
 
-  const labels = chartData.map(item => item.brand);
-  const prices = chartData.map(item => item.avgPrice);
-  
-  const backgroundColors = chartData.map(item => {
-    if (item.brand === 'اسنوا') return 'rgba(76, 175, 80, 0.8)';
-    if (item.brand === 'دوو') return 'rgba(255, 152, 0, 0.8)';
-    return 'rgba(102, 126, 234, 0.7)';
+  return {
+    labels: chartData.map(d => d.brand),
+    values: chartData.map(d => d.value),
+    label: 'میانگین قیمت (تومان)',
+    backgroundColor: chartData.map(d => {
+      if (d.brand === 'اسنوا') return 'rgba(76, 175, 80, 0.8)';
+      if (d.brand === 'دوو') return 'rgba(255, 152, 0, 0.8)';
+      return 'rgba(102, 126, 234, 0.7)';
+    })
+  };
+}
+
+function renderSizeAvgChart(data) {
+  const sizeGroups = {};
+  data.forEach(item => {
+    const size = item.size;
+    if (size !== 'نامشخص' && item.price_num > 0) {
+      if (!sizeGroups[size]) {
+        sizeGroups[size] = { total: 0, count: 0 };
+      }
+      sizeGroups[size].total += item.price_num;
+      sizeGroups[size].count += 1;
+    }
   });
+
+  const chartData = Object.entries(sizeGroups)
+    .map(([size, stats]) => ({ size, value: Math.round(stats.total / stats.count) }))
+    .sort((a, b) => parseInt(a.size) - parseInt(b.size))
+    .slice(0, 15);
+
+  return {
+    labels: chartData.map(d => d.size + ' اینچ'),
+    values: chartData.map(d => d.value),
+    label: 'میانگین قیمت (تومان)',
+    backgroundColor: 'rgba(54, 162, 235, 0.7)'
+  };
+}
+
+function renderBrandCountChart(data) {
+  const brandCounts = {};
+  data.forEach(item => {
+    if (item.brand && item.brand !== 'متفرقه' && item.brand !== 'نامشخص') {
+      brandCounts[item.brand] = (brandCounts[item.brand] || 0) + 1;
+    }
+  });
+
+  const chartData = Object.entries(brandCounts)
+    .map(([brand, count]) => ({ brand, value: count }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 15);
+
+  return {
+    labels: chartData.map(d => d.brand),
+    values: chartData.map(d => d.value),
+    label: 'تعداد محصولات',
+    backgroundColor: 'rgba(255, 159, 64, 0.7)'
+  };
+}
+
+function renderChart(data) {
+  const ctx = document.getElementById('price-chart');
+  if (!ctx) return;
+
+  if (myChart) myChart.destroy();
+
+  const chartType = document.getElementById('chart-type')?.value || 'brandAvg';
+  let chartData;
+
+  switch (chartType) {
+    case 'sizeAvg':
+      chartData = renderSizeAvgChart(data);
+      break;
+    case 'brandCount':
+      chartData = renderBrandCountChart(data);
+      break;
+    default:
+      chartData = renderBrandAvgChart(data);
+  }
 
   try {
     myChart = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: labels,
+        labels: chartData.labels,
         datasets: [{
-          label: 'میانگین قیمت (تومان)',
-          data: prices,
-          backgroundColor: backgroundColors,
-          borderColor: backgroundColors.map(c => c.replace('0.8', '1').replace('0.7', '1')),
+          label: chartData.label,
+          data: chartData.values,
+          backgroundColor: chartData.backgroundColor,
+          borderColor: Array.isArray(chartData.backgroundColor) 
+            ? chartData.backgroundColor.map(c => c.replace('0.7', '1').replace('0.8', '1'))
+            : chartData.backgroundColor.replace('0.7', '1'),
           borderWidth: 2,
           borderRadius: 5
         }]
@@ -313,7 +368,7 @@ function renderChart(data) {
             beginAtZero: true,
             ticks: {
               callback: function(value) {
-                return toPersianDigits(value) + ' تومان';
+                return toPersianDigits(value) + (chartType !== 'brandCount' ? ' تومان' : '');
               }
             }
           }
@@ -322,22 +377,23 @@ function renderChart(data) {
           tooltip: {
             callbacks: {
               label: function(context) {
-                const brand = context.label;
-                const value = toPersianDigits(context.raw);
-                let label = `میانگین قیمت: ${value} تومان`;
-                if (brand === 'اسنوا' || brand === 'دوو') {
-                  label = `🔴 ${label} (برند ویژه)`;
+                let label = '';
+                if (chartType === 'brandAvg') {
+                  label = `میانگین قیمت: ${toPersianDigits(context.raw)} تومان`;
+                  if (context.label === 'اسنوا' || context.label === 'دوو') {
+                    label = `🔴 ${label} (برند ویژه)`;
+                  }
+                } else if (chartType === 'sizeAvg') {
+                  label = `میانگین قیمت: ${toPersianDigits(context.raw)} تومان`;
+                } else {
+                  label = `تعداد محصولات: ${toPersianDigits(context.raw)}`;
                 }
                 return label;
               }
             }
           },
           legend: {
-            labels: {
-              font: {
-                family: 'Vazir, Tahoma, sans-serif'
-              }
-            }
+            labels: { font: { family: 'Vazir, Tahoma, sans-serif' } }
           }
         }
       }
@@ -346,6 +402,8 @@ function renderChart(data) {
     console.error('خطا در رسم نمودار:', error);
   }
 }
+
+// ================================================================
 
 function updateUI() {
   const data = currentData[currentTab] || [];
@@ -379,24 +437,19 @@ function updateUI() {
   const brandSelect = document.getElementById('brand-filter');
   brandSelect.innerHTML = '<option value="">همه برندها</option>';
 
-  // استفاده از ترتیب ثابت TOROB_BRANDS برای نمایش برندها
   const validBrands = TOROB_BRANDS.filter(brand => !IGNORED_BRANDS.includes(brand));
   
   if (currentTab === 'torob') {
-    // در تب ترب، همه برندهای معتبر را نمایش بده
     validBrands.forEach(brand => {
       brandSelect.innerHTML += `<option value="${brand}">${brand}</option>`;
     });
   } else {
-    // در تب دیجی‌کالا، فقط برندهای موجود در داده را نمایش بده، اما با ترتیب TOROB_BRANDS
     const existingBrands = new Set(data.map(d => d.brand).filter(b => b !== 'متفرقه' && b !== 'نامشخص'));
-    // اول برندهایی که در TOROB_BRANDS هستند و در داده وجود دارند
     validBrands.forEach(brand => {
       if (existingBrands.has(brand)) {
         brandSelect.innerHTML += `<option value="${brand}">${brand}</option>`;
       }
     });
-    // سپس برندهایی که در TOROB_BRANDS نیستند اما در داده وجود دارند (به ترتیب الفبا)
     const otherBrands = [...existingBrands].filter(b => !validBrands.includes(b)).sort((a, b) => a.localeCompare(b, 'fa'));
     otherBrands.forEach(b => brandSelect.innerHTML += `<option value="${b}">${b}</option>`);
   }
@@ -418,7 +471,6 @@ function sortData(data) {
     }
 
     if (typeof aVal === 'string' && typeof bVal === 'string') {
-      // مرتب‌سازی صحیح فارسی با localeCompare
       return sortDir === 'asc' 
         ? aVal.localeCompare(bVal, 'fa') 
         : bVal.localeCompare(aVal, 'fa');
@@ -671,6 +723,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     reader.readAsText(file);
   });
+
+  // رویداد تغییر نوع نمودار
+  const chartTypeSelect = document.getElementById('chart-type');
+  if (chartTypeSelect) {
+    chartTypeSelect.addEventListener('change', () => {
+      const filteredData = getFilteredData();
+      renderChart(filteredData);
+    });
+  }
 
   updateUI();
 });
