@@ -1,4 +1,4 @@
-// js/dashboard.js - نسخه خفن نهایی
+// js/dashboard.js - فیکس نهایی آپلود + دارک مود + ری‌اکشن
 
 let currentData = { torob: [], digikala: [] };
 let currentTab = 'torob';
@@ -9,9 +9,9 @@ const TOROB_BRANDS = [
   "ورلد استار", "پارس", "پاناسونیک"
 ];
 
-function toPersianDigits(n) {
-  if (n == null) return '—';
-  return n.toLocaleString('fa-IR');
+function toPersianDigits(num) {
+  if (num === '—' || num === null || num === undefined) return '—';
+  return num.toLocaleString('fa-IR');
 }
 
 function extractBrand(title) {
@@ -19,7 +19,9 @@ function extractBrand(title) {
   const l = title.toLowerCase();
   if (l.includes('سامسونگ')) return 'سامسونگ';
   if (l.includes('سام الکترونیک') || l.includes('سام')) return 'سام الکترونیک';
-  for (const b of TOROB_BRANDS) if (l.includes(b.toLowerCase())) return b;
+  for (const b of TOROB_BRANDS) {
+    if (l.includes(b.toLowerCase())) return b;
+  }
   return 'متفرقه';
 }
 
@@ -39,21 +41,37 @@ function extractSize(title) {
 }
 
 function loadData(raw, source) {
-  const processed = raw.map(item => {
-    const title = String(item['ProductCard_desktop_product-name__JwqeK'] || item['ellipsis-2'] || '').trim();
-    return {
-      name: title || 'نامشخص',
-      brand: extractBrand(title),
-      price: parseInt((item['ProductCard_desktop_product-price-text__y20OV'] || item['flex'] || '0').replace(/[^0-9]/g,'')) || 0,
-      sellers: parseInt((item['ProductCard_desktop_shops__mbtsF'] || '0').replace(/[^0-9]/g,'')) || 1,
-      link: item['ProductCards_cards__MYvdn href'] || item['block href'] || '#',
-      size: extractSize(title)
-    };
-  }).filter(i => i.price > 0);
+  let processed = [];
+
+  if (source === 'torob') {
+    processed = raw.map(item => {
+      const title = String(item['ProductCard_desktop_product-name__JwqeK'] || '').trim();
+      const brand = extractBrand(title);
+      const size = extractSize(title);
+
+      let price = parseInt(String(item['ProductCard_desktop_product-price-text__y20OV'] || '0').replace(/[^0-9]/g, '')) || 0;
+      let sellers = parseInt(String(item['ProductCard_desktop_shops__mbtsF'] || '0').replace(/[^0-9]/g, '')) || 0;
+      const link = item['ProductCards_cards__MYvdn href'] || '#';
+
+      if (price <= 0) return null;
+
+      return { name: title, brand, price, sellers, link, size };
+    }).filter(Boolean);
+  } else {
+    // دیجی‌کالا (ساده‌سازی شده)
+    processed = raw.map(item => {
+      const title = item['ellipsis-2'] || 'نامشخص';
+      const brand = extractBrand(title);
+      const size = extractSize(title);
+      let price = parseInt(String(item['flex'] || '0').replace(/[^0-9]/g, '')) || 0;
+      return { name: title, brand, price, sellers: 1, link: item['block href'] || '#', size };
+    }).filter(i => i.price > 0);
+  }
 
   currentData[source] = processed;
-  currentTab = source;
+  currentTab = source; // تغییر تب به منبع فایل
   renderUI();
+  alert(`فایل ${source} با موفقیت لود شد (${processed.length} محصول)`);
 }
 
 function renderUI() {
@@ -69,7 +87,6 @@ function renderUI() {
   document.getElementById('avg-price').textContent = toPersianDigits(prices.length ? Math.round(prices.reduce((a,b)=>a+b,0)/prices.length) : 0) + ' تومان';
   document.getElementById('total-items').textContent = toPersianDigits(data.length);
   document.getElementById('total-sellers').textContent = toPersianDigits(data.reduce((s,i)=>s+i.sellers,0));
-  document.getElementById('total-brands').textContent = toPersianDigits(new Set(data.map(i=>i.brand)).size);
 
   // سایزها
   const sizes = [...new Set(data.map(d => d.size).filter(Boolean))]
@@ -83,7 +100,8 @@ function renderUI() {
   // برندها
   const brandSelect = document.getElementById('brand-filter');
   brandSelect.innerHTML = '<option value="">همه برندها</option>';
-  (currentTab === 'torob' ? TOROB_BRANDS : [...new Set(data.map(d => d.brand))]).forEach(b => {
+  const brands = currentTab === 'torob' ? TOROB_BRANDS : [...new Set(data.map(d => d.brand))];
+  brands.sort((a,b)=>a.localeCompare(b,'fa')).forEach(b => {
     brandSelect.innerHTML += `<option value="${b}">${b}</option>`;
   });
 
@@ -92,12 +110,27 @@ function renderUI() {
 
 function renderTable(data) {
   const tbody = document.querySelector('#product-table tbody');
-  tbody.innerHTML = data.map(item => `
+  const isTorob = currentTab === 'torob';
+
+  tbody.innerHTML = data.map(item => isTorob ? `
     <tr class="hover:bg-indigo-50 dark:hover:bg-slate-700/50 transition-colors">
-      <td class="px-6 py-4 font-medium">${item.name}</td>
+      <td class="px-6 py-4">${item.name}</td>
       <td class="px-6 py-4">${item.brand}</td>
       <td class="px-6 py-4">${toPersianDigits(item.price)} تومان</td>
       <td class="px-6 py-4">${toPersianDigits(item.sellers)} فروشنده</td>
+      <td class="px-6 py-4">
+        <a href="${item.link}" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:underline">مشاهده</a>
+      </td>
+    </tr>
+  ` : `
+    <tr class="hover:bg-indigo-50 dark:hover:bg-slate-700/50 transition-colors">
+      <td class="px-6 py-4">${item.name}</td>
+      <td class="px-6 py-4">${item.brand}</td>
+      <td class="px-6 py-4">${toPersianDigits(item.price)} تومان</td>
+      <td class="px-6 py-4">${toPersianDigits(item.original_price_num || 0)} تومان</td>
+      <td class="px-6 py-4">${item.discount || '—'}</td>
+      <td class="px-6 py-4">${item.rating || '—'}</td>
+      <td class="px-6 py-4">${item.stock || 'نامشخص'}</td>
       <td class="px-6 py-4">
         <a href="${item.link}" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:underline">مشاهده</a>
       </td>
@@ -106,7 +139,7 @@ function renderTable(data) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // دارک مود
+  // دارک مود واقعی با ذخیره
   const toggle = document.getElementById('theme-toggle');
   const isDark = localStorage.getItem('darkMode') !== 'false';
   document.documentElement.classList.toggle('dark', isDark);
@@ -137,13 +170,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    let source = file.name.toLowerCase().startsWith('torob') ? 'torob' : 'digikala';
+    let source = 'digikala';
+    if (file.name.toLowerCase().startsWith('torob')) source = 'torob';
 
     const reader = new FileReader();
     reader.onload = ev => {
       try {
         const json = JSON.parse(ev.target.result);
         loadData(json, source);
+        alert(`فایل ${source} لود شد (${json.length} محصول)`);
       } catch (err) {
         alert('خطا در فایل: ' + err.message);
       }
@@ -171,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, currentTab);
-    XLSX.writeFile(wb, `${currentTab}_prices_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.writeFile(wb, `${currentTab}_prices.xlsx`);
   });
 
   renderUI();
