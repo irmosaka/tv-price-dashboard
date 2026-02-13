@@ -1,17 +1,23 @@
 /* css/style.css */
-* { box-sizing: border-box; }
+* { box-sizing: border-box;
+  font-family: 'Vazirmatn', system-ui, -apple-system, sans-serif !important;
+  font-weight: 400;
+  }
 
 body {
-  font-family: 'Vazirmatn', system-ui, sans-serif;
   background: #f8f9fa;
   margin: 0;
   padding: 20px;
-  color: #2c3e50;
+  color: #1f2937;
 }
 
 .container {
   max-width: 1450px;
   margin: 0 auto;
+}
+
+h1, h2, h3, label, button, td, th, select, input {
+  font-family: 'Vazirmatn', sans-serif !important;
 }
 
 h1 {
@@ -43,6 +49,8 @@ h1 {
 }
 
 input, select, button {
+  font-family: 'Vazirmatn', sans-serif !important;
+  font-weight: 500;
   padding: 10px 14px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
@@ -50,11 +58,12 @@ input, select, button {
 }
 
 button {
+  font-family: 'Vazirmatn', sans-serif !important;
+  font-weight: 500;
   background: #2563eb;
   color: white;
   border: none;
   cursor: pointer;
-  font-weight: 500;
 }
 
 button:hover {
@@ -68,10 +77,12 @@ button:hover {
 #download-excel:hover { background: #15803d; }
 
 .tabs {
+  font-family: 'Vazirmatn', sans-serif !important;
   margin-bottom: 15px;
 }
 
 .tab {
+  font-family: 'Vazirmatn', sans-serif !important;
   padding: 12px 28px;
   background: #e2e8f0;
   border: none;
@@ -81,11 +92,13 @@ button:hover {
 }
 
 .tab.active {
+  font-family: 'Vazirmatn', sans-serif !important;
   background: #2563eb;
   color: white;
 }
 
 table {
+  font-family: 'Vazirmatn', sans-serif !important;
   width: 100%;
   border-collapse: collapse;
   background: white;
@@ -95,6 +108,7 @@ table {
 }
 
 th, td {
+  font-family: 'Vazirmatn', sans-serif !important;
   padding: 14px 12px;
   text-align: right;
   border-bottom: 1px solid #e2e8f0;
@@ -107,15 +121,18 @@ th {
 }
 
 th:hover {
+  font-family: 'Vazirmatn', sans-serif !important;
   background: #1e3a8a;
 }
 
 #pagination {
+  font-family: 'Vazirmatn', sans-serif !important;
   margin: 25px 0;
   text-align: center;
 }
 
 #pagination button {
+  font-family: 'Vazirmatn', sans-serif !important;
   margin: 0 4px;
   padding: 8px 14px;
   background: #f1f5f9;
@@ -125,11 +142,13 @@ th:hover {
 }
 
 #pagination button.active {
+  font-family: 'Vazirmatn', sans-serif !important;
   background: #2563eb;
   color: white;
 }
 
 .charts {
+  font-family: 'Vazirmatn', sans-serif !important;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
   gap: 25px;
@@ -137,6 +156,7 @@ th:hover {
 }
 
 canvas {
+  font-family: 'Vazirmatn', sans-serif !important;
   background: white;
   padding: 20px;
   border-radius: 12px;
@@ -144,6 +164,7 @@ canvas {
 }
 
 #stats {
+  font-family: 'Vazirmatn', sans-serif !important;
   display: flex;
   flex-wrap: wrap;
   gap: 30px;
