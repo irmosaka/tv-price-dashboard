@@ -5,19 +5,19 @@ let rowsPerPage = 20;
 let sortCol = 'price_num';
 let sortDir = 'asc';
 
-// لیست برندها به ترتیب حروف الفبا (مرتب شده با localeCompare)
+// لیست کامل برندها (مرتب شده بر اساس حروف الفبا)
 const TOROB_BRANDS = [
   "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "پارس", "پاناسونیک",
-  "تی سی ال", "توشیبا", "جی بی پی", "جی پلاس", "جی وی سی", "دوو", "سام الکترونیک", "سامسونگ",
-  "سونی", "لیماک جنرال اینترنشنال", "نکسار", "هایسنس", "ورلد استار"
+  "تی سی ال", "توشیبا", "جی بی پی", "جی پلاس", "جی وی سی", "دوو", "سام الکترونیک",
+  "سامسونگ", "سونی", "لیماک جنرال اینترنشنال", "نکسار", "هایسنس", "ورلد استار"
 ].sort((a, b) => a.localeCompare(b, 'fa'));
 
-// برندهایی که باید به عنوان متفرقه دسته‌بندی شوند (اما خود برند حذف نمی‌شود)
+// برندهایی که باید به عنوان متفرقه دسته‌بندی شوند (اما در فیلتر نمایش داده نمی‌شوند)
 const IGNORED_BRANDS = ["بویمن", "جی بی پی", "لیماک جنرال اینترنشنال", "ورلد استار"];
 
 // کلمات کلیدی برای حذف کامل محصول (این محصولات اصلاً نمایش داده نمی‌شوند)
 const EXCLUDE_KEYWORDS = [
-  "ویدئو وال", "LED Wall", "پاورولوژی", "powerology", 
+  "ویدئو وال", "LED Wall", "پاورولوژی", "powerology",
   "ال ای دی ۱۵.۶ اینچ", "15.6 اینچ", "مانیتور", "monitor",
   "ITC", "گام پیکسل", "فضای داخلی", "ولگا", "volga",
   "ضخیم", "نرمال", "۴۰ پین", "40 Pin"
@@ -28,85 +28,88 @@ let chartBrandAvg = null;
 let chartSizeAvg = null;
 let chartBrandCount = null;
 
+// تابع کمکی برای نرمال‌سازی متن (حذف کاراکترهای خاص)
+function normalizeText(text) {
+  if (!text) return '';
+  // حذف zero-width spaces و کاراکترهای کنترلی
+  return text.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+}
+
 function toPersianDigits(num) {
   if (num === '—' || num === null || num === undefined) return '—';
   return num.toLocaleString('fa-IR');
 }
 
+// تشخیص برند با روش includes و اولویت طول عبارت
 function extractBrandFromTitle(title) {
   if (!title || typeof title !== 'string' || !title.trim()) return 'متفرقه';
-  
-  const lower = title.toLowerCase();
-  
-  // تشخیص برند سام الکترونیک (با دقت بالا و جلوگیری از تداخل با برندهای دیگر)
-  if (lower.includes('سام') && !lower.includes('سامسونگ') && (lower.includes('ua') || lower.includes('qa'))) {
-    if (!lower.includes('lg') && !lower.includes('ال جی') && !lower.includes('ال‌جی')) {
-      return 'سام الکترونیک';
-    }
-  }
-  
-  // لیست الگوهای برند با اولویت نام‌های بلندتر
+
+  const normalized = normalizeText(title).toLowerCase();
+
+  // لیست برندها به همراه نام‌های انگلیسی معادل (با اولویت طول)
   const brandPatterns = [
-    // برندهای با نام بلند (برای جلوگیری از تشخیص نادرست)
-    { pattern: 'لیماک جنرال اینترنشنال', name: 'لیماک جنرال اینترنشنال' },
-    { pattern: 'limak general international', name: 'لیماک جنرال اینترنشنال' },
-    { pattern: 'ورلد استار', name: 'ورلد استار' },
-    { pattern: 'worldstar', name: 'ورلد استار' },
-    { pattern: 'پاناسونیک', name: 'پاناسونیک' },
-    { pattern: 'panasonic', name: 'پاناسونیک' },
-    { pattern: 'توشیبا', name: 'توشیبا' },
-    { pattern: 'toshiba', name: 'توشیبا' },
-    { pattern: 'سام الکترونیک', name: 'سام الکترونیک' }, // اضافه شد
-    { pattern: 'سامسونگ', name: 'سامسونگ' },
-    { pattern: 'samsung', name: 'سامسونگ' },
-    { pattern: 'سونی', name: 'سونی' },
-    { pattern: 'sony', name: 'سونی' },
-    { pattern: 'ال جی', name: 'ال جی' },
-    { pattern: 'lg', name: 'ال جی' },
-    { pattern: 'اسنوا', name: 'اسنوا' },
-    { pattern: 'دوو', name: 'دوو' },
-    { pattern: 'هایسنس', name: 'هایسنس' },
-    { pattern: 'hisense', name: 'هایسنس' },
-    { pattern: 'تی سی ال', name: 'تی سی ال' },
-    { pattern: 'tcl', name: 'تی سی ال' },
-    { pattern: 'ایکس ویژن', name: 'ایکس ویژن' },
-    { pattern: 'xvision', name: 'ایکس ویژن' },
-    { pattern: 'آپلاس', name: 'آپلاس' },
-    { pattern: 'aplus', name: 'آپلاس' },
-    { pattern: 'آیوا', name: 'آیوا' },
-    { pattern: 'aiwa', name: 'آیوا' },
-    { pattern: 'جی پلاس', name: 'جی پلاس' },
-    { pattern: 'gplus', name: 'جی پلاس' },
-    { pattern: 'جی وی سی', name: 'جی وی سی' },
-    { pattern: 'jvc', name: 'جی وی سی' },
-    { pattern: 'نکسار', name: 'نکسار' },
-    { pattern: 'nexar', name: 'نکسار' },
-    { pattern: 'پارس', name: 'پارس' },
-    { pattern: 'pars', name: 'پارس' },
-    { pattern: 'بویمن', name: 'بویمن' },
-    { pattern: 'boyman', name: 'بویمن' },
-    { pattern: 'جی بی پی', name: 'جی بی پی' },
-    { pattern: 'gbp', name: 'جی بی پی' }
+    // برندهای بلندتر اول
+    { name: 'لیماک جنرال اینترنشنال', patterns: ['لیماک جنرال اینترنشنال', 'limak general international'] },
+    { name: 'ورلد استار', patterns: ['ورلد استار', 'worldstar'] },
+    { name: 'پاناسونیک', patterns: ['پاناسونیک', 'panasonic'] },
+    { name: 'توشیبا', patterns: ['توشیبا', 'toshiba'] },
+    { name: 'سام الکترونیک', patterns: ['سام الکترونیک'] },
+    { name: 'سامسونگ', patterns: ['سامسونگ', 'samsung'] },
+    { name: 'سونی', patterns: ['سونی', 'sony'] },
+    { name: 'ال جی', patterns: ['ال جی', 'ال‌جی', 'lg'] },
+    { name: 'اسنوا', patterns: ['اسنوا'] },
+    { name: 'دوو', patterns: ['دوو'] },
+    { name: 'هایسنس', patterns: ['هایسنس', 'hisense'] },
+    { name: 'تی سی ال', patterns: ['تی سی ال', 'tcl'] },
+    { name: 'ایکس ویژن', patterns: ['ایکس ویژن', 'xvision'] },
+    { name: 'آپلاس', patterns: ['آپلاس', 'aplus'] },
+    { name: 'آیوا', patterns: ['آیوا', 'aiwa'] },
+    { name: 'جی پلاس', patterns: ['جی پلاس', 'gplus'] },
+    { name: 'جی وی سی', patterns: ['جی وی سی', 'jvc'] },
+    { name: 'نکسار', patterns: ['نکسار', 'nexar'] },
+    { name: 'پارس', patterns: ['پارس', 'pars'] },
+    { name: 'بویمن', patterns: ['بویمن', 'boyman'] },
+    { name: 'جی بی پی', patterns: ['جی بی پی', 'gbp'] },
+    // برای «سام» به‌تنهایی (با شرط عدم وجود سامسونگ و وجود UA/QA)
+    { name: 'سام الکترونیک', patterns: ['سام'], condition: (txt) => txt.includes('سام') && !txt.includes('سامسونگ') && (txt.includes('ua') || txt.includes('qa')) }
   ];
 
-  // مرتب‌سازی الگوها بر اساس طول (نزولی) برای اولویت با نام‌های بلندتر
-  brandPatterns.sort((a, b) => b.pattern.length - a.pattern.length);
+  // اول بررسی شرطی برای «سام» (با UA/QA)
+  for (const bp of brandPatterns) {
+    if (bp.condition) {
+      if (bp.condition(normalized)) {
+        return bp.name;
+      }
+    }
+  }
 
-  for (const { pattern, name } of brandPatterns) {
-    // برای جلوگیری از تداخل "سونی" با "سونیا"، از کلمه کامل استفاده می‌کنیم
-    // در متن فارسی، کلمات با فاصله جدا می‌شوند. می‌توانیم بررسی کنیم که الگو به صورت کلمه مجزا باشد
-    const regex = new RegExp(`\\b${pattern}\\b`, 'i');
-    if (regex.test(lower)) {
+  // سپس بررسی الگوهای معمولی (با اولویت طول)
+  // ابتدا لیست را بر اساس طول بلندترین pattern مرتب می‌کنیم
+  const flatPatterns = [];
+  brandPatterns.forEach(bp => {
+    if (!bp.condition) { // آن‌هایی که شرط ندارند
+      bp.patterns.forEach(p => {
+        flatPatterns.push({ name: bp.name, pattern: p.toLowerCase() });
+      });
+    }
+  });
+  flatPatterns.sort((a, b) => b.pattern.length - a.pattern.length);
+
+  for (const { name, pattern } of flatPatterns) {
+    if (normalized.includes(pattern)) {
+      // اگر برند در لیست نادیده‌گرفته‌شده است، متفرقه برگردان
       if (IGNORED_BRANDS.includes(name)) return 'متفرقه';
       return name;
     }
   }
-  
+
   return 'متفرقه';
 }
 
 function extractSize(title) {
   if (!title || typeof title !== 'string') return 'نامشخص';
+
+  const normalized = normalizeText(title);
 
   // الگوهای اصلی (با ذکر "اینچ" یا "سایز")
   const patterns = [
@@ -125,7 +128,7 @@ function extractSize(title) {
   ];
 
   for (const pattern of patterns) {
-    const match = title.match(pattern);
+    const match = normalized.match(pattern);
     if (match && match[1]) {
       let sizeStr = match[1].replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
       const num = parseInt(sizeStr, 10);
@@ -133,9 +136,8 @@ function extractSize(title) {
     }
   }
 
-  // اگر الگوهای اصلی پیدا نشد، به دنبال اعداد تنها می‌گردیم
-  // اما فقط اعدادی که به صورت کلمه مستقل باشند (نه بخشی از مدل مثل S30)
-  const standaloneNumbers = title.match(/\b(\d{2,3})\b/g);
+  // اگر الگوهای اصلی پیدا نشد، به دنبال اعداد تنها می‌گردیم (با دقت)
+  const standaloneNumbers = normalized.match(/\b(\d{2,3})\b/g);
   if (standaloneNumbers) {
     for (let numStr of standaloneNumbers) {
       const num = parseInt(numStr, 10);
@@ -143,29 +145,16 @@ function extractSize(title) {
     }
   }
 
-  // بررسی اعداد در عنوان برای مدل‌های تلویزیون (به عنوان آخرین راه، اما با دقت کمتر)
-  const numbers = title.match(/\d{2,3}/g);
-  if (numbers) {
-    for (let num of numbers) {
-      const n = parseInt(num, 10);
-      // فقط اگر عدد بین 40 و 100 باشد و در مجاورت حرف نباشد؟ اینجا سخت است، فعلاً همین.
-      if (n >= 40 && n <= 100) return n.toString();
-    }
-  }
-  
   return 'نامشخص';
 }
 
 function extractTech(title) {
   const lower = (title || '').toLowerCase();
-  
   if (lower.includes('qled') || lower.includes('کیو ال ای دی') || lower.includes('کیو‌ال‌ایدی') ||
-      lower.includes('q led') || lower.includes('کیوال‌ایدی') || lower.includes('کیوال‌ایدی') ||
+      lower.includes('q led') || lower.includes('کیوال‌ایدی') ||
       (lower.includes('q') && lower.includes('led'))) return 'QLED';
-  
   if (lower.includes('oled') || lower.includes('اولد') || lower.includes('او ال ای دی') ||
       (lower.includes('o') && lower.includes('led'))) return 'OLED';
-  
   return 'LED';
 }
 
