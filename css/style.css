@@ -1,176 +1,19 @@
 /* css/style.css */
-* { box-sizing: border-box;
-  font-family: 'Vazirmatn', system-ui, -apple-system, sans-serif !important;
-  font-weight: 400;
-  }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 body {
-  background: #f8f9fa;
-  margin: 0;
-  padding: 20px;
-  color: #1f2937;
+  font-family: 'Vazirmatn', system-ui, sans-serif;
 }
 
-.container {
-  max-width: 1450px;
-  margin: 0 auto;
+th[data-col] {
+  position: relative;
 }
 
-h1, h2, h3, label, button, td, th, select, input {
-  font-family: 'Vazirmatn', sans-serif !important;
-}
-
-h1 {
-  text-align: center;
-  margin-bottom: 25px;
-  color: #1e3a8a;
-}
-
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  background: white;
-  padding: 18px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-  margin-bottom: 25px;
-}
-
-.filter-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.filter-group label {
-  font-weight: 600;
-  min-width: 70px;
-}
-
-input, select, button {
-  font-family: 'Vazirmatn', sans-serif !important;
-  font-weight: 500;
-  padding: 10px 14px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 15px;
-}
-
-button {
-  font-family: 'Vazirmatn', sans-serif !important;
-  font-weight: 500;
-  background: #2563eb;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #1d4ed8;
-}
-
-#clear-filters { background: #ef4444; }
-#clear-filters:hover { background: #dc2626; }
-
-#download-excel { background: #16a34a; }
-#download-excel:hover { background: #15803d; }
-
-.tabs {
-  font-family: 'Vazirmatn', sans-serif !important;
-  margin-bottom: 15px;
-}
-
-.tab {
-  font-family: 'Vazirmatn', sans-serif !important;
-  padding: 12px 28px;
-  background: #e2e8f0;
-  border: none;
-  border-radius: 8px 8px 0 0;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.tab.active {
-  font-family: 'Vazirmatn', sans-serif !important;
-  background: #2563eb;
-  color: white;
-}
-
-table {
-  font-family: 'Vazirmatn', sans-serif !important;
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-}
-
-th, td {
-  font-family: 'Vazirmatn', sans-serif !important;
-  padding: 14px 12px;
-  text-align: right;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-th {
-  background: #1e40af;
-  color: white;
-  cursor: pointer;
-}
-
-th:hover {
-  font-family: 'Vazirmatn', sans-serif !important;
-  background: #1e3a8a;
-}
-
-#pagination {
-  font-family: 'Vazirmatn', sans-serif !important;
-  margin: 25px 0;
-  text-align: center;
-}
-
-#pagination button {
-  font-family: 'Vazirmatn', sans-serif !important;
-  margin: 0 4px;
-  padding: 8px 14px;
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-#pagination button.active {
-  font-family: 'Vazirmatn', sans-serif !important;
-  background: #2563eb;
-  color: white;
-}
-
-.charts {
-  font-family: 'Vazirmatn', sans-serif !important;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-  gap: 25px;
-  margin-top: 40px;
-}
-
-canvas {
-  font-family: 'Vazirmatn', sans-serif !important;
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-}
-
-#stats {
-  font-family: 'Vazirmatn', sans-serif !important;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
-  background: white;
-  padding: 18px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-  margin-bottom: 25px;
+th[data-col]::after {
+  content: '↕';
+  position: absolute;
+  right: 8px;
+  opacity: 0.5;
 }
