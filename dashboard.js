@@ -5,7 +5,7 @@ let rowsPerPage = 20;
 let sortCol = 'price_num';
 let sortDir = 'asc';
 
-// لیست برندها به ترتیب حروف الفبا
+// لیست برندها به ترتیب حروف الفبا (مرتب شده)
 const TOROB_BRANDS = [
   "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "پارس", "پاناسونیک",
   "تی سی ال", "جی بی پی", "جی پلاس", "جی وی سی", "دوو", "سام الکترونیک", "سامسونگ",
@@ -27,14 +27,15 @@ function extractBrandFromTitle(title) {
   
   const lower = title.toLowerCase();
   
-  // تشخیص برند سام الکترونیک (الویت بالا)
-  if ((lower.includes('سام') || lower.includes('samsung') === false) && 
-      (lower.includes('ua') || lower.includes('qa')) && 
-      !lower.includes('سامسونگ')) {
-    return 'سام الکترونیک';
+  // تشخیص برند سام الکترونیک (با دقت بالا و جلوگیری از تداخل با برندهای دیگر)
+  if (lower.includes('سام') && !lower.includes('سامسونگ') && (lower.includes('ua') || lower.includes('qa'))) {
+    // اطمینان از اینکه برند دیگری مانند ال‌جی نیست (ال‌جی نیز ممکن است UA داشته باشد)
+    if (!lower.includes('lg') && !lower.includes('ال جی') && !lower.includes('ال‌جی')) {
+      return 'سام الکترونیک';
+    }
   }
   
-  // برندهای ویژه
+  // برندهای ویژه با الگوهای دقیق
   const brandPatterns = [
     { pattern: 'پاناسونیک', name: 'پاناسونیک' },
     { pattern: 'panasonic', name: 'پاناسونیک' },
@@ -371,12 +372,27 @@ function updateUI() {
   const brandSelect = document.getElementById('brand-filter');
   brandSelect.innerHTML = '<option value="">همه برندها</option>';
 
-  // فیلتر کردن برندهای نادیده گرفته شده
+  // استفاده از ترتیب ثابت TOROB_BRANDS برای نمایش برندها
   const validBrands = TOROB_BRANDS.filter(brand => !IGNORED_BRANDS.includes(brand));
   
-  validBrands.sort((a, b) => a.localeCompare(b, 'fa')).forEach(brand => {
-    brandSelect.innerHTML += `<option value="${brand}">${brand}</option>`;
-  });
+  if (currentTab === 'torob') {
+    // در تب ترب، همه برندهای معتبر را نمایش بده
+    validBrands.forEach(brand => {
+      brandSelect.innerHTML += `<option value="${brand}">${brand}</option>`;
+    });
+  } else {
+    // در تب دیجی‌کالا، فقط برندهای موجود در داده را نمایش بده، اما با ترتیب TOROB_BRANDS
+    const existingBrands = new Set(data.map(d => d.brand).filter(b => b !== 'متفرقه' && b !== 'نامشخص'));
+    // اول برندهایی که در TOROB_BRANDS هستند و در داده وجود دارند
+    validBrands.forEach(brand => {
+      if (existingBrands.has(brand)) {
+        brandSelect.innerHTML += `<option value="${brand}">${brand}</option>`;
+      }
+    });
+    // سپس برندهایی که در TOROB_BRANDS نیستند اما در داده وجود دارند (به ترتیب الفبا)
+    const otherBrands = [...existingBrands].filter(b => !validBrands.includes(b)).sort((a, b) => a.localeCompare(b, 'fa'));
+    otherBrands.forEach(b => brandSelect.innerHTML += `<option value="${b}">${b}</option>`);
+  }
 
   renderTable(data);
   renderChart(data);
