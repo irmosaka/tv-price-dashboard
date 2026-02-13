@@ -1,351 +1,101 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>داشبورد قیمت تلویزیون</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>داشبورد قیمت تلویزیون</title>
+  
+  <!-- فونت فارسی -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vazirmatn@33.0.4/Vazirmatn-font-face.css">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- SheetJS برای اکسل -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-    <style>
-        :root {
-            --primary: #2563eb;
-            --primary-light: #3b82f6;
-            --gray: #6b7280;
-            --light: #f3f4f6;
-            --dark: #1f2937;
-            --shadow: 0 4px 20px rgba(0,0,0,0.08);
-        }
-
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body, button, input, select, span, div, p, h1, h3, td, th {
-            font-family: 'Vazirmatn', system-ui, sans-serif !important;
-        }
-        body {
-            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-            color: var(--dark);
-            min-height: 100vh;
-            padding: 1.5rem 1rem;
-            margin: 0;
-            position: relative;
-        }
-
-        /* واترمارک */
-        body::after {
-            content: 'Made BY MoSaKa';
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            font-size: 0.8rem;
-            color: rgba(107, 114, 128, 0.3);
-            font-style: italic;
-            font-weight: 300;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        .container { max-width: 1440px; margin: 0 auto; }
-
-        h1 { text-align: center; font-size: clamp(1.8rem, 5vw, 2.5rem); color: var(--primary); margin-bottom: 1.5rem; }
-
-        #last-update { text-align: center; color: var(--gray); font-size: 1rem; margin: 1rem 0; }
-
-        #stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.2rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(37,99,235,0.15); }
-
-        .stat-card i { font-size: 2.2rem; color: var(--primary); margin-bottom: 0.8rem; }
-
-        .stat-card h3 { font-size: 1rem; color: var(--gray); margin-bottom: 0.6rem; }
-
-        .stat-card .value { font-size: 2.1rem; font-weight: 700; color: var(--primary-dark); }
-
-        #tabs {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 1rem;
-            background: white;
-            border-radius: 12px;
-            padding: 0.5rem;
-            box-shadow: var(--shadow);
-        }
-
-        .tab {
-            padding: 0.8rem 1.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
-
-        .tab.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .tab:hover {
-            background: var(--primary-light);
-            color: white;
-        }
-
-        #filter-section {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-            margin-bottom: 2rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #filter-section label { display: flex; align-items: center; gap: 0.6rem; font-weight: 500; }
-
-        select, input[type="range"] {
-            padding: 0.7rem 1rem;
-            border: 1px solid #d1d5db;
-            border-radius: 10px;
-            font-size: 1rem;
-        }
-
-        #clear-filters {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 0.7rem 1.4rem;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        #clear-filters:hover { background: #dc2626; transform: scale(1.03); }
-
-        #actions { text-align: center; margin: 1.5rem 0; }
-
-        #actions button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.8rem 1.6rem;
-            border-radius: 12px;
-            cursor: pointer;
-            margin: 0.5rem;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        #actions button:hover { background: var(--primary-light); transform: translateY(-2px); }
-
-        .table-wrapper { overflow-x: auto; margin: 1.5rem 0; }
-
-        #product-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: var(--shadow);
-        }
-
-        th, td { padding: 14px 12px; text-align: right; border-bottom: 1px solid #e5e7eb; }
-
-        th { background: var(--primary); color: white; cursor: pointer; }
-
-        th:hover { background: var(--primary-light); }
-
-        tr:hover { background: rgba(37,99,235,0.03); }
-
-        .pagination {
-            display: flex;
-            justify-content: center;
-            margin: 2rem 0;
-            gap: 0.5rem;
-        }
-
-        .pagination button {
-            background: white;
-            border: 1px solid var(--gray);
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .pagination button.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .pagination button:hover:not(.active) {
-            background: var(--light);
-        }
-
-        .pagination button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        #load-more {
-            display: none; /* جایگزین با pagination */
-        }
-
-        #charts-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: auto auto;
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .chart-card.full-width {
-            grid-column: 1 / 3;
-            grid-row: auto;
-        }
-
-        .chart-card {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-            cursor: default;
-        }
-
-        .chart-card h3 { text-align: center; margin-bottom: 1rem; color: var(--primary); font-weight: 600; }
-
-        canvas { width: 100% !important; height: 280px !important; }
-
-        footer {
-            text-align: center;
-            margin-top: 4rem;
-            padding: 2rem 0;
-            color: var(--gray);
-            font-size: 1rem;
-            border-top: 1px solid #e5e7eb;
-        }
-
-        footer strong { color: var(--primary); font-weight: 600; }
-
-        @media (max-width: 992px) {
-            #charts-section {
-                grid-template-columns: 1fr;
-                grid-template-rows: auto;
-            }
-            .chart-card.full-width {
-                grid-column: 1;
-                grid-row: auto;
-            }
-            canvas { height: 260px !important; }
-        }
-
-        @media (max-width: 768px) {
-            h1 { font-size: 1.8rem; }
-            #filter-section { flex-direction: column; }
-            .chart-card { padding: 1rem; }
-            canvas { height: 220px !important; }
-        }
-    </style>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container">
-        <h1><i class="fas fa-tv"></i> داشبورد قیمت تلویزیون</h1>
-        
-        <p id="last-update"><i class="fas fa-clock"></i> آخرین بروزرسانی: —</p>
-        
-        <!-- تب‌ها برای منابع مختلف -->
-        <div id="tabs">
-            <div class="tab active" data-tab="digikala">دیجی‌کالا</div>
-            <div class="tab" data-tab="torob">ترب</div>
-            <div class="tab" data-tab="compare">مقایسه</div>
-        </div>
-        
-        <div id="stats">
-            <div class="stat-card"><i class="fas fa-coins"></i><h3>میانگین قیمت فروش</h3><div class="value" id="avg-price">— تومان</div></div>
-            <div class="stat-card"><i class="fas fa-boxes-stacked"></i><h3>تعداد محصولات</h3><div class="value" id="total-items">—</div></div>
-            <div class="stat-card"><i class="fas fa-store"></i><h3>تعداد فروشنده کل</h3><div class="value" id="total-sellers">—</div></div>
-            <div class="stat-card"><i class="fas fa-tags"></i><h3>تعداد برندها</h3><div class="value" id="total-brands">—</div></div>
-        </div>
+  <div class="container">
+    <h1>داشبورد مقایسه قیمت تلویزیون</h1>
 
-        <div id="filter-section">
-            <label><i class="fas fa-filter"></i> حداقل قیمت:
-                <input type="range" id="price-filter" min="0" max="500000000" value="0" step="5000000">
-                <span id="filter-value">۰ تومان</span>
-            </label>
-            <label><i class="fas fa-ruler"></i> سایز: <select id="size-filter"></select></label>
-            <label><i class="fas fa-copyright"></i> برند: <select id="brand-filter"></select></label>
-            <label><i class="fas fa-microchip"></i> تکنولوژی: <select id="tech-filter"></select></label>
-            <button id="clear-filters"><i class="fas fa-times"></i> حذف فیلترها</button>
-        </div>
+    <div class="controls">
+      <button id="upload-btn">آپلود JSON جدید</button>
+      <input type="file" id="file-input" accept=".json" style="display:none"/>
 
-        <div id="actions">
-            <button id="upload-btn"><i class="fas fa-upload"></i> آپلود JSON جدید</button>
-            <button onclick="downloadExcel()"><i class="fas fa-file-excel"></i> دانلود اکسل</button>
-        </div>
-        <input type="file" id="file-input" accept=".json" style="display:none;" />
+      <div class="filter-group">
+        <label>منبع:</label>
+        <select id="source-select">
+          <option value="torob">ترب</option>
+          <option value="digikala">دیجی‌کالا</option>
+        </select>
+      </div>
 
-        <div class="table-wrapper">
-            <table id="product-table">
-               <thead>
-                    <tr>
-                        <th data-col="name">نام محصول</th>
-                        <th data-col="brand">برند</th>
-                        <th data-col="price_num">قیمت فروش</th>
-                        <th data-col="original_price_num">قیمت اصلی</th>
-                        <th data-col="discount">تخفیف</th>
-                        <th data-col="rating">امتیاز</th>
-                        <th>موجودی</th>
-                        <th>لینک</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <div class="pagination" id="pagination"></div>
-        </div>
+      <div class="filter-group">
+        <label>جستجو:</label>
+        <input type="text" id="search-input" placeholder="نام محصول یا برند..."/>
+      </div>
 
-        <div id="charts-section">
-            <div class="chart-card full-width">
-                <h3><i class="fas fa-chart-bar"></i> قیمت میانگین بر اساس برند</h3>
-                <canvas id="brand-price-chart"></canvas>
-            </div>
-            <div class="chart-card full-width">
-                <h3><i class="fas fa-chart-scatter"></i> قیمت در مقابل سایز</h3>
-                <canvas id="price-size-scatter"></canvas>
-            </div>
-            <div class="chart-card full-width">
-                <h3><i class="fas fa-chart-pie"></i> توزیع برندها</h3>
-                <canvas id="brand-pie-chart" style="height: 600px !important;"></canvas>
-            </div>
-        </div>
+      <div class="filter-group">
+        <label>حداقل قیمت:</label>
+        <input type="number" id="price-filter" min="0" value="0"/>
+      </div>
 
-        <footer>
-            ساخته شده با ❤️ توسط <strong>محمد صادقی کاجی</strong> - زمستان ۱۴۰۴
-        </footer>
+      <div class="filter-group">
+        <label>سایز:</label>
+        <select id="size-filter">
+          <option value="">همه سایزها</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>برند:</label>
+        <select id="brand-filter">
+          <option value="">همه برندها</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>تکنولوژی:</label>
+        <select id="tech-filter">
+          <option value="">همه تکنولوژی‌ها</option>
+        </select>
+      </div>
+
+      <button id="clear-filters">پاک کردن فیلترها</button>
+      <button id="download-excel">دانلود اکسل</button>
     </div>
 
-    <script src="dashboard.js"></script>
+    <div id="stats">
+      <span>میانگین قیمت: <strong id="avg-price">—</strong></span>
+      <span>تعداد محصولات: <strong id="total-items">—</strong></span>
+      <span>تعداد فروشنده‌ها: <strong id="total-sellers">—</strong></span>
+      <span>تعداد برندها: <strong id="total-brands">—</strong></span>
+      <span id="last-update">آخرین بروزرسانی: —</span>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="torob">ترب</button>
+      <button class="tab" data-tab="digikala">دیجی‌کالا</button>
+    </div>
+
+    <table id="product-table">
+      <thead>
+        <tr></tr> <!-- هدر توسط JS پر می‌شود -->
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div id="pagination"></div>
+
+    <div class="charts">
+      <canvas id="brand-price-chart"></canvas>
+      <canvas id="brand-pie-chart"></canvas>
+      <canvas id="price-size-scatter"></canvas>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
