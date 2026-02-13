@@ -1,4 +1,4 @@
-// js/dashboard.js - فیکس نهایی آپلود + دارک مود + ری‌اکشن
+// js/dashboard.js
 
 let currentData = { torob: [], digikala: [] };
 let currentTab = 'torob';
@@ -19,9 +19,7 @@ function extractBrand(title) {
   const l = title.toLowerCase();
   if (l.includes('سامسونگ')) return 'سامسونگ';
   if (l.includes('سام الکترونیک') || l.includes('سام')) return 'سام الکترونیک';
-  for (const b of TOROB_BRANDS) {
-    if (l.includes(b.toLowerCase())) return b;
-  }
+  for (const b of TOROB_BRANDS) if (l.includes(b.toLowerCase())) return b;
   return 'متفرقه';
 }
 
@@ -49,55 +47,67 @@ function loadData(raw, source) {
       const brand = extractBrand(title);
       const size = extractSize(title);
 
-      let price = parseInt(String(item['ProductCard_desktop_product-price-text__y20OV'] || '0').replace(/[^0-9]/g, '')) || 0;
-      let sellers = parseInt(String(item['ProductCard_desktop_shops__mbtsF'] || '0').replace(/[^0-9]/g, '')) || 0;
+      let price_num = parseInt(String(item['ProductCard_desktop_product-price-text__y20OV'] || '0')
+        .replace(/[^0-9۰-۹]/g, '')
+        .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
+
+      let sellers = parseInt(String(item['ProductCard_desktop_shops__mbtsF'] || '0')
+        .replace(/[^0-9۰-۹]/g, '')
+        .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
+
       const link = item['ProductCards_cards__MYvdn href'] || '#';
 
-      if (price <= 0) return null;
+      if (price_num <= 0) return null;
 
-      return { name: title, brand, price, sellers, link, size };
+      return { name: title, brand, link, price_num, sellers, size };
     }).filter(Boolean);
   } else {
-    // دیجی‌کالا (ساده‌سازی شده)
     processed = raw.map(item => {
       const title = item['ellipsis-2'] || 'نامشخص';
       const brand = extractBrand(title);
       const size = extractSize(title);
-      let price = parseInt(String(item['flex'] || '0').replace(/[^0-9]/g, '')) || 0;
-      return { name: title, brand, price, sellers: 1, link: item['block href'] || '#', size };
-    }).filter(i => i.price > 0);
+      let price_num = parseInt(String(item['flex'] || '0').replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
+      let original_price_num = parseInt(String(item['text-neutral-300'] || '0').replace(/[^0-9۰-۹]/g, '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
+
+      return {
+        name: title,
+        brand,
+        link: item['block href'] || '#',
+        stock: item['text-caption'] || 'نامشخص',
+        rating: item['text-body2-strong'] || '—',
+        discount: item['text-body2-strong (2)'] || '—',
+        price_num,
+        original_price_num,
+        sellers: 1,
+        size
+      };
+    }).filter(d => d.price_num > 0);
   }
 
   currentData[source] = processed;
-  currentTab = source; // تغییر تب به منبع فایل
-  renderUI();
-  alert(`فایل ${source} با موفقیت لود شد (${processed.length} محصول)`);
+  currentTab = source;
+  updateUI();
 }
 
-function renderUI() {
+function updateUI() {
   const data = currentData[currentTab] || [];
   if (!data.length) {
-    document.querySelector('#product-table tbody').innerHTML = '<tr><td colspan="5" class="text-center py-20 text-slate-500 dark:text-slate-400 text-lg">هیچ داده‌ای موجود نیست</td></tr>';
+    document.querySelector('#product-table tbody').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:50px;">هیچ داده‌ای موجود نیست</td></tr>';
     document.getElementById('pagination').innerHTML = '';
     return;
   }
 
-  // Stats
-  const prices = data.map(i => i.price).filter(p => p > 0);
-  document.getElementById('avg-price').textContent = toPersianDigits(prices.length ? Math.round(prices.reduce((a,b)=>a+b,0)/prices.length) : 0) + ' تومان';
-  document.getElementById('total-items').textContent = toPersianDigits(data.length);
-  document.getElementById('total-sellers').textContent = toPersianDigits(data.reduce((s,i)=>s+i.sellers,0));
+  updateStats(data);
+  document.getElementById('last-update').textContent = `آخرین بروزرسانی: ${new Date().toLocaleString('fa-IR')}`;
 
-  // سایزها
   const sizes = [...new Set(data.map(d => d.size).filter(Boolean))]
-    .map(s => parseInt(s, 10))
-    .filter(n => !isNaN(n))
+    .map(s => parseInt(s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)), 10))
+    .filter(n => !isNaN(n) && n >= 32 && n <= 100)
     .sort((a,b)=>a-b);
 
   document.getElementById('size-filter').innerHTML = '<option value="">همه سایزها</option>' + 
     sizes.map(s => `<option value="${s}">${s} اینچ</option>`).join('');
 
-  // برندها
   const brandSelect = document.getElementById('brand-filter');
   brandSelect.innerHTML = '<option value="">همه برندها</option>';
   const brands = currentTab === 'torob' ? TOROB_BRANDS : [...new Set(data.map(d => d.brand))];
@@ -108,62 +118,51 @@ function renderUI() {
   renderTable(data);
 }
 
+function updateStats(data) {
+  const prices = data.map(i => i.price_num || i.price).filter(p => p > 0);
+  const avg = prices.length ? Math.round(prices.reduce((a,b)=>a+b,0)/prices.length) : 0;
+  document.getElementById('avg-price').textContent = toPersianDigits(avg) + ' تومان';
+  document.getElementById('total-items').textContent = toPersianDigits(data.length);
+  document.getElementById('total-sellers').textContent = toPersianDigits(data.reduce((s,i)=>s+(i.sellers||0),0));
+  document.getElementById('total-brands').textContent = toPersianDigits(new Set(data.map(i=>i.brand)).size);
+}
+
 function renderTable(data) {
   const tbody = document.querySelector('#product-table tbody');
   const isTorob = currentTab === 'torob';
 
   tbody.innerHTML = data.map(item => isTorob ? `
-    <tr class="hover:bg-indigo-50 dark:hover:bg-slate-700/50 transition-colors">
-      <td class="px-6 py-4">${item.name}</td>
-      <td class="px-6 py-4">${item.brand}</td>
-      <td class="px-6 py-4">${toPersianDigits(item.price)} تومان</td>
-      <td class="px-6 py-4">${toPersianDigits(item.sellers)} فروشنده</td>
-      <td class="px-6 py-4">
-        <a href="${item.link}" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:underline">مشاهده</a>
-      </td>
+    <tr>
+      <td>${item.name}</td>
+      <td>${item.brand}</td>
+      <td>${toPersianDigits(item.price_num || item.price)} تومان</td>
+      <td>${toPersianDigits(item.sellers)} فروشنده</td>
+      <td><a href="${item.link}" target="_blank">مشاهده</a></td>
     </tr>
   ` : `
-    <tr class="hover:bg-indigo-50 dark:hover:bg-slate-700/50 transition-colors">
-      <td class="px-6 py-4">${item.name}</td>
-      <td class="px-6 py-4">${item.brand}</td>
-      <td class="px-6 py-4">${toPersianDigits(item.price)} تومان</td>
-      <td class="px-6 py-4">${toPersianDigits(item.original_price_num || 0)} تومان</td>
-      <td class="px-6 py-4">${item.discount || '—'}</td>
-      <td class="px-6 py-4">${item.rating || '—'}</td>
-      <td class="px-6 py-4">${item.stock || 'نامشخص'}</td>
-      <td class="px-6 py-4">
-        <a href="${item.link}" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:underline">مشاهده</a>
-      </td>
+    <tr>
+      <td>${item.name}</td>
+      <td>${item.brand}</td>
+      <td>${toPersianDigits(item.price_num)} تومان</td>
+      <td>${toPersianDigits(item.original_price_num)} تومان</td>
+      <td>${item.discount}</td>
+      <td>${item.rating}</td>
+      <td>${item.stock}</td>
+      <td><a href="${item.link}" target="_blank">مشاهده</a></td>
     </tr>
   `).join('');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // دارک مود واقعی با ذخیره
-  const toggle = document.getElementById('theme-toggle');
-  const isDark = localStorage.getItem('darkMode') !== 'false';
-  document.documentElement.classList.toggle('dark', isDark);
-  toggle.querySelector('.light-icon').classList.toggle('hidden', isDark);
-  toggle.querySelector('.dark-icon').classList.toggle('hidden', !isDark);
-
-  toggle.addEventListener('click', () => {
-    const dark = document.documentElement.classList.toggle('dark');
-    localStorage.setItem('darkMode', dark);
-    toggle.querySelector('.light-icon').classList.toggle('hidden', dark);
-    toggle.querySelector('.dark-icon').classList.toggle('hidden', !dark);
-  });
-
-  // تب‌ها
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       currentTab = tab.dataset.tab;
-      renderUI();
+      updateUI();
     });
   });
 
-  // آپلود
   document.getElementById('upload-btn').addEventListener('click', () => document.getElementById('file-input').click());
 
   document.getElementById('file-input').addEventListener('change', e => {
@@ -176,9 +175,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const reader = new FileReader();
     reader.onload = ev => {
       try {
-        const json = JSON.parse(ev.target.result);
+        let text = ev.target.result.trim();
+        if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+        if (text.endsWith(',]')) text = text.slice(0, -2) + ']';
+
+        const json = JSON.parse(text);
         loadData(json, source);
-        alert(`فایل ${source} لود شد (${json.length} محصول)`);
       } catch (err) {
         alert('خطا در فایل: ' + err.message);
       }
@@ -186,17 +188,16 @@ document.addEventListener('DOMContentLoaded', () => {
     reader.readAsText(file);
   });
 
-  // فیلترها
-  ['search-input','price-filter','size-filter','brand-filter'].forEach(id => {
-    document.getElementById(id)?.addEventListener('input', renderUI);
-  });
-
   document.getElementById('clear-filters').addEventListener('click', () => {
     document.getElementById('search-input').value = '';
     document.getElementById('price-filter').value = 0;
     document.getElementById('size-filter').value = '';
     document.getElementById('brand-filter').value = '';
-    renderUI();
+    updateUI();
+  });
+
+  ['search-input','price-filter','size-filter','brand-filter'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', updateUI);
   });
 
   document.getElementById('download-excel').addEventListener('click', () => {
@@ -206,8 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, currentTab);
-    XLSX.writeFile(wb, `${currentTab}_prices.xlsx`);
+    XLSX.writeFile(wb, `${currentTab}_prices_${new Date().toISOString().slice(0,10)}.xlsx`);
   });
 
-  renderUI();
+  updateUI();
 });
