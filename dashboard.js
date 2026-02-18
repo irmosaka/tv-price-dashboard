@@ -265,7 +265,6 @@ function updateStats(data) {
   document.getElementById('avg-price').textContent = toPersianDigits(avgPrice) + ' تومان';
   document.getElementById('total-items').textContent = toPersianDigits(data.length);
   
-  // مجموع فروشندگان (در ترب معنی دارد، در دیجی‌کالا عموماً ۰ یا ۱)
   const totalSellers = data.reduce((sum, item) => sum + (item.sellers || 0), 0);
   document.getElementById('total-sellers').textContent = toPersianDigits(totalSellers);
   
@@ -432,16 +431,29 @@ function renderAllCharts(data) {
 function updateUI() {
   const data = currentData[currentTab] || [];
   
-  // نمایش/مخفی کردن کاشی تعداد فروشندگان
-  const sellersCard = document.getElementById('sellers-stat-card');
-  if (sellersCard) {
-    if (currentTab === 'torob') {
-      sellersCard.style.display = 'block';
-    } else {
-      sellersCard.style.display = 'none';
-    }
+  // تنظیم عرض کاشی‌های آمار
+  const avgWrapper = document.getElementById('stat-card-avg-wrapper');
+  const itemsWrapper = document.getElementById('stat-card-items-wrapper');
+  const sellersWrapper = document.getElementById('stat-card-sellers-wrapper');
+  const brandsWrapper = document.getElementById('stat-card-brands-wrapper');
+
+  if (currentTab === 'torob') {
+    // نمایش کاشی فروشندگان و تنظیم عرض یکسان
+    sellersWrapper.style.display = 'block';
+    [avgWrapper, itemsWrapper, sellersWrapper, brandsWrapper].forEach(el => {
+      el.classList.remove('col-lg-4', 'col-md-4');
+      el.classList.add('col-lg-3', 'col-md-6');
+    });
+  } else {
+    // مخفی کردن کاشی فروشندگان و تنظیم سه کاشی دیگر برای پر کردن فضا
+    sellersWrapper.style.display = 'none';
+    [avgWrapper, itemsWrapper, brandsWrapper].forEach(el => {
+      el.classList.remove('col-lg-3', 'col-md-6');
+      el.classList.add('col-lg-4', 'col-md-4');
+    });
   }
   
+  // نمایش سرستون‌های مناسب
   if (currentTab === 'torob') {
     document.getElementById('table-header-digikala').style.display = 'none';
     document.getElementById('table-header-torob').style.display = '';
