@@ -214,7 +214,12 @@ function loadData(raw, source = 'digikala') {
       };
     }).filter(item => item !== null);
   } else {
+    // ========== تغییر اصلی برای حذف آیتم‌های غیرمحصول ==========
     processed = raw.map(item => {
+      // نادیده گرفتن آیتم‌هایی که لینک معتبر محصول ندارند
+      if (!item['block href'] || !item['block href'].includes('/product/')) {
+        return null;
+      }
       const title = item['ellipsis-2'] || 'نامشخص';
       const brand = extractBrandFromTitle(title);
       const size = extractSize(title);
@@ -239,7 +244,8 @@ function loadData(raw, source = 'digikala') {
         size,
         tech
       };
-    }).filter(d => d.price_num > 0);
+    }).filter(d => d !== null && d.price_num > 0);
+    // ==========================================================
   }
 
   processed = processed.filter(isValidProduct);
