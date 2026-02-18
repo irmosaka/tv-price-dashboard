@@ -399,7 +399,7 @@
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
-                <div class="stat-card orange">
+                <div class="stat-card orange" id="sellers-stat-card">
                     <div class="stat-label">تعداد فروشندگان</div>
                     <div class="stat-value" id="total-sellers">۰</div>
                     <i class="fas fa-store"></i>
@@ -427,6 +427,16 @@
                     <div class="tab" data-tab="torob">
                         <i class="fas fa-search"></i> ترب
                     </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- بخش جستجو (جدا از فیلترها) -->
+        <div class="filter-section">
+            <h4><i class="fas fa-search"></i> جستجو</h4>
+            <div class="row">
+                <div class="col-12">
+                    <input type="text" class="form-control" id="search-input" placeholder="جستجو در نام محصول یا برند ...">
                 </div>
             </div>
         </div>
@@ -467,10 +477,6 @@
                     <button id="clear-filters" class="btn btn-outline-secondary">
                         <i class="fas fa-filter"></i> پاک کردن فیلترها
                     </button>
-                </div>
-                 <div class="col-md-3 mb-3">
-                    <label class="form-label">جستجو در نام محصول یا برند</label>
-                    <input type="text" class="form-control" id="search-input" placeholder="مثال: اسنوا یا 55 اینچ">
                 </div>
             </div>
         </div>
