@@ -553,7 +553,6 @@ function renderTable(data, page = currentPage) {
         <td>${item.discount}</td>
         <td>${item.rating}</td>
         <td>${item.stock}</td>
-        <td>—</td>
         <td><a href="${item.link}" target="_blank" class="product-link">مشاهده</a></td>
       </tr>`;
     }
