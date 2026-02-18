@@ -432,6 +432,16 @@ function renderAllCharts(data) {
 function updateUI() {
   const data = currentData[currentTab] || [];
   
+  // نمایش/مخفی کردن کاشی تعداد فروشندگان
+  const sellersCard = document.getElementById('sellers-stat-card');
+  if (sellersCard) {
+    if (currentTab === 'torob') {
+      sellersCard.style.display = 'block';
+    } else {
+      sellersCard.style.display = 'none';
+    }
+  }
+  
   if (currentTab === 'torob') {
     document.getElementById('table-header-digikala').style.display = 'none';
     document.getElementById('table-header-torob').style.display = '';
