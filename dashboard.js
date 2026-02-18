@@ -5,10 +5,10 @@ let rowsPerPage = 20;
 let sortCol = 'price_num';
 let sortDir = 'asc';
 
-// مسیر فایل‌های JSON (نسبت به صفحه اصلی)
-const DATA_PATHS = {
-  digikala: 'data/digikala-latest.json',
-  torob: 'data/torob-latest.json'
+// اطلاعات فایل‌های انتخاب‌شده (نام، تاریخ کامیت، آدرس)
+let selectedFiles = {
+  digikala: { name: null, commitDate: null, url: null },
+  torob: { name: null, commitDate: null, url: null }
 };
 
 // لیست کامل برندها (مرتب شده بر اساس حروف الفبا)
@@ -159,52 +159,122 @@ function isValidProduct(item) {
   return true;
 }
 
-// دریافت آخرین تاریخ کامیت فایل از GitHub
-async function fetchLastCommitDate(filename) {
+// دریافت لیست فایل‌های پوشه data از GitHub
+async function fetchFileList() {
   try {
-    // توجه: نام مخزن و مسیر فایل باید با مخزن شما هماهنگ شود
-    const response = await fetch(`https://api.github.com/repos/irmosaka/tv-price-dashboard/commits?path=${filename}&page=1&per_page=1`);
+    const response = await fetch('https://api.github.com/repos/irmosaka/tv-price-dashboard/contents/data');
+    if (!response.ok) throw new Error('خطا در دریافت لیست فایل‌ها');
+    return await response.json();
+  } catch (error) {
+    console.error('خطا در دریافت لیست فایل‌ها:', error);
+    return null;
+  }
+}
+
+// استخراج تاریخ از نام فایل (فرمت: digikala-YYYY-MM-DD.json)
+function extractDateFromFilename(filename, prefix) {
+  const regex = new RegExp(`${prefix}-(\\d{4}-\\d{2}-\\d{2})\\.json`);
+  const match = filename.match(regex);
+  return match ? match[1] : null;
+}
+
+// انتخاب جدیدترین فایل برای یک منبع
+function getLatestFileForSource(files, prefix) {
+  const validFiles = files
+    .filter(file => file.name.startsWith(prefix) && file.name.endsWith('.json'))
+    .map(file => {
+      const dateStr = extractDateFromFilename(file.name, prefix);
+      return {
+        name: file.name,
+        date: dateStr ? new Date(dateStr) : null,
+        download_url: file.download_url,
+        path: file.path
+      };
+    })
+    .filter(f => f.date !== null)
+    .sort((a, b) => b.date - a.date); // نزولی
+
+  return validFiles.length > 0 ? validFiles[0] : null;
+}
+
+// دریافت تاریخ آخرین کامیت یک فایل از GitHub
+async function fetchCommitDate(filePath) {
+  try {
+    const response = await fetch(`https://api.github.com/repos/irmosaka/tv-price-dashboard/commits?path=${filePath}&page=1&per_page=1`);
     if (!response.ok) throw new Error('GitHub API error');
     const commits = await response.json();
     if (commits && commits[0] && commits[0].commit && commits[0].commit.committer && commits[0].commit.committer.date) {
       return new Date(commits[0].commit.committer.date);
     }
   } catch (e) {
-    console.error('خطا در دریافت تاریخ از GitHub:', e);
+    console.error('خطا در دریافت تاریخ کامیت:', e);
   }
   return null;
 }
 
-// بروزرسانی تاریخ آخرین کامیت در header
-async function updateLastUpdateFromGitHub() {
-  const digikalaDate = await fetchLastCommitDate('data/digikala-latest.json');
-  const torobDate = await fetchLastCommitDate('data/torob-latest.json');
-  
-  let latestDate = null;
-  if (digikalaDate && torobDate) {
-    latestDate = digikalaDate > torobDate ? digikalaDate : torobDate;
-  } else if (digikalaDate) {
-    latestDate = digikalaDate;
-  } else if (torobDate) {
-    latestDate = torobDate;
+// تابع اصلی مقداردهی اولیه: انتخاب فایل‌ها، دریافت تاریخ‌ها و بارگذاری داده‌ها
+async function initData() {
+  // تنظیم فونت پیش‌فرض Chart.js به وزیر
+  if (typeof Chart !== 'undefined') {
+    Chart.defaults.font.family = 'Vazir';
   }
-  
-  if (latestDate) {
-    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' };
-    document.getElementById('last-update').textContent = latestDate.toLocaleDateString('fa-IR', options);
+
+  const files = await fetchFileList();
+  if (!files) {
+    // اگر دریافت لیست ممکن نبود، از fallback استفاده کن (همان فایل‌های latest)
+    console.warn('استفاده از fallback: digikala-latest.json و torob-latest.json');
+    selectedFiles.digikala.url = 'data/digikala-latest.json';
+    selectedFiles.torob.url = 'data/torob-latest.json';
+    // برای fallback تاریخ بروزرسانی را زمان حال قرار می‌دهیم
+    document.getElementById('last-update').textContent = new Date().toLocaleString('fa-IR');
+    fetchData('digikala');
+    fetchData('torob');
+    return;
+  }
+
+  // انتخاب جدیدترین فایل برای دیجی‌کالا
+  const latestDigikala = getLatestFileForSource(files, 'digikala');
+  if (latestDigikala) {
+    selectedFiles.digikala.name = latestDigikala.name;
+    selectedFiles.digikala.url = latestDigikala.download_url;
+    selectedFiles.digikala.commitDate = await fetchCommitDate(latestDigikala.path);
   } else {
-    // اگر دریافت تاریخ موفق نبود، از تاریخ کنونی استفاده می‌کنیم
+    console.warn('هیچ فایل دیجی‌کالا یافت نشد');
+  }
+
+  // انتخاب جدیدترین فایل برای ترب
+  const latestTorob = getLatestFileForSource(files, 'torob');
+  if (latestTorob) {
+    selectedFiles.torob.name = latestTorob.name;
+    selectedFiles.torob.url = latestTorob.download_url;
+    selectedFiles.torob.commitDate = await fetchCommitDate(latestTorob.path);
+  } else {
+    console.warn('هیچ فایل ترب یافت نشد');
+  }
+
+  // بروزرسانی نمایش آخرین تاریخ (بزرگترین تاریخ بین دو فایل)
+  const dates = [];
+  if (selectedFiles.digikala.commitDate) dates.push(selectedFiles.digikala.commitDate);
+  if (selectedFiles.torob.commitDate) dates.push(selectedFiles.torob.commitDate);
+  if (dates.length > 0) {
+    const latestDate = new Date(Math.max(...dates));
+    document.getElementById('last-update').textContent = latestDate.toLocaleString('fa-IR');
+  } else {
     document.getElementById('last-update').textContent = new Date().toLocaleString('fa-IR');
   }
+
+  // بارگذاری داده‌ها
+  if (selectedFiles.digikala.url) fetchData('digikala');
+  if (selectedFiles.torob.url) fetchData('torob');
 }
 
 // تابع بارگذاری داده از فایل JSON (با fetch)
 async function fetchData(source) {
-  const url = DATA_PATHS[source];
-  if (!url) return;
+  const fileInfo = selectedFiles[source];
+  if (!fileInfo || !fileInfo.url) return;
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(fileInfo.url);
     if (!response.ok) throw new Error(`فایل ${source} یافت نشد`);
     const json = await response.json();
     loadData(json, source);
@@ -692,11 +762,6 @@ function sortTable(col) {
 
 // بارگذاری اولیه و رویدادها
 document.addEventListener('DOMContentLoaded', () => {
-  // تنظیم فونت پیش‌فرض Chart.js به وزیر
-  if (typeof Chart !== 'undefined') {
-    Chart.defaults.font.family = 'Vazir';
-  }
-  
   // بارگذاری Chart.js (اگر هنوز بارگذاری نشده)
   if (typeof Chart === 'undefined') {
     const script = document.createElement('script');
@@ -704,17 +769,13 @@ document.addEventListener('DOMContentLoaded', () => {
     script.onload = () => {
       console.log('Chart.js loaded');
       Chart.defaults.font.family = 'Vazir';
-      fetchData('digikala');
-      fetchData('torob');
+      initData();
     };
     document.head.appendChild(script);
   } else {
-    fetchData('digikala');
-    fetchData('torob');
+    Chart.defaults.font.family = 'Vazir';
+    initData();
   }
-
-  // دریافت تاریخ آخرین بروزرسانی از GitHub
-  updateLastUpdateFromGitHub();
 
   // مدیریت تب‌ها
   document.querySelectorAll('.tab').forEach(tab => {
