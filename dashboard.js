@@ -159,6 +159,45 @@ function isValidProduct(item) {
   return true;
 }
 
+// دریافت آخرین تاریخ کامیت فایل از GitHub
+async function fetchLastCommitDate(filename) {
+  try {
+    // توجه: نام مخزن و مسیر فایل باید با مخزن شما هماهنگ شود
+    const response = await fetch(`https://api.github.com/repos/irmosaka/tv-price-dashboard/commits?path=${filename}&page=1&per_page=1`);
+    if (!response.ok) throw new Error('GitHub API error');
+    const commits = await response.json();
+    if (commits && commits[0] && commits[0].commit && commits[0].commit.committer && commits[0].commit.committer.date) {
+      return new Date(commits[0].commit.committer.date);
+    }
+  } catch (e) {
+    console.error('خطا در دریافت تاریخ از GitHub:', e);
+  }
+  return null;
+}
+
+// بروزرسانی تاریخ آخرین کامیت در header
+async function updateLastUpdateFromGitHub() {
+  const digikalaDate = await fetchLastCommitDate('data/digikala-latest.json');
+  const torobDate = await fetchLastCommitDate('data/torob-latest.json');
+  
+  let latestDate = null;
+  if (digikalaDate && torobDate) {
+    latestDate = digikalaDate > torobDate ? digikalaDate : torobDate;
+  } else if (digikalaDate) {
+    latestDate = digikalaDate;
+  } else if (torobDate) {
+    latestDate = torobDate;
+  }
+  
+  if (latestDate) {
+    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' };
+    document.getElementById('last-update').textContent = latestDate.toLocaleDateString('fa-IR', options);
+  } else {
+    // اگر دریافت تاریخ موفق نبود، از تاریخ کنونی استفاده می‌کنیم
+    document.getElementById('last-update').textContent = new Date().toLocaleString('fa-IR');
+  }
+}
+
 // تابع بارگذاری داده از فایل JSON (با fetch)
 async function fetchData(source) {
   const url = DATA_PATHS[source];
@@ -333,7 +372,6 @@ function renderBrandAvgChart(data) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      font: { family: 'Vazir, Tahoma, sans-serif' },
       scales: { y: { beginAtZero: true, ticks: { callback: v => toPersianDigits(v) + ' تومان' } } },
       plugins: { tooltip: { callbacks: { label: ctx => `میانگین: ${toPersianDigits(ctx.raw)} تومان` } } }
     }
@@ -375,7 +413,6 @@ function renderSizeAvgChart(data) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      font: { family: 'Vazir, Tahoma, sans-serif' },
       scales: { y: { beginAtZero: true, ticks: { callback: v => toPersianDigits(v) + ' تومان' } } },
       plugins: { tooltip: { callbacks: { label: ctx => `میانگین: ${toPersianDigits(ctx.raw)} تومان` } } }
     }
@@ -414,7 +451,6 @@ function renderBrandCountChart(data) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      font: { family: 'Vazir, Tahoma, sans-serif' },
       scales: { y: { beginAtZero: true, ticks: { callback: v => toPersianDigits(v) } } },
       plugins: { tooltip: { callbacks: { label: ctx => `تعداد: ${toPersianDigits(ctx.raw)}` } } }
     }
@@ -438,14 +474,12 @@ function updateUI() {
   const brandsWrapper = document.getElementById('stat-card-brands-wrapper');
 
   if (currentTab === 'torob') {
-    // نمایش کاشی فروشندگان و تنظیم عرض یکسان
     sellersWrapper.style.display = 'block';
     [avgWrapper, itemsWrapper, sellersWrapper, brandsWrapper].forEach(el => {
       el.classList.remove('col-lg-4', 'col-md-4');
       el.classList.add('col-lg-3', 'col-md-6');
     });
   } else {
-    // مخفی کردن کاشی فروشندگان و تنظیم سه کاشی دیگر برای پر کردن فضا
     sellersWrapper.style.display = 'none';
     [avgWrapper, itemsWrapper, brandsWrapper].forEach(el => {
       el.classList.remove('col-lg-3', 'col-md-6');
@@ -453,7 +487,6 @@ function updateUI() {
     });
   }
   
-  // نمایش سرستون‌های مناسب
   if (currentTab === 'torob') {
     document.getElementById('table-header-digikala').style.display = 'none';
     document.getElementById('table-header-torob').style.display = '';
@@ -463,14 +496,14 @@ function updateUI() {
   }
   
   if (data.length === 0) {
-    document.querySelector('#product-table tbody').innerHTML = '<tr><td colspan="9" style="text-align:center; padding:40px;">هیچ داده‌ای موجود نیست. لطفاً فایل JSON را بارگذاری کنید.</td></tr>';
+    const colspan = currentTab === 'torob' ? '5' : '8';
+    document.querySelector('#product-table tbody').innerHTML = `<tr><td colspan="${colspan}" style="text-align:center; padding:40px;">هیچ داده‌ای موجود نیست. لطفاً فایل JSON را بارگذاری کنید.</td></tr>`;
     document.getElementById('pagination').innerHTML = '';
     return;
   }
 
   updateStats(data);
-  document.getElementById('last-update').textContent = new Date().toLocaleString('fa-IR');
-
+  
   const sizeFilter = document.getElementById('size-filter');
   const sizes = [...new Set(data.map(d => d.size).filter(s => s !== 'نامشخص'))]
     .map(s => parseInt(s, 10))
@@ -659,12 +692,18 @@ function sortTable(col) {
 
 // بارگذاری اولیه و رویدادها
 document.addEventListener('DOMContentLoaded', () => {
-  // بارگذاری Chart.js
+  // تنظیم فونت پیش‌فرض Chart.js به وزیر
+  if (typeof Chart !== 'undefined') {
+    Chart.defaults.font.family = 'Vazir';
+  }
+  
+  // بارگذاری Chart.js (اگر هنوز بارگذاری نشده)
   if (typeof Chart === 'undefined') {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
     script.onload = () => {
       console.log('Chart.js loaded');
+      Chart.defaults.font.family = 'Vazir';
       fetchData('digikala');
       fetchData('torob');
     };
@@ -673,6 +712,9 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchData('digikala');
     fetchData('torob');
   }
+
+  // دریافت تاریخ آخرین بروزرسانی از GitHub
+  updateLastUpdateFromGitHub();
 
   // مدیریت تب‌ها
   document.querySelectorAll('.tab').forEach(tab => {
