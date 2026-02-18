@@ -171,7 +171,6 @@ async function fetchData(source) {
     loadData(json, source);
   } catch (error) {
     console.error(`خطا در بارگذاری داده‌های ${source}:`, error);
-    // در صورت خطا، می‌توان از localStorage استفاده کرد (اگر قبلاً ذخیره شده باشد)
     const cached = localStorage.getItem(`daily_prices_${source}`);
     if (cached) {
       try {
@@ -214,9 +213,7 @@ function loadData(raw, source = 'digikala') {
       };
     }).filter(item => item !== null);
   } else {
-    // ========== تغییر اصلی برای حذف آیتم‌های غیرمحصول ==========
     processed = raw.map(item => {
-      // نادیده گرفتن آیتم‌هایی که لینک معتبر محصول ندارند
       if (!item['block href'] || !item['block href'].includes('/product/')) {
         return null;
       }
@@ -245,7 +242,6 @@ function loadData(raw, source = 'digikala') {
         tech
       };
     }).filter(d => d !== null && d.price_num > 0);
-    // ==========================================================
   }
 
   processed = processed.filter(isValidProduct);
@@ -268,7 +264,11 @@ function updateStats(data) {
   
   document.getElementById('avg-price').textContent = toPersianDigits(avgPrice) + ' تومان';
   document.getElementById('total-items').textContent = toPersianDigits(data.length);
-  document.getElementById('total-sellers').textContent = toPersianDigits(data.reduce((sum, item) => sum + item.sellers, 0));
+  
+  // مجموع فروشندگان (در ترب معنی دارد، در دیجی‌کالا عموماً ۰ یا ۱)
+  const totalSellers = data.reduce((sum, item) => sum + (item.sellers || 0), 0);
+  document.getElementById('total-sellers').textContent = toPersianDigits(totalSellers);
+  
   document.getElementById('total-brands').textContent = toPersianDigits([...new Set(data.map(item => item.brand).filter(b => b !== 'متفرقه'))].length);
   document.getElementById('product-count').textContent = data.length;
 }
@@ -441,7 +441,7 @@ function updateUI() {
   }
   
   if (data.length === 0) {
-    document.querySelector('#product-table tbody').innerHTML = '<tr><td colspan="8" style="text-align:center; padding:40px;">هیچ داده‌ای موجود نیست. لطفاً فایل JSON را بارگذاری کنید.</td></tr>';
+    document.querySelector('#product-table tbody').innerHTML = '<tr><td colspan="9" style="text-align:center; padding:40px;">هیچ داده‌ای موجود نیست. لطفاً فایل JSON را بارگذاری کنید.</td></tr>';
     document.getElementById('pagination').innerHTML = '';
     return;
   }
@@ -515,9 +515,25 @@ function renderTable(data, page = currentPage) {
     const rowClass = isSpecialBrand ? 'style="background-color: #fff3e0;"' : '';
     
     if (isTorob) {
-      return `<tr ${rowClass}><td>${item.name}</td><td><strong>${item.brand}</strong></td><td>${toPersianDigits(item.price_num)} تومان</td><td>${toPersianDigits(item.sellers)} فروشنده</td><td><a href="${item.link}" target="_blank" class="product-link">مشاهده</a></td></tr>`;
+      return `<tr ${rowClass}>
+        <td>${item.name}</td>
+        <td><strong>${item.brand}</strong></td>
+        <td>${toPersianDigits(item.price_num)} تومان</td>
+        <td>${toPersianDigits(item.sellers)}</td>
+        <td><a href="${item.link}" target="_blank" class="product-link">مشاهده</a></td>
+      </tr>`;
     } else {
-      return `<tr ${rowClass}><td>${item.name}</td><td><strong>${item.brand}</strong></td><td>${toPersianDigits(item.price_num)} تومان</td><td>${toPersianDigits(item.original_price_num)} تومان</td><td>${item.discount}</td><td>${item.rating}</td><td>${item.stock}</td><td><a href="${item.link}" target="_blank" class="product-link">مشاهده</a></td></tr>`;
+      return `<tr ${rowClass}>
+        <td>${item.name}</td>
+        <td><strong>${item.brand}</strong></td>
+        <td>${toPersianDigits(item.price_num)} تومان</td>
+        <td>${toPersianDigits(item.original_price_num)} تومان</td>
+        <td>${item.discount}</td>
+        <td>${item.rating}</td>
+        <td>${item.stock}</td>
+        <td>—</td>
+        <td><a href="${item.link}" target="_blank" class="product-link">مشاهده</a></td>
+      </tr>`;
     }
   }).join('');
 
@@ -579,6 +595,14 @@ function changePage(page) {
 function getFilteredData() {
   let filtered = currentData[currentTab] || [];
   
+  const searchTerm = document.getElementById('search-input')?.value.trim().toLowerCase() || '';
+  if (searchTerm) {
+    filtered = filtered.filter(item => 
+      item.name.toLowerCase().includes(searchTerm) || 
+      item.brand.toLowerCase().includes(searchTerm)
+    );
+  }
+  
   const minPrice = parseInt(document.getElementById('price-filter').value) || 0;
   if (minPrice > 0) filtered = filtered.filter(item => item.price_num >= minPrice);
   
@@ -620,7 +644,6 @@ document.addEventListener('DOMContentLoaded', () => {
     script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
     script.onload = () => {
       console.log('Chart.js loaded');
-      // بعد از بارگذاری Chart.js، داده‌ها را دریافت کن
       fetchData('digikala');
       fetchData('torob');
     };
@@ -649,7 +672,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // رویدادهای فیلترها
-  ['price-filter', 'size-filter', 'brand-filter', 'tech-filter'].forEach(id => {
+  ['price-filter', 'size-filter', 'brand-filter', 'tech-filter', 'search-input'].forEach(id => {
     const element = document.getElementById(id);
     if (element) {
       element.addEventListener('input', applyFilters);
@@ -672,6 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('size-filter').value = '';
     document.getElementById('brand-filter').value = '';
     document.getElementById('tech-filter').value = '';
+    document.getElementById('search-input').value = '';
     if (filterValue) filterValue.textContent = '۰ تومان';
     currentPage = 1;
     sortCol = 'price_num';
