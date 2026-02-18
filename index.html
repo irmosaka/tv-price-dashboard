@@ -145,22 +145,21 @@
             color: white;
         }
         
-th {
-    background-color: #667eea;  /* هر سلول هدر این رنگ را بگیرد */
-    color: white;
-    padding: 15px;
-    text-align: center;
-    cursor: pointer;
-    font-weight: bold;
-    position: relative;
-    transition: all 0.2s ease;
-}
-
-/* فقط هدری که ماوس روی آن است تغییر رنگ می‌دهد */
-th:hover {
-    background-color: #5a6fd8 !important;
-    box-shadow: inset 0 -3px 0 #ffd700;  /* خط زیرین طلایی */
-}
+        th {
+            background-color: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        
+        th:hover {
+            background-color: #5a6fd8 !important;
+            box-shadow: inset 0 -3px 0 #ffd700;
+        }
         
         td {
             padding: 12px 15px;
@@ -257,6 +256,18 @@ th:hover {
         .form-control:focus, .form-select:focus {
             border-color: #667eea;
             box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+        }
+        
+        /* اصلاح نمایش فلش دراپ‌داون */
+        select.form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: left 0.75rem center;
+            background-size: 16px 12px;
+            padding-left: 2.25rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         }
         
         .btn-primary {
@@ -403,42 +414,31 @@ th:hover {
             </div>
         </div>
         
-        <!-- بخش آپلود فایل -->
-        <!-- <div class="upload-section">
-            <h4>📁 بارگذاری فایل JSON</h4>
-            <p>فایل JSON داده‌های ترب یا دیجی‌کالا را انتخاب کنید</p>
-            <div class="d-flex justify-content-center gap-3 mt-3">
-                <button id="upload-btn" class="btn btn-primary">
-                    <i class="fas fa-upload"></i> انتخاب فایل
-                </button>
-                <input type="file" id="file-input" accept=".json" hidden>
+        <!-- تب‌های منبع داده -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-database"></i> منبع داده
             </div>
-            <div class="mt-3 text-muted">
-                <small>فایل‌های پشتیبانی شده: torob-*.json یا digikala-*.json</small>
-            </div>
-        </div> -->
-        
-       <!-- تب‌های منبع داده -->
-<div class="card">
-    <div class="card-header">
-        <i class="fas fa-database"></i> منبع داده
-    </div>
-    <div class="card-body">
-        <div class="d-flex justify-content-center">
-            <div class="tab active" data-tab="digikala">
-                <img src="https://www.digikala.com/statics/img/png/footerlogo2.webp" alt="Digikala" style="height: 1.2em; width: auto; vertical-align: middle; margin-left: 5px;"> دیجی‌کالا
-            </div>
-            <div class="tab" data-tab="torob">
-                <img src="https://gifto.biz/wp-content/uploads/2025/02/torob-logo-2.png" alt="Torob" style="height: 1.2em; width: auto; vertical-align: middle; margin-left: 5px;"> ترب
+            <div class="card-body">
+                <div class="d-flex justify-content-center">
+                    <div class="tab active" data-tab="digikala">
+                        <img src="https://www.digikala.com/statics/img/png/footerlogo2.webp" alt="Digikala" style="height: 1.2em; width: auto; vertical-align: middle; margin-left: 5px;"> دیجی‌کالا
+                    </div>
+                    <div class="tab" data-tab="torob">
+                        <i class="fas fa-search"></i> ترب
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
         
         <!-- بخش فیلترها -->
         <div class="filter-section">
             <h4><i class="fas fa-filter"></i> فیلترها</h4>
             <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">جستجو در نام محصول یا برند</label>
+                    <input type="text" class="form-control" id="search-input" placeholder="مثال: اسنوا یا 55 اینچ">
+                </div>
                 <div class="col-md-3 mb-3">
                     <label class="form-label">حداقل قیمت</label>
                     <input type="range" class="form-range" id="price-filter" min="0" max="50000000" step="100000" value="0">
@@ -450,14 +450,12 @@ th:hover {
                     <label class="form-label">سایز تلویزیون</label>
                     <select class="form-select" id="size-filter">
                         <option value="">همه سایزها</option>
-                        <!-- سایزها به صورت داینامیک لود می‌شوند -->
                     </select>
                 </div>
                 <div class="col-md-3 mb-3">
                     <label class="form-label">برند</label>
                     <select class="form-select" id="brand-filter">
                         <option value="">همه برندها</option>
-                        <!-- برندها به صورت داینامیک لود می‌شوند -->
                     </select>
                 </div>
                 <div class="col-md-3 mb-3">
@@ -469,9 +467,11 @@ th:hover {
                         <option value="QLED">QLED</option>
                     </select>
                 </div>
-                <button id="clear-filters" class="btn btn-outline-secondary">
-                    <i class="fas fa-filter"></i> پاک کردن فیلترها
-                </button>
+                <div class="col-md-12 mt-3">
+                    <button id="clear-filters" class="btn btn-outline-secondary">
+                        <i class="fas fa-filter"></i> پاک کردن فیلترها
+                    </button>
+                </div>
             </div>
         </div>
         
@@ -486,7 +486,6 @@ th:hover {
                     <table id="product-table" class="table table-hover">
                         <thead>
                             <tr id="table-header-digikala">
-                                <!-- هدر دیجی‌کالا -->
                                 <th data-col="name">نام محصول</th>
                                 <th data-col="brand">برند</th>
                                 <th data-col="price_num">قیمت فروش</th>
@@ -494,21 +493,20 @@ th:hover {
                                 <th data-col="discount">تخفیف</th>
                                 <th data-col="rating">امتیاز</th>
                                 <th data-col="stock">موجودی</th>
+                                <th data-col="sellers">تعداد فروشندگان</th>
                                 <th>لینک</th>
                             </tr>
                             <tr id="table-header-torob" style="display: none;">
-                                <!-- هدر ترب -->
                                 <th data-col="name">نام محصول</th>
                                 <th data-col="brand">برند</th>
                                 <th data-col="price_num">قیمت</th>
-                                <th data-col="sellers">فروشندگان</th>
+                                <th data-col="sellers">تعداد فروشندگان</th>
                                 <th>لینک</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- داده‌ها به صورت داینامیک لود می‌شوند -->
                             <tr>
-                                <td colspan="8" style="text-align: center; padding: 40px;">
+                                <td colspan="9" style="text-align: center; padding: 40px;">
                                     <div class="spinner-border text-primary" role="status">
                                         <span class="visually-hidden">در حال بارگذاری...</span>
                                     </div>
@@ -520,43 +518,40 @@ th:hover {
                 </div>
                 
                 <!-- صفحه‌بندی -->
-                <div id="pagination" class="pagination">
-                    <!-- دکمه‌های صفحه‌بندی به صورت داینامیک ایجاد می‌شوند -->
-                </div>
+                <div id="pagination" class="pagination"></div>
             </div>
         </div>
         
-        <!-- نمودار میانگین قیمت بر اساس برند -->
-<!-- نمودارهای تحلیلی -->
-<div class="chart-container">
-    <h3><i class="fas fa-chart-pie"></i> نمودارهای تحلیلی</h3>
-    <div class="row mt-4">
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-transparent fw-bold">📊 میانگین قیمت برند (۱۵ برند برتر)</div>
-                <div class="card-body" style="height: 300px;">
-                    <canvas id="chart-brand-avg"></canvas>
+        <!-- نمودارهای تحلیلی -->
+        <div class="chart-container">
+            <h3><i class="fas fa-chart-pie"></i> نمودارهای تحلیلی</h3>
+            <div class="row mt-4">
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-transparent fw-bold">📊 میانگین قیمت برند (۱۵ برند برتر)</div>
+                        <div class="card-body" style="height: 300px;">
+                            <canvas id="chart-brand-avg"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-transparent fw-bold">📈 میانگین قیمت بر اساس سایز</div>
+                        <div class="card-body" style="height: 300px;">
+                            <canvas id="chart-size-avg"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-transparent fw-bold">📊 تعداد محصولات هر برند</div>
+                        <div class="card-body" style="height: 300px;">
+                            <canvas id="chart-brand-count"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-transparent fw-bold">📈 میانگین قیمت بر اساس سایز</div>
-                <div class="card-body" style="height: 300px;">
-                    <canvas id="chart-size-avg"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-transparent fw-bold">📊 تعداد محصولات هر برند</div>
-                <div class="card-body" style="height: 300px;">
-                    <canvas id="chart-brand-count"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
         
         <!-- فوتر -->
         <footer class="text-center mt-5 mb-3 text-muted">
