@@ -5,6 +5,12 @@ let rowsPerPage = 20;
 let sortCol = 'price_num';
 let sortDir = 'asc';
 
+// مسیر فایل‌های JSON (نسبت به صفحه اصلی)
+const DATA_PATHS = {
+  digikala: 'data/digikala-latest.json',
+  torob: 'data/torob-latest.json'
+};
+
 // لیست کامل برندها (مرتب شده بر اساس حروف الفبا)
 const TOROB_BRANDS = [
   "آپلاس", "آیوا", "اسنوا", "ال جی", "ایکس ویژن", "بویمن", "پارس", "پاناسونیک",
@@ -12,16 +18,16 @@ const TOROB_BRANDS = [
   "سامسونگ", "سونی", "لیماک جنرال اینترنشنال", "نکسار", "هایسنس", "ورلد استار"
 ].sort((a, b) => a.localeCompare(b, 'fa'));
 
-// برندهایی که باید به عنوان متفرقه دسته‌بندی شوند (اما در فیلتر نمایش داده نمی‌شوند)
+// برندهایی که باید به عنوان متفرقه دسته‌بندی شوند
 const IGNORED_BRANDS = ["بویمن", "جی بی پی", "لیماک جنرال اینترنشنال", "ورلد استار"];
 
-// کلمات کلیدی برای حذف کامل محصول (این محصولات اصلاً نمایش داده نمی‌شوند)
+// کلمات کلیدی برای حذف کامل محصول
 const EXCLUDE_KEYWORDS = [
   "ویدئو وال", "LED Wall", "پاورولوژی", "powerology",
   "ال ای دی ۱۵.۶ اینچ", "15.6 اینچ", "مانیتور", "monitor",
   "ITC", "گام پیکسل", "فضای داخلی", "ولگا", "volga",
   "ضخیم", "نرمال", "۴۰ پین", "40 Pin",
-  "ایلیا", "ELIA" 
+  "ایلیا", "ELIA"
 ];
 
 // متغیرهای نمودارها
@@ -29,10 +35,9 @@ let chartBrandAvg = null;
 let chartSizeAvg = null;
 let chartBrandCount = null;
 
-// تابع کمکی برای نرمال‌سازی متن (حذف کاراکترهای خاص)
+// تابع کمکی برای نرمال‌سازی متن
 function normalizeText(text) {
   if (!text) return '';
-  // حذف zero-width spaces و کاراکترهای کنترلی
   return text.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
 }
 
@@ -47,9 +52,7 @@ function extractBrandFromTitle(title) {
 
   const normalized = normalizeText(title).toLowerCase();
 
-  // لیست برندها به همراه نام‌های انگلیسی معادل (با اولویت طول)
   const brandPatterns = [
-    // برندهای بلندتر اول
     { name: 'لیماک جنرال اینترنشنال', patterns: ['لیماک جنرال اینترنشنال', 'limak general international'] },
     { name: 'ورلد استار', patterns: ['ورلد استار', 'worldstar'] },
     { name: 'پاناسونیک', patterns: ['پاناسونیک', 'panasonic'] },
@@ -71,34 +74,27 @@ function extractBrandFromTitle(title) {
     { name: 'پارس', patterns: ['پارس', 'pars'] },
     { name: 'بویمن', patterns: ['بویمن', 'boyman'] },
     { name: 'جی بی پی', patterns: ['جی بی پی', 'gbp'] },
-    // برای «سام» به‌تنهایی (با شرط عدم وجود سامسونگ و وجود UA/QA)
     { name: 'سام الکترونیک', patterns: ['سام'], condition: (txt) => txt.includes('سام') && !txt.includes('سامسونگ') && (txt.includes('ua') || txt.includes('qa')) }
   ];
 
-  // اول بررسی شرطی برای «سام» (با UA/QA)
+  // بررسی شرطی برای «سام»
   for (const bp of brandPatterns) {
-    if (bp.condition) {
-      if (bp.condition(normalized)) {
-        return bp.name;
-      }
+    if (bp.condition && bp.condition(normalized)) {
+      return bp.name;
     }
   }
 
-  // سپس بررسی الگوهای معمولی (با اولویت طول)
-  // ابتدا لیست را بر اساس طول بلندترین pattern مرتب می‌کنیم
+  // مرتب‌سازی الگوها بر اساس طول
   const flatPatterns = [];
   brandPatterns.forEach(bp => {
-    if (!bp.condition) { // آن‌هایی که شرط ندارند
-      bp.patterns.forEach(p => {
-        flatPatterns.push({ name: bp.name, pattern: p.toLowerCase() });
-      });
+    if (!bp.condition) {
+      bp.patterns.forEach(p => flatPatterns.push({ name: bp.name, pattern: p.toLowerCase() }));
     }
   });
   flatPatterns.sort((a, b) => b.pattern.length - a.pattern.length);
 
   for (const { name, pattern } of flatPatterns) {
     if (normalized.includes(pattern)) {
-      // اگر برند در لیست نادیده‌گرفته‌شده است، متفرقه برگردان
       if (IGNORED_BRANDS.includes(name)) return 'متفرقه';
       return name;
     }
@@ -112,20 +108,11 @@ function extractSize(title) {
 
   const normalized = normalizeText(title);
 
-  // الگوهای اصلی (با ذکر "اینچ" یا "سایز")
   const patterns = [
-    /(\d{2,3})\s*اینچ/i,
-    /(\d{2,3})\s*اینج/i,
-    /سایز\s*(\d{2,3})/i,
-    /اندازه\s*(\d{2,3})/i,
-    /(\d{2,3})\s*["']?اینچ/i,
-    /[\d۰-۹]{2,3}\s*اینچ/i,
-    /سایز\s*[\d۰-۹]{2,3}\s*اینچ/i,
-    /(\d{2,3})[\s_-]?اینچ/i,
-    /(\d{2,3})"/i,
-    /(\d{2,3})''/i,
-    /(\d{2,3})\s*inch/i,
-    /(\d{2,3})[\s_-]?inch/i
+    /(\d{2,3})\s*اینچ/i, /(\d{2,3})\s*اینج/i, /سایز\s*(\d{2,3})/i,
+    /اندازه\s*(\d{2,3})/i, /(\d{2,3})\s*["']?اینچ/i, /[\d۰-۹]{2,3}\s*اینچ/i,
+    /سایز\s*[\d۰-۹]{2,3}\s*اینچ/i, /(\d{2,3})[\s_-]?اینچ/i, /(\d{2,3})"/i,
+    /(\d{2,3})''/i, /(\d{2,3})\s*inch/i, /(\d{2,3})[\s_-]?inch/i
   ];
 
   for (const pattern of patterns) {
@@ -137,7 +124,6 @@ function extractSize(title) {
     }
   }
 
-  // اگر الگوهای اصلی پیدا نشد، به دنبال اعداد تنها می‌گردیم (با دقت)
   const standaloneNumbers = normalized.match(/\b(\d{2,3})\b/g);
   if (standaloneNumbers) {
     for (let numStr of standaloneNumbers) {
@@ -159,21 +145,42 @@ function extractTech(title) {
   return 'LED';
 }
 
-// تابع بررسی اعتبار محصول (آیا باید نمایش داده شود؟)
+// تابع بررسی اعتبار محصول
 function isValidProduct(item) {
   const title = item.name || '';
-  // حذف محصولات با کلمات کلیدی ممنوع
   for (const kw of EXCLUDE_KEYWORDS) {
     if (title.includes(kw)) return false;
   }
-  // حذف محصولات با سایز کمتر از 24 اینچ (به جز مواردی که سایز نامشخص است)
   if (item.size !== 'نامشخص') {
     const sizeNum = parseInt(item.size, 10);
     if (!isNaN(sizeNum) && (sizeNum < 24 || sizeNum > 100)) return false;
   }
-  // حذف برند پاورولوژی (اگر تشخیص داده شود)
   if (title.toLowerCase().includes('powerology') || title.includes('پاورولوژی')) return false;
   return true;
+}
+
+// تابع بارگذاری داده از فایل JSON (با fetch)
+async function fetchData(source) {
+  const url = DATA_PATHS[source];
+  if (!url) return;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`فایل ${source} یافت نشد`);
+    const json = await response.json();
+    loadData(json, source);
+  } catch (error) {
+    console.error(`خطا در بارگذاری داده‌های ${source}:`, error);
+    // در صورت خطا، می‌توان از localStorage استفاده کرد (اگر قبلاً ذخیره شده باشد)
+    const cached = localStorage.getItem(`daily_prices_${source}`);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        currentData[source] = parsed;
+        updateUI();
+      } catch (e) {}
+    }
+  }
 }
 
 function loadData(raw, source = 'digikala') {
@@ -235,12 +242,18 @@ function loadData(raw, source = 'digikala') {
     }).filter(d => d.price_num > 0);
   }
 
-  // فیلتر نهایی: حذف محصولات نامعتبر
   processed = processed.filter(isValidProduct);
 
   currentData[source] = processed;
   localStorage.setItem(`daily_prices_${source}`, JSON.stringify(processed));
-  updateUI();
+  
+  if (source === currentTab) {
+    updateUI();
+  } else if (source === 'digikala' && currentTab === 'digikala') {
+    updateUI();
+  } else if (source === 'torob' && currentTab === 'torob') {
+    updateUI();
+  }
 }
 
 function updateStats(data) {
@@ -295,9 +308,9 @@ function renderBrandAvgChart(data) {
   const labels = chartData.map(d => d.brand);
   const values = chartData.map(d => d.value);
   const backgroundColors = chartData.map(d => {
-    if (d.brand === 'اسنوا') return '#4CAF50';      // سبز
-    if (d.brand === 'دوو') return '#F44336';        // قرمز
-    return '#42A5F5';                                // آبی
+    if (d.brand === 'اسنوا') return '#4CAF50';
+    if (d.brand === 'دوو') return '#F44336';
+    return '#42A5F5';
   });
 
   chartBrandAvg = new Chart(ctx, {
@@ -593,19 +606,25 @@ function sortTable(col) {
   applyFilters();
 }
 
+// بارگذاری اولیه و رویدادها
 document.addEventListener('DOMContentLoaded', () => {
+  // بارگذاری Chart.js
   if (typeof Chart === 'undefined') {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
     script.onload = () => {
       console.log('Chart.js loaded');
-      if (currentData[currentTab] && currentData[currentTab].length > 0) {
-        renderAllCharts(currentData[currentTab]);
-      }
+      // بعد از بارگذاری Chart.js، داده‌ها را دریافت کن
+      fetchData('digikala');
+      fetchData('torob');
     };
     document.head.appendChild(script);
+  } else {
+    fetchData('digikala');
+    fetchData('torob');
   }
 
+  // مدیریت تب‌ها
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -618,10 +637,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // رویدادهای مرتب‌سازی
   document.querySelectorAll('th[data-col]').forEach(th => {
     th.addEventListener('click', () => sortTable(th.dataset.col));
   });
 
+  // رویدادهای فیلترها
   ['price-filter', 'size-filter', 'brand-filter', 'tech-filter'].forEach(id => {
     const element = document.getElementById(id);
     if (element) {
@@ -630,6 +651,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // نمایش مقدار فیلتر قیمت
   const priceFilter = document.getElementById('price-filter');
   const filterValue = document.getElementById('filter-value');
   if (priceFilter && filterValue) {
@@ -638,6 +660,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // پاک کردن فیلترها
   document.getElementById('clear-filters')?.addEventListener('click', () => {
     document.getElementById('price-filter').value = 0;
     document.getElementById('size-filter').value = '';
@@ -649,43 +672,4 @@ document.addEventListener('DOMContentLoaded', () => {
     sortDir = 'asc';
     updateUI();
   });
-
-  document.getElementById('upload-btn')?.addEventListener('click', () => {
-    document.getElementById('file-input')?.click();
-  });
-
-  document.getElementById('file-input')?.addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    let source = 'digikala';
-    const fileNameLower = file.name.toLowerCase();
-
-    if (fileNameLower.startsWith('torob')) source = 'torob';
-    else if (fileNameLower.startsWith('digikala')) source = 'digikala';
-    else {
-      const userSource = prompt('نام فایل شناخته نشد. منبع داده (digikala یا torob):')?.trim().toLowerCase();
-      if (userSource === 'torob' || userSource === 'digikala') source = userSource;
-      else alert('منبع داده نامعتبر است. از digikala استفاده می‌شود.');
-    }
-
-    const reader = new FileReader();
-    reader.onload = ev => {
-      try {
-        let text = ev.target.result.trim();
-        if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-        if (text.endsWith(',]')) text = text.slice(0, -2) + ']';
-
-        const json = JSON.parse(text);
-        loadData(json, source);
-        alert(`داده‌های ${source} از فایل "${file.name}" لود شد (${json.length} محصول)`);
-        e.target.value = '';
-      } catch (err) {
-        alert('خطا در خواندن فایل: ' + err.message);
-      }
-    };
-    reader.readAsText(file);
-  });
-
-  updateUI();
 });
